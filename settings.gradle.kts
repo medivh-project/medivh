@@ -9,8 +9,10 @@ pluginManagement {
 
 }
 
-include("medivh-api")
-include("medivh-core")
+include(":medivh-api")
+include(":medivh-core")
+include(":medivh-plugins")
+include(":medivh-plugins:medivh-plugin-gradle-kotlin")
 
 rootProject.children.forEach { it.configureBuildScriptName() }
 
