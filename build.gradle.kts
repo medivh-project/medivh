@@ -28,7 +28,7 @@ allprojects {
     }
 
     kotlin {
-        jvmToolchain(17)
+        jvmToolchain(8)
     }
     
     extensions.add("versions", versions)

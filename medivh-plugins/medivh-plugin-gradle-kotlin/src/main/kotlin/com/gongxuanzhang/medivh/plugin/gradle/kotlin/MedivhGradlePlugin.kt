@@ -10,7 +10,9 @@ import org.gradle.api.Project
 class MedivhGradlePlugin : Plugin<Project> {
 
     override fun apply(project: Project) {
-        val medivh = project.tasks.register("medivh", Medivh::class.java).get()
+        project.dependencies.add("implementation", "com.gongxuanzhang:medivh-api:0.0.1")
+        
+        val medivh = project.tasks.register("medivh", MedivhTask::class.java).get()
         project.tasks.named("compileKotlin").configure {
             it.finalizedBy(medivh)
         }

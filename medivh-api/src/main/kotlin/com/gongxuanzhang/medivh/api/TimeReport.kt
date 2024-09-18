@@ -1,8 +1,6 @@
 package com.gongxuanzhang.medivh.api
 
 import java.util.concurrent.TimeUnit
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import kotlin.time.Duration.Companion.milliseconds
 
 /**
@@ -10,15 +8,21 @@ import kotlin.time.Duration.Companion.milliseconds
  */
 object TimeReport {
 
-    private val log: Logger = LoggerFactory.getLogger(this.javaClass)
 
-    fun <T> timeReport(actionName: String, timeUnit: TimeUnit = TimeUnit.MILLISECONDS, action: () -> T): T {
+    fun <T> timeReport(
+        actionName: String,
+        timeUnit: TimeUnit = TimeUnit.MILLISECONDS,
+        console: Boolean = false,
+        action: () -> T
+    ): T {
         return when (timeUnit) {
             TimeUnit.MICROSECONDS, TimeUnit.NANOSECONDS -> {
                 val startTime = System.nanoTime()
                 val result = action.invoke()
                 val nano = System.nanoTime() - startTime
-                log.info("finish [$actionName] for ${formatTime(nano, timeUnit)}")
+                if (console) {
+                    println("$actionName cost ${formatTime(nano, timeUnit)}")
+                }
                 result
             }
 
@@ -26,7 +30,9 @@ object TimeReport {
                 val startTime = System.currentTimeMillis()
                 val result = action.invoke()
                 val nano = (System.currentTimeMillis() - startTime).milliseconds.inWholeNanoseconds
-                log.info("finish [$actionName] for ${formatTime(nano, timeUnit)}")
+                if (console) {
+                    println("$actionName cost ${formatTime(nano, timeUnit)}")
+                }
                 result
             }
         }

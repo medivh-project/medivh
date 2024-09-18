@@ -8,5 +8,5 @@ package com.gongxuanzhang.medivh.api
  * @author gongxuanzhangmelt@gmail.com
  */
 @Target(AnnotationTarget.FUNCTION)
-@Retention(AnnotationRetention.SOURCE)
+@Retention(AnnotationRetention.RUNTIME)
 annotation class DebugTime
