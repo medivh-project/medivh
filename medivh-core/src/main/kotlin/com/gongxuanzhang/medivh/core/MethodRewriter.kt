@@ -31,11 +31,7 @@ class MethodRewriter(private val parent: Medivh, mv: MethodVisitor) : MethodVisi
             mv.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/System", "out", printStream.descriptor)
             mv.visitInsn(Opcodes.SWAP)
             mv.visitMethodInsn(
-                Opcodes.INVOKEVIRTUAL,
-                printStream.internalName,
-                "println",
-                "($objectDescriptor)V",
-                false
+                Opcodes.INVOKEVIRTUAL, printStream.internalName, "println", "($objectDescriptor)V", false
             )
         }
         super.visitCode()

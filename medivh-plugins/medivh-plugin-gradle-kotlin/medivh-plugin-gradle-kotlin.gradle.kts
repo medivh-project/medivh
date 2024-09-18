@@ -5,7 +5,7 @@ plugins {
 
 dependencies {
     api(project(":medivh-core"))
-}   
+}
 
 gradlePlugin {
     plugins {

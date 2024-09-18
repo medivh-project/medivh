@@ -2,10 +2,7 @@ package com.gongxuanzhang.medivh.core
 
 import java.io.File
 import org.objectweb.asm.ClassReader
-import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.ClassWriter
-import org.objectweb.asm.MethodVisitor
-import org.objectweb.asm.Opcodes
 
 
 /**
@@ -16,7 +13,7 @@ class Medivh(private val classFile: File) {
     private val classReader = ClassReader(classFile.readBytes())
 
     private val classWriter = ClassWriter(classReader, ClassWriter.COMPUTE_FRAMES or ClassWriter.COMPUTE_MAXS)
-    
+
     init {
         check(classFile.exists() || classFile.isFile) {
             "class file [${classFile.path}] not found"

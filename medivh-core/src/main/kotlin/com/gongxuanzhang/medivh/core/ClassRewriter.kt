@@ -9,7 +9,7 @@ import org.objectweb.asm.Opcodes
 /**
  * @author gxz gongxuanzhangmelt@gmail.com
  **/
-class ClassRewriter(private val medivh: Medivh,writer: ClassWriter) : ClassVisitor(Opcodes.ASM9, writer) {
+class ClassRewriter(private val medivh: Medivh, writer: ClassWriter) : ClassVisitor(Opcodes.ASM9, writer) {
 
     override fun visitMethod(
         access: Int,
@@ -19,6 +19,6 @@ class ClassRewriter(private val medivh: Medivh,writer: ClassWriter) : ClassVisit
         exceptions: Array<out String>?
     ): MethodVisitor {
         val mv = super.visitMethod(access, name, descriptor, signature, exceptions)
-        return MethodRewriter(medivh,mv)
+        return MethodRewriter(medivh, mv)
     }
 }

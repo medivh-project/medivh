@@ -3,7 +3,7 @@ package com.gongxuanzhang.medivh.api
 import com.gongxuanzhang.medivh.api.TimeReport.formatTime
 import java.time.Duration
 import java.util.concurrent.TimeUnit
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import kotlin.test.Test
 
 
