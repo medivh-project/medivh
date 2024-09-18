@@ -15,6 +15,7 @@ class MethodRewriter(private val parent: Medivh, mv: MethodVisitor) : MethodVisi
 
     private var shouldRewrite = false
 
+
     override fun visitAnnotation(descriptor: String?, visible: Boolean): AnnotationVisitor {
         if (annotationDesc.contains(descriptor)) {
             shouldRewrite = true
