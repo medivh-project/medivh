@@ -7,11 +7,17 @@ import net.bytebuddy.asm.Advice
  * @author gongxuanzhangmelt@gmail.com
  * 
  */
-object TimeReportInterceptor {
+object MedivhInterceptor {
 
     @JvmStatic
     @Advice.OnMethodEnter
     fun onEnter(@Advice.Origin method: Method) {
-        println("Entering method: ${method.name}")
+        TimeReporter.start(method.name)
+    }
+    
+    @JvmStatic
+    @Advice.OnMethodExit
+    fun onExit(@Advice.Origin method: Method) {
+        TimeReporter.end(method.name)
     }
 }

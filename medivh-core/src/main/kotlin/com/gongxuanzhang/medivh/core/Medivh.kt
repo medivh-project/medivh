@@ -17,10 +17,17 @@ object Medivh {
 
         val context = MedivhContext(agentArgs)
 
+        Runtime.getRuntime().addShutdownHook(Thread {
+            TimeReporter.statisticMap.forEach { kv ->
+                println("${kv.key} : ${kv.value}")
+            }
+            TimeReporter.shutdown()
+        })
+
         AgentBuilder.Default().type(context.includeMatchers())
             .transform { builder, _, _, _, _ ->
                 builder.method(ElementMatchers.isAnnotatedWith(DebugTime::class.java))
-                    .intercept(Advice.to(TimeReportInterceptor::class.java))
+                    .intercept(Advice.to(MedivhInterceptor::class.java))
             }.installOn(inst)
     }
 

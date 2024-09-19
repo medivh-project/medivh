@@ -19,7 +19,6 @@ class MedivhGradlePlugin : Plugin<Project> {
         project.dependencies.add("implementation", "com.gongxuanzhang:medivh-api:0.0.1")
         project.dependencies.add("implementation", "net.bytebuddy:byte-buddy-agent:1.15.1")
         project.dependencies.add("implementation", "net.bytebuddy:byte-buddy:1.15.1")
-
         project.afterEvaluate {
             it.tasks.withType(Test::class.java) { test ->
                 test.jvmArgs("-javaagent:/Users/gongxuanzhang/workSpace/java/github/medivh/medivh-core/build/libs/medivh-core-0.0.1.jar=${medivhExtension.toParams()}")
