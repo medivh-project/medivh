@@ -1,33 +1,29 @@
 package com.gongxuanzhang.medivh.core
 
-import java.io.File
-import org.objectweb.asm.ClassReader
-import org.objectweb.asm.ClassWriter
+import com.gongxuanzhang.medivh.api.DebugTime
+import java.lang.instrument.Instrumentation
+import net.bytebuddy.agent.builder.AgentBuilder
+import net.bytebuddy.asm.Advice
+import net.bytebuddy.matcher.ElementMatchers
 
 
 /**
  * @author gxz gongxuanzhangmelt@gmail.com
  **/
-class Medivh(private val classFile: File, medivhCache: MedivhCache) {
+object Medivh {
 
-    init {
-        check(classFile.exists() || classFile.isFile) {
-            "class file [${classFile.path}] not found"
-        }
+    @JvmStatic
+    fun premain(agentArgs: String?, inst: Instrumentation) {
+
+        val context = MedivhContext(agentArgs)
+
+        AgentBuilder.Default().type(context.includeMatchers())
+            .transform { builder, _, _, _, _ ->
+                builder.method(ElementMatchers.isAnnotatedWith(DebugTime::class.java))
+                    .intercept(Advice.to(TimeReportInterceptor::class.java))
+            }.installOn(inst)
     }
 
-    var shouldRewrite = false
-
-    fun execute() {
-        val classReader = ClassReader(classFile.readBytes())
-        val classWriter = ClassWriter(classReader, ClassWriter.COMPUTE_FRAMES or ClassWriter.COMPUTE_MAXS)
-        ClassRewriter(this, classWriter).let {
-            classReader.accept(it, 0)
-        }
-        if (shouldRewrite) {
-            classFile.writeBytes(classWriter.toByteArray())
-            println("rewrite class file ${classReader.className}")
-        }
-    }
 
 }
+

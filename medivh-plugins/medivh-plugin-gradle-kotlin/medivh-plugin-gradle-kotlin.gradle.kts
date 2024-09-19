@@ -5,7 +5,11 @@ plugins {
 
 dependencies {
     api(project(":medivh-core"))
+    implementation("net.bytebuddy:byte-buddy:1.15.1")
+    implementation("net.bytebuddy:byte-buddy-agent:1.15.1")
+
 }
+
 
 gradlePlugin {
     plugins {

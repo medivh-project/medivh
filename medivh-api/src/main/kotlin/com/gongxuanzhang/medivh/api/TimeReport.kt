@@ -1,15 +1,13 @@
 package com.gongxuanzhang.medivh.api
 
 import java.util.concurrent.TimeUnit
-import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * @author gongxuanzhangmelt@gmail.com
  */
 object TimeReport {
 
-
-    fun <T> timeReport(
+     fun <T> timeReport(
         actionName: String,
         timeUnit: TimeUnit = TimeUnit.MILLISECONDS,
         console: Boolean = false,
@@ -21,7 +19,7 @@ object TimeReport {
                 val result = action.invoke()
                 val nano = System.nanoTime() - startTime
                 if (console) {
-                    println("$actionName cost ${formatTime(nano, timeUnit)}")
+                    println("$actionName cost $nano ns")
                 }
                 result
             }
@@ -29,9 +27,8 @@ object TimeReport {
             else -> {
                 val startTime = System.currentTimeMillis()
                 val result = action.invoke()
-                val nano = (System.currentTimeMillis() - startTime).milliseconds.inWholeNanoseconds
                 if (console) {
-                    println("$actionName cost ${formatTime(nano, timeUnit)}")
+                    println("$actionName cost ${System.currentTimeMillis() - startTime} ms")
                 }
                 result
             }
@@ -65,4 +62,6 @@ object TimeReport {
         }
         return result.toString().trim()
     }
+
+
 }
