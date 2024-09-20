@@ -7,3 +7,12 @@ repositories {
     mavenLocal()
     mavenCentral()
 }
+
+gradlePlugin {
+    plugins {
+        register("jarAgain") {
+            id = "jarAgain"
+            implementationClass = "com.gongxuanzhang.medivh.build.JarAgainPlugin"
+        }
+    }
+}

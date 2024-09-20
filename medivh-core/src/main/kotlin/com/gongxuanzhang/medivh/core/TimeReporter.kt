@@ -46,8 +46,14 @@ object TimeReporter {
     }
 
 
-    fun shutdown() {
-        println("shutdown!")
+    fun toHtml(): String {
+        shutdown()
+        this.javaClass.classLoader.getResourceAsStream("gaga.html")?.use {
+            return it.readBytes().toString(Charsets.UTF_8)
+        } ?: return ""
+    }
+
+    private fun shutdown() {
         threadPool.shutdown()
         threadPool.awaitTermination(10, TimeUnit.SECONDS)
     }

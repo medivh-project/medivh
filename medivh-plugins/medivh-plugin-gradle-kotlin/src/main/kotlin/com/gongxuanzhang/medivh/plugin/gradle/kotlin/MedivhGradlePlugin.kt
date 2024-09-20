@@ -12,16 +12,21 @@ class MedivhGradlePlugin : Plugin<Project> {
 
     override fun apply(project: Project) {
 
-        println("medivh!")
+        //   todo  build src auto 
+        val byteBuddyVersion = "1.15.1"
 
         val medivhExtension = project.extensions.create("medivh", MedivhExtension::class.java)
 
         project.dependencies.add("implementation", "com.gongxuanzhang:medivh-api:0.0.1")
-        project.dependencies.add("implementation", "net.bytebuddy:byte-buddy-agent:1.15.1")
-        project.dependencies.add("implementation", "net.bytebuddy:byte-buddy:1.15.1")
+        project.dependencies.add("testImplementation", "net.bytebuddy:byte-buddy-agent:$byteBuddyVersion")
+        project.dependencies.add("testImplementation", "net.bytebuddy:byte-buddy:$byteBuddyVersion")
+        val copyAgent = project.tasks.register("copyAgent", CopyAgentTask::class.java){
+            it.version = project.version.toString()
+        }
         project.afterEvaluate {
             it.tasks.withType(Test::class.java) { test ->
-                test.jvmArgs("-javaagent:/Users/gongxuanzhang/workSpace/java/github/medivh/medivh-core/build/libs/medivh-core-0.0.1.jar=${medivhExtension.toParams()}")
+                test.dependsOn("copyAgent")
+                test.jvmArgs("-javaagent:${copyAgent.get().outputFile}=${medivhExtension.toParams()}")
             }
         }
     }

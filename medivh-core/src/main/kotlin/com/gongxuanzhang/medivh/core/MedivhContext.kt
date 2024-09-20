@@ -12,6 +12,7 @@ import net.bytebuddy.matcher.ElementMatchers
  *
  * @author gxz gongxuanzhangmelt@gmail.com
  **/
+@Suppress("UNCHECKED_CAST")
 class MedivhContext(vars: String?) {
 
 

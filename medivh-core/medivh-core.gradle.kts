@@ -2,6 +2,7 @@ val asmVersion: String by versions
 
 plugins {
     id("com.gradle.plugin-publish") version "1.2.1"
+    jarAgain
 }
 
 dependencies {

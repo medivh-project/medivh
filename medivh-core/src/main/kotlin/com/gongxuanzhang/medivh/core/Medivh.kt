@@ -18,10 +18,7 @@ object Medivh {
         val context = MedivhContext(agentArgs)
 
         Runtime.getRuntime().addShutdownHook(Thread {
-            TimeReporter.statisticMap.forEach { kv ->
-                println("${kv.key} : ${kv.value}")
-            }
-            TimeReporter.shutdown()
+            println(TimeReporter.toHtml())
         })
 
         AgentBuilder.Default().type(context.includeMatchers())
