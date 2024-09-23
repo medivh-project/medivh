@@ -15,8 +15,8 @@ dependencies {
 gradlePlugin {
     plugins {
         create("medivh-plugin-gradle-kotlin") {
-            id = "com.gongxuanzhang.medivh.plugin.gradle.kotlin"
-            implementationClass = "com.gongxuanzhang.medivh.plugin.gradle.kotlin.MedivhGradlePlugin"
+            id = "tech.medivh.plugin.gradle.kotlin"
+            implementationClass = "tech.medivh.plugin.gradle.kotlin.MedivhGradlePlugin"
         }
     }
 }

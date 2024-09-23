@@ -1,4 +1,4 @@
-import com.gongxuanzhang.medivh.build.Versions
+import tech.medivh.build.Versions
 
 plugins{
     kotlin("jvm")
@@ -11,7 +11,7 @@ allprojects {
     
     apply(plugin = "org.jetbrains.kotlin.jvm")
 
-    group = "com.gongxuanzhang"
+    group = "tech.medivh"
     version = "0.0.1"
     
     repositories {
@@ -28,7 +28,7 @@ allprojects {
     }
 
     kotlin {
-        jvmToolchain(8)
+        jvmToolchain(17)
     }
     
     extensions.add("versions", versions)

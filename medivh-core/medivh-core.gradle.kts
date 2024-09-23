@@ -15,7 +15,7 @@ dependencies {
 tasks.jar {
     manifest {
         attributes(
-            "Premain-Class" to "com.gongxuanzhang.medivh.core.Medivh",
+            "Premain-Class" to "tech.medivh.core.Medivh",
             "Manifest-Version" to "1.0",
             "Can-Redefine-Classes" to "true",
             "Can-Retransform-Classes" to "true"

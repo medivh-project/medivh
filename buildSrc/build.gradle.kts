@@ -12,7 +12,7 @@ gradlePlugin {
     plugins {
         register("jarAgain") {
             id = "jarAgain"
-            implementationClass = "com.gongxuanzhang.medivh.build.JarAgainPlugin"
+            implementationClass = "tech.medivh.build.JarAgainPlugin"
         }
     }
 }
