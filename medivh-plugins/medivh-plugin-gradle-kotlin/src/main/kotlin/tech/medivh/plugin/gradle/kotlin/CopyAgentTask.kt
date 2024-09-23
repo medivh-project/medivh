@@ -18,7 +18,7 @@ open class CopyAgentTask : MedivhTask() {
     var version: String = ""
 
     @get:OutputFile
-    val outputFile = project.buildDir.resolve("medivh").resolve(agentName())
+    val outputFile = project.layout.buildDirectory.dir("medivh").get().file(agentName()).asFile
 
     @TaskAction
     fun copyAgent() {

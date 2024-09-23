@@ -11,7 +11,7 @@ data class MethodStatistic(
     var maxCost: Long,
     var minCost: Long
 ) {
-    
+
     fun avgCost(): Long {
         return totalCost / invokeCount
     }

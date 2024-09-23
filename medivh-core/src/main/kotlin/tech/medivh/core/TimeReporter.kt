@@ -48,7 +48,7 @@ object TimeReporter {
 
     fun toHtml(): String {
         shutdown()
-        this.javaClass.classLoader.getResourceAsStream("gaga.html")?.use {
+        this.javaClass.classLoader.getResourceAsStream("report.html")?.use {
             return it.readBytes().toString(Charsets.UTF_8)
         } ?: return ""
     }

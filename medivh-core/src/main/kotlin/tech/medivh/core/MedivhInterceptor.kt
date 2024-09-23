@@ -5,7 +5,7 @@ import net.bytebuddy.asm.Advice
 
 /**
  * @author gongxuanzhangmelt@gmail.com
- * 
+ *
  */
 object MedivhInterceptor {
 
@@ -14,7 +14,7 @@ object MedivhInterceptor {
     fun onEnter(@Advice.Origin method: Method) {
         TimeReporter.start(method.name)
     }
-    
+
     @JvmStatic
     @Advice.OnMethodExit
     fun onExit(@Advice.Origin method: Method) {

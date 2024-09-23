@@ -10,18 +10,23 @@
             margin: 50px auto;
             max-width: 80%;
         }
+
         .table th {
             cursor: pointer;
         }
+
         .table th.sort-asc::after {
             content: " ▲";
         }
+
         .table th.sort-desc::after {
             content: " ▼";
         }
+
         .pagination {
             justify-content: center;
         }
+
         .page-summary {
             text-align: center;
             margin-bottom: 10px;
@@ -34,17 +39,17 @@
     <h2 class="text-center">Method Statistics</h2>
     <table class="table table-hover table-bordered text-center">
         <thead class="table-dark">
-            <tr>
-                <th scope="col" data-sort="method">Method</th>
-                <th scope="col" data-sort="invokeCount">Invoke Count</th>
-                <th scope="col" data-sort="totalCost">Total Cost</th>
-                <th scope="col" data-sort="maxCost">Max Cost</th>
-                <th scope="col" data-sort="minCost">Min Cost</th>
-                <th scope="col" data-sort="avgCost">Avg Cost</th>
-            </tr>
+        <tr>
+            <th scope="col" data-sort="method">Method</th>
+            <th scope="col" data-sort="invokeCount">Invoke Count</th>
+            <th scope="col" data-sort="totalCost">Total Cost</th>
+            <th scope="col" data-sort="maxCost">Max Cost</th>
+            <th scope="col" data-sort="minCost">Min Cost</th>
+            <th scope="col" data-sort="avgCost">Avg Cost</th>
+        </tr>
         </thead>
         <tbody id="table-body">
-            <!-- Table rows will be dynamically populated here -->
+        <!-- Table rows will be dynamically populated here -->
         </tbody>
     </table>
 
@@ -62,17 +67,17 @@
 
 <script>
     const data = [
-        { method: 'methodA', invokeCount: 100, totalCost: 2000, maxCost: 50, minCost: 10 },
-        { method: 'methodB', invokeCount: 150, totalCost: 3000, maxCost: 60, minCost: 20 },
-        { method: 'methodC', invokeCount: 200, totalCost: 5000, maxCost: 70, minCost: 30 },
-        { method: 'methodD', invokeCount: 80, totalCost: 1600, maxCost: 45, minCost: 15 },
-        { method: 'methodE', invokeCount: 120, totalCost: 2400, maxCost: 55, minCost: 18 },
-        { method: 'methodF', invokeCount: 180, totalCost: 4000, maxCost: 65, minCost: 22 },
-        { method: 'methodG', invokeCount: 140, totalCost: 3200, maxCost: 52, minCost: 16 },
-        { method: 'methodH', invokeCount: 170, totalCost: 3800, maxCost: 62, minCost: 25 },
-        { method: 'methodI', invokeCount: 220, totalCost: 5500, maxCost: 75, minCost: 28 },
-        { method: 'methodJ', invokeCount: 90, totalCost: 1800, maxCost: 40, minCost: 14 },
-        { method: 'methodK', invokeCount: 130, totalCost: 2600, maxCost: 58, minCost: 20 },
+        {method: 'methodA', invokeCount: 100, totalCost: 2000, maxCost: 50, minCost: 10},
+        {method: 'methodB', invokeCount: 150, totalCost: 3000, maxCost: 60, minCost: 20},
+        {method: 'methodC', invokeCount: 200, totalCost: 5000, maxCost: 70, minCost: 30},
+        {method: 'methodD', invokeCount: 80, totalCost: 1600, maxCost: 45, minCost: 15},
+        {method: 'methodE', invokeCount: 120, totalCost: 2400, maxCost: 55, minCost: 18},
+        {method: 'methodF', invokeCount: 180, totalCost: 4000, maxCost: 65, minCost: 22},
+        {method: 'methodG', invokeCount: 140, totalCost: 3200, maxCost: 52, minCost: 16},
+        {method: 'methodH', invokeCount: 170, totalCost: 3800, maxCost: 62, minCost: 25},
+        {method: 'methodI', invokeCount: 220, totalCost: 5500, maxCost: 75, minCost: 28},
+        {method: 'methodJ', invokeCount: 90, totalCost: 1800, maxCost: 40, minCost: 14},
+        {method: 'methodK', invokeCount: 130, totalCost: 2600, maxCost: 58, minCost: 20},
     ];
 
     const rowsPerPage = 5;

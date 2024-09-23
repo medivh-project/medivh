@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit
  */
 object TimeReport {
 
-     fun <T> timeReport(
+    fun <T> timeReport(
         actionName: String,
         timeUnit: TimeUnit = TimeUnit.MILLISECONDS,
         console: Boolean = false,

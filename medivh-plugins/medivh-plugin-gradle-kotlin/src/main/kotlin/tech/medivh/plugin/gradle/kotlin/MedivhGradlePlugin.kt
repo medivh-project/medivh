@@ -20,7 +20,7 @@ class MedivhGradlePlugin : Plugin<Project> {
         project.dependencies.add("implementation", "tech.medivh:medivh-api:0.0.1")
         project.dependencies.add("testImplementation", "net.bytebuddy:byte-buddy-agent:$byteBuddyVersion")
         project.dependencies.add("testImplementation", "net.bytebuddy:byte-buddy:$byteBuddyVersion")
-        val copyAgent = project.tasks.register("copyAgent", CopyAgentTask::class.java){
+        val copyAgent = project.tasks.register("copyAgent", CopyAgentTask::class.java) {
             it.version = project.version.toString()
         }
         project.afterEvaluate {

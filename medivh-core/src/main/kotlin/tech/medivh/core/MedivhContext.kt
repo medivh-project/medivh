@@ -17,7 +17,7 @@ class MedivhContext(vars: String?) {
 
 
     private val include = mutableListOf<String>()
-    
+
     init {
         vars?.let {
             it.split(";").forEach { kv ->
@@ -39,7 +39,7 @@ class MedivhContext(vars: String?) {
         if (include.isEmpty()) {
             return matcher
         }
-        include.forEach { 
+        include.forEach {
             matcher = matcher.or(ElementMatchers.nameStartsWith(it))
         }
         return matcher
