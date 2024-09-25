@@ -17,6 +17,7 @@ gradlePlugin {
         create("medivh-plugin-gradle-kotlin") {
             id = "tech.medivh.plugin.gradle.kotlin"
             implementationClass = "tech.medivh.plugin.gradle.kotlin.MedivhGradlePlugin"
+            version = project.version.toString()
         }
     }
 }

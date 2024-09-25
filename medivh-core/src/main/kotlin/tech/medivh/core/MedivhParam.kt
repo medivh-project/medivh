@@ -10,7 +10,7 @@ enum class MedivhParam(val type: Class<*>, val key: String, val default: Any?, v
 
 
     companion object {
-        private val keyMap = values().associateBy { it.key }
+        private val keyMap = entries.associateBy { it.key }
         fun valueOfKey(key: String): MedivhParam? {
             return keyMap[key]
         }
