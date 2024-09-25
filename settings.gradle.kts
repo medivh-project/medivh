@@ -2,9 +2,11 @@ rootProject.name = "medivh"
 
 pluginManagement {
     val buildKotlinVersion: String by settings
-
+    val publishVersion: String by settings
+    
     plugins {
         kotlin("jvm") version buildKotlinVersion apply false
+        id("com.gradle.plugin-publish") version publishVersion apply false
     }
 
 }

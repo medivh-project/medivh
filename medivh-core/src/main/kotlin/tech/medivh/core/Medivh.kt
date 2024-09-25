@@ -18,7 +18,7 @@ object Medivh {
         val context = MedivhContext(agentArgs)
 
         Runtime.getRuntime().addShutdownHook(Thread {
-            println(TimeReporter.toHtml())
+            println(TimeReporter.generateHtml())
         })
 
         AgentBuilder.Default().type(context.includeMatchers())
@@ -26,6 +26,7 @@ object Medivh {
                 builder.method(ElementMatchers.isAnnotatedWith(DebugTime::class.java))
                     .intercept(Advice.to(MedivhInterceptor::class.java))
             }.installOn(inst)
+
     }
 
 

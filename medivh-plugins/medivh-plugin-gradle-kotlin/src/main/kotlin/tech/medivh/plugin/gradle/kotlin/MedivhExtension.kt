@@ -1,24 +1,32 @@
 package tech.medivh.plugin.gradle.kotlin
 
+import org.gradle.api.model.ObjectFactory
+import org.gradle.api.provider.SetProperty
 import tech.medivh.core.MedivhParam
+import javax.inject.Inject
 
 
 /**
  * @author gxz gongxuanzhangmelt@gmail.com
  **/
-open class MedivhExtension {
+open class MedivhExtension @Inject constructor(objects: ObjectFactory) {
 
-    private val includePackage = mutableSetOf<String>()
+    val includePackage: SetProperty<String> = objects.setProperty(String::class.java)
 
-    fun include(packages: String) {
-        includePackage.add(packages)
+    fun include(packageName: String) {
+        val currentPackages = includePackage.getOrElse(emptySet())
+        includePackage.set(currentPackages + packageName)
     }
 
+    fun skip(): Boolean {
+        return includePackage.getOrElse(emptySet()).isEmpty()
+    }
 
-    internal fun toParams(): String {
+    fun toParams(): String {
         val sb = StringBuilder()
-        if (includePackage.isNotEmpty()) {
-            sb.append("${MedivhParam.INCLUDE.key}=${includePackage.joinToString(",")}")
+        val packageNames = includePackage.getOrElse(emptySet())
+        if (packageNames.isNotEmpty()) {
+            sb.append("${MedivhParam.INCLUDE.key}=${packageNames.joinToString(",")}")
         }
         return sb.toString()
     }

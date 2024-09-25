@@ -20,9 +20,9 @@ tasks.named<Test>("test") {
 
 gradlePlugin {
     plugins {
-        register("jarAgain") {
-            id = "jarAgain"
-            implementationClass = "tech.medivh.build.JarAgainPlugin"
+        register("insertAgent") {
+            id = "insertAgent"
+            implementationClass = "tech.medivh.build.InsertAgentPlugin"
         }
     }
 }

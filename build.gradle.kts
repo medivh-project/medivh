@@ -1,24 +1,24 @@
 import tech.medivh.build.Versions
 
-plugins{
+plugins {
     kotlin("jvm")
 }
 
 val versionsFile: String by properties
-val versions = Versions(file(versionsFile))
+val rootVersionFile = file(versionsFile)
 
 allprojects {
-    
+
     apply(plugin = "org.jetbrains.kotlin.jvm")
 
     group = "tech.medivh"
     version = "0.0.1"
-    
+
     repositories {
         mavenLocal()
         mavenCentral()
     }
-    
+
     dependencies {
         testImplementation(kotlin("test"))
     }
@@ -30,8 +30,8 @@ allprojects {
     kotlin {
         jvmToolchain(17)
     }
-    
-    extensions.add("versions", versions)
+
+    extensions.create("medivhVersion", Versions::class.java, rootVersionFile)
 }
 
 

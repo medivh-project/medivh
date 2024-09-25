@@ -19,13 +19,13 @@ object TimeReporter {
     )
 
     //  todo  init capacity by scan method count 
-    private val startMap = HashMap<String, MethodStart>(8196)
+    private val startMap = HashMap<String, MethodStartRecord>(8196)
 
-    val statisticMap = HashMap<String, MethodStatistic>(8196)
+    private val statisticMap = HashMap<String, MethodStatistic>(8196)
 
     fun start(token: String) {
         threadPool.submit {
-            startMap[token] = MethodStart(token, System.currentTimeMillis())
+            startMap[token] = MethodStartRecord(token)
         }
     }
 
@@ -46,16 +46,10 @@ object TimeReporter {
     }
 
 
-    fun toHtml(): String {
-        shutdown()
-        this.javaClass.classLoader.getResourceAsStream("report.html")?.use {
+    fun generateHtml(): String {
+        this.javaClass.classLoader.getResourceAsStream("report/report.html")?.use {
             return it.readBytes().toString(Charsets.UTF_8)
         } ?: return ""
-    }
-
-    private fun shutdown() {
-        threadPool.shutdown()
-        threadPool.awaitTermination(10, TimeUnit.SECONDS)
     }
 
 }

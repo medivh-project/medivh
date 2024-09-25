@@ -1,12 +1,15 @@
-val asmVersion: String by versions
-
+val asmVersion: String by medivhVersion
+val jacksonVersion: String by medivhVersion
 plugins {
-    id("com.gradle.plugin-publish") version "1.2.1"
-    jarAgain
+    kotlin("jvm")
+    `maven-publish`
+    `java-gradle-plugin`
+    insertAgent
 }
 
 dependencies {
-    implementation(project(":medivh-api"))
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
+    api(project(":medivh-api"))
     implementation("org.ow2.asm:asm:$asmVersion")
     implementation("net.bytebuddy:byte-buddy:1.15.0")
 }
