@@ -9,47 +9,57 @@
     <script src="js/jquery-3.7.1.min.js"></script>
     <script src="js/popper.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
+    <script src="js/medivh.js"></script>
     <style>
         body {
             background-color: white;
             color: #333;
             padding: 20px;
         }
+
         .header {
             display: flex;
             align-items: center;
             justify-content: center;
             margin-bottom: 30px;
         }
+
         .header img {
             width: 50px;
             height: auto;
             margin-right: 20px;
         }
+
         table {
             background-color: #f8f9fa;
             border-radius: 8px;
             overflow: hidden;
         }
+
         th, td {
             border: none;
             padding: 15px;
             text-align: center;
         }
+
         th {
             background-color: #007bff;
             color: white;
         }
+
         tr:hover {
             background-color: #e9ecef;
         }
+
         .navbar {
             margin-bottom: 20px;
         }
+
         .btn {
             background-color: #007bff;
             border: none;
         }
+
         .btn:hover {
             background-color: #0056b3;
         }
@@ -64,7 +74,8 @@
         <h1>Method Call Statistics</h1>
     </div>
     <div class="mb-3">
-        <input type="text" id="search-input" class="form-control" placeholder="Search for a method" oninput="searchMethod()">
+        <input type="text" id="search-input" class="form-control" placeholder="Search for a method"
+               oninput="searchMethod()">
     </div>
     <table class="table table-bordered">
         <thead class="thead-light">
@@ -112,18 +123,10 @@
 </div>
 
 <script>
-    let data = [];
+    let data = jsonData();
     let filteredData = [];
     let currentPage = 1;
     let rowsPerPage = 20;
-
-    function fetchData() {
-        $.getJSON('./data.json', function(response) {
-            data = response;
-            filteredData = data;
-            renderTable();
-        });
-    }
 
     function renderTable() {
         const start = (currentPage - 1) * rowsPerPage;
@@ -197,7 +200,8 @@
         renderTable();
     }
 
-    fetchData();
+    filteredData = data;
+    renderTable();
 </script>
 </body>
 </html>

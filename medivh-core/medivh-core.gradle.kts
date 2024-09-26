@@ -1,4 +1,3 @@
-val asmVersion: String by medivhVersion
 val jacksonVersion: String by medivhVersion
 plugins {
     kotlin("jvm")
@@ -8,12 +7,14 @@ plugins {
 }
 
 dependencies {
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
-    api(project(":medivh-api"))
-    implementation("org.ow2.asm:asm:$asmVersion")
+    implementation(project(":medivh-api"))
     implementation("net.bytebuddy:byte-buddy:1.15.0")
 }
 
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
 
 tasks.jar {
     manifest {

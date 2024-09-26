@@ -18,7 +18,7 @@ object Medivh {
         val context = MedivhContext(agentArgs)
 
         Runtime.getRuntime().addShutdownHook(Thread {
-            println(TimeReporter.generateHtml())
+            TimeReporter.generateHtml(context.targetDir())
         })
 
         AgentBuilder.Default().type(context.includeMatchers())

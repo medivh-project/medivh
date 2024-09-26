@@ -6,8 +6,8 @@ package tech.medivh.core
  **/
 enum class MedivhParam(val type: Class<*>, val key: String, val default: Any?, val resolve: ParamResolver<*>) {
 
-    INCLUDE(List::class.java, "include", null, ListResolver);
-
+    INCLUDE(List::class.java, "include", null, ListResolver),
+    REPORT_DIR(String::class.java, "reportDir", null, StringResolver);
 
     companion object {
         private val keyMap = entries.associateBy { it.key }

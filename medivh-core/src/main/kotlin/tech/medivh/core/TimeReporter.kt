@@ -1,9 +1,14 @@
 package tech.medivh.core
 
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.ThreadFactory
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
+import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
 
 
 /**
@@ -46,10 +51,55 @@ object TimeReporter {
     }
 
 
-    fun generateHtml(): String {
-        this.javaClass.classLoader.getResourceAsStream("report/report.html")?.use {
-            return it.readBytes().toString(Charsets.UTF_8)
-        } ?: return ""
+    fun generateHtml(dir: File) {
+        if (!dir.exists()) {
+            dir.mkdirs()
+        }
+        val medivhDir = dir.parentFile.parentFile.parentFile
+        unzip(medivhDir.resolve("report.zip"), dir)
+        dir.resolve("js").resolve("medivh.js").writeText(generateMedivhJsContent())
+        val reportHtml = dir.resolve("index.html")
+        println("you can open ${reportHtml.absolutePath} to see the report")
+    }
+
+    private fun generateMedivhJsContent(): String {
+        val json = generateJson()
+        return """
+            function jsonData() {
+                return $json;
+            }
+        """.trimIndent()
+    }
+
+    private fun unzip(zipFile: File, targetDir: File) {
+        ZipInputStream(FileInputStream(zipFile)).use { zis ->
+            var entry: ZipEntry? = zis.nextEntry
+            while (entry != null) {
+                val newFile = File(targetDir, entry.name)
+                if (entry.isDirectory) {
+                    newFile.mkdirs()
+                } else {
+                    newFile.parentFile.mkdirs()
+                    FileOutputStream(newFile).use { fos ->
+                        zis.copyTo(fos)
+                    }
+                }
+                zis.closeEntry()
+                entry = zis.nextEntry
+            }
+        }
+    }
+
+    private fun generateJson(): String {
+        val result = statisticMap.values
+        if (result.isEmpty()) {
+            return "[]"
+        }
+        return if (result.size == 1) {
+            "[${result.first().jsonLine()}]"
+        } else {
+            result.joinToString(",", "[", "]") { it.jsonLine() }
+        }
     }
 
 }

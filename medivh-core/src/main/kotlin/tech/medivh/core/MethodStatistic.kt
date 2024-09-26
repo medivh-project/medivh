@@ -15,4 +15,9 @@ data class MethodStatistic(
     fun avgCost(): Long {
         return totalCost / invokeCount
     }
+
+    //  todo How to do make a agent jar contain a third-party library
+    fun jsonLine(): String {
+        return "{\"method\":\"$method\",\"invokeCount\":$invokeCount,\"totalCost\":$totalCost,\"maxCost\":$maxCost,\"minCost\":$minCost,\"avgCost\":${avgCost()}}"
+    }
 }

@@ -20,7 +20,7 @@ open class Versions(versionFile: File) {
     operator fun getValue(thisRef: Any, property: KProperty<*>): String {
         return properties[property.name].toString()
     }
-    
+
 
     override fun toString(): String {
         return properties.toString()

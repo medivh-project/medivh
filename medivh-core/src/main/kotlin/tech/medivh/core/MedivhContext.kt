@@ -1,5 +1,6 @@
 package tech.medivh.core
 
+import java.io.File
 import net.bytebuddy.description.type.TypeDescription
 import net.bytebuddy.matcher.ElementMatcher
 import net.bytebuddy.matcher.ElementMatchers
@@ -18,6 +19,8 @@ class MedivhContext(vars: String?) {
 
     private val include = mutableListOf<String>()
 
+    private var reportDir: String? = null
+
     init {
         vars?.let {
             it.split(";").forEach { kv ->
@@ -27,6 +30,7 @@ class MedivhContext(vars: String?) {
                     val value = param.resolve.resolve(split[1])
                     when (param) {
                         MedivhParam.INCLUDE -> include.addAll(value as List<String>)
+                        MedivhParam.REPORT_DIR -> reportDir = value as String
                     }
                 }
             }
@@ -44,5 +48,7 @@ class MedivhContext(vars: String?) {
         }
         return matcher
     }
+
+    fun targetDir() = reportDir?.let { File(it) } ?: throw IllegalArgumentException("reportDir is null")
 
 }

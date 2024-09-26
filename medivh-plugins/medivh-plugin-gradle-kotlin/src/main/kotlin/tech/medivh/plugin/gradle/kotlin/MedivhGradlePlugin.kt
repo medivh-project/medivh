@@ -13,7 +13,7 @@ class MedivhGradlePlugin : Plugin<Project> {
 
     override fun apply(project: Project) {
 
-        val medivhExtension = project.extensions.create("medivh", MedivhExtension::class.java, project.objects)
+        val medivhExtension = project.extensions.create("medivh", MedivhExtension::class.java, project.objects, project)
 
         val resourceStream = this::class.java.classLoader.getResourceAsStream("medivh.version")
         resourceStream?.bufferedReader()?.use { reader ->
@@ -31,9 +31,11 @@ class MedivhGradlePlugin : Plugin<Project> {
             project.dependencies.add("testImplementation", "net.bytebuddy:byte-buddy-agent:$byteBuddyVersion")
             project.dependencies.add("testImplementation", "net.bytebuddy:byte-buddy:$byteBuddyVersion")
             val copyAgent = project.tasks.register("copyAgent", CopyAgentTask::class.java, medivhVersion)
+            project.tasks.register("copyReportZip", CopyReportZipTask::class.java)
 
             project.tasks.withType(Test::class.java) { test ->
                 test.dependsOn("copyAgent")
+                test.dependsOn("copyReportZip")
                 if (medivhExtension.skip()) {
                     val warnMessage = """
                         Medivh Warn:no package to include,please use medivh.include("your package name").
@@ -49,4 +51,5 @@ class MedivhGradlePlugin : Plugin<Project> {
             }
         }
     }
+
 }

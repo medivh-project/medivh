@@ -3,11 +3,12 @@ package tech.medivh.build
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
-import java.nio.file.Files
-import java.util.*
+import java.io.IOException
 import java.util.jar.JarEntry
 import java.util.jar.JarFile
 import java.util.jar.JarOutputStream
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
@@ -24,9 +25,13 @@ class InsertAgentPlugin : Plugin<Project> {
             project.tasks.named("jar") {
                 it.doLast {
                     val buildJar = project.buildJar
-                    val agent = extractAgentJar(buildJar)
-                    if (agent == null) {
-                        insertAgentJar(buildJar, project)
+                    if (!buildJar.hasAgentJar) {
+                        File(buildJar.name).apply {
+                            val agent = copyTo(parentFile.resolve("medivh-agent-${project.version}.jar"), true)
+                            val versionFile = File(agent.parentFile, "medivh.version")
+                            versionFile.writeText(project.version.toString())
+                            insertFileIntoJar(buildJar, agent, versionFile, zipReport(project))
+                        }
                     }
                 }
             }
@@ -35,30 +40,18 @@ class InsertAgentPlugin : Plugin<Project> {
     }
 
 
-    private val Project.buildJar: File
-        get() {
-            val name = "${project.name}-${project.version}.jar"
-            return layout.buildDirectory.dir("libs").get().file(name).asFile
-        }
-
-
     private fun registerCheckBuild(project: Project) {
         project.tasks.register("checkBuild") {
             it.doLast {
                 val targetJar = project.buildJar
-                val jar = extractAgentJar(targetJar)
-                check(jar != null) {
-                    val message = "Can't find agent jar in $targetJar"
+                val agentJar = targetJar.getJarEntry("medivh-agent-${project.version}.jar")
+                check(agentJar != null) {
+                    val message = "Can't find medivh-agent-${project.version}.jar in $targetJar"
                     project.logger.error(message)
                     message
                 }
-                check(JarFile(targetJar).getEntry("medivh.version") != null) {
+                check(targetJar.getEntry("medivh.version") != null) {
                     val message = "Can't find medivh.version in $targetJar"
-                    project.logger.error(message)
-                    message
-                }
-                check(extractAgentJar(jar) == null) {
-                    val message = "jar file don't have agent jar [$jar]"
                     project.logger.error(message)
                     message
                 }
@@ -70,60 +63,74 @@ class InsertAgentPlugin : Plugin<Project> {
         }
     }
 
-    private fun extractAgentJar(jar: File): File? {
-        val outputDir = Files.createTempDirectory(UUID.randomUUID().toString()).toFile()
-        val jarFile = JarFile(jar)
-        val entries = jarFile.entries()
-        outputDir.mkdirs()
-        while (entries.hasMoreElements()) {
-            val entry = entries.nextElement()
-            if (entry.name.startsWith("medivh-agent") && entry.name.endsWith(".jar")) {
-                val outputFile = File(outputDir, entry.name)
-                jarFile.getInputStream(entry).use { input ->
-                    FileOutputStream(outputFile).use { output ->
-                        input.copyTo(output)
-                        return outputFile
+    private fun zipReport(project: Project): File {
+        val reportDir = project.resources.text.fromFile("src/main/resources/report/").asFile()
+        val zipReportTargetFile = project.layout.buildDirectory.dir("libs").get().file("report.zip").asFile
+        ZipOutputStream(FileOutputStream(zipReportTargetFile)).use { zipOutput ->
+            reportDir.walkTopDown().filter { it.isFile }.forEach { file ->
+                val zipEntry = ZipEntry(file.relativeTo(reportDir).path)
+                zipOutput.putNextEntry(zipEntry)
+                FileInputStream(file).use { input ->
+                    input.copyTo(zipOutput)
+                }
+                zipOutput.closeEntry()
+            }
+        }
+        return zipReportTargetFile
+    }
+
+    private fun insertFileIntoJar(into: JarFile, vararg fileToInsert: File) {
+        val jarFile = File(into.name)
+        val tempJarFile = File(jarFile.parent, "${jarFile.name}.tmp")
+
+        into.use { jar ->
+            JarOutputStream(FileOutputStream(tempJarFile)).use { jos ->
+                jar.entries().asSequence().forEach { entry ->
+                    if (!entry.isDirectory) {
+                        jar.getInputStream(entry).use { inputStream ->
+                            jos.putNextEntry(JarEntry(entry.name))
+                            inputStream.copyTo(jos)
+                            jos.closeEntry()
+                        }
+                    }
+                }
+
+                fileToInsert.forEach { file ->
+                    FileInputStream(file).use { inputStream ->
+                        jos.putNextEntry(JarEntry(file.name))
+                        inputStream.copyTo(jos)
+                        jos.closeEntry()
                     }
                 }
             }
         }
-        return null
-    }
 
-    private fun insertAgentJar(buildJar: File, project: Project) {
-        val agent = buildJar.copyTo(buildJar.parentFile.resolve("medivh-agent-${project.version}.jar"), true)
-        val versionFile = File(agent.parentFile, "medivh.version")
-        versionFile.writeText(project.version.toString())
-        val tempFile = File("${buildJar.name}.tmp")
-
-
-        JarFile(buildJar).use { jarFile ->
-            JarOutputStream(FileOutputStream(tempFile)).use { jarOutput ->
-                jarFile.entries().asSequence().forEach { entry ->
-                    jarOutput.putNextEntry(JarEntry(entry.name))
-                    jarFile.getInputStream(entry).copyTo(jarOutput)
-                    jarOutput.closeEntry()
-                }
-
-                val agentEntry = JarEntry(agent.name)
-                jarOutput.putNextEntry(agentEntry)
-                FileInputStream(agent).use { input ->
-                    input.copyTo(jarOutput)
-                }
-
-                val versionFileEntry = JarEntry(versionFile.name)
-                jarOutput.putNextEntry(versionFileEntry)
-                FileInputStream(versionFile).use { input ->
-                    input.copyTo(jarOutput)
-                }
-                jarOutput.closeEntry()
-            }
+        if (!jarFile.delete()) {
+            throw IOException("Failed to delete original jar file: ${jarFile.absolutePath}")
         }
-        project.logger.debug("delete agent jar ${agent.delete()}")
-        project.logger.debug("delete agent jar ${versionFile.delete()}")
-        tempFile.renameTo(buildJar)
+        if (!tempJarFile.renameTo(jarFile)) {
+            throw IOException("Failed to rename temp jar file to: ${jarFile.absolutePath}")
+        }
     }
 
+
+    private val Project.buildJar: JarFile
+        get() {
+            val name = "${project.name}-${project.version}.jar"
+            return JarFile(layout.buildDirectory.dir("libs").get().file(name).asFile)
+        }
+
+    private val JarFile.hasAgentJar: Boolean
+        get() {
+            val entries = entries()
+            while (entries.hasMoreElements()) {
+                val entry = entries.nextElement()
+                if (entry.name.startsWith("medivh-agent") && entry.name.endsWith(".jar")) {
+                    return true
+                }
+            }
+            return false
+        }
 }
 
 
