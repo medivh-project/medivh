@@ -58,8 +58,8 @@ object TimeReporter {
         val medivhDir = dir.parentFile.parentFile.parentFile
         unzip(medivhDir.resolve("report.zip"), dir)
         dir.resolve("js").resolve("medivh.js").writeText(generateMedivhJsContent())
-        val reportHtml = dir.resolve("index.html")
-        println("you can open ${reportHtml.absolutePath} to see the report")
+        val reportHtml = dir.resolve("report.html")
+        println("you can open  file://${reportHtml.absolutePath} to see the report")
     }
 
     private fun generateMedivhJsContent(): String {
