@@ -1,4 +1,6 @@
-val jacksonVersion: String by medivhVersion
+val fastjson2Version: String by medivhVersion
+val byteBuddyVersion: String by medivhVersion
+
 plugins {
     kotlin("jvm")
     `maven-publish`
@@ -8,7 +10,8 @@ plugins {
 
 dependencies {
     implementation(project(":medivh-api"))
-    implementation("net.bytebuddy:byte-buddy:1.15.0")
+    implementation("net.bytebuddy:byte-buddy:$byteBuddyVersion")
+    implementation("com.alibaba.fastjson2:fastjson2:$fastjson2Version")
 }
 
 java {

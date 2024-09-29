@@ -2,22 +2,23 @@ package tech.medivh.core
 
 import java.lang.reflect.Method
 import net.bytebuddy.asm.Advice
+import tech.medivh.core.reporter.MultiThreadTimeReporter
 
 /**
  * @author gongxuanzhangmelt@gmail.com
  *
  */
-object MedivhInterceptor {
+object MultiThreadInterceptor {
 
     @JvmStatic
     @Advice.OnMethodEnter
     fun onEnter(@Advice.Origin method: Method) {
-        TimeReporter.start(method.name)
+        MultiThreadTimeReporter.start(method.name)
     }
 
     @JvmStatic
     @Advice.OnMethodExit
     fun onExit(@Advice.Origin method: Method) {
-        TimeReporter.end(method.name)
+        MultiThreadTimeReporter.end(method.name)
     }
 }

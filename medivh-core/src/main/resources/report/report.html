@@ -1,190 +1,165 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Method Statistics</title>
-    <link rel="stylesheet" href="css/bootstrap.min.css">
-    <link rel="icon" href="images/favicon.ico" type="image/x-icon">
-    <script src="js/jquery-3.7.1.min.js"></script>
-    <script src="js/popper.min.js"></script>
-    <script src="js/bootstrap.min.js"></script>
-    <script src="js/medivh.js"></script>
+    <title>Medivh-Report</title>
+    <link rel="stylesheet" href="../../css/element.css">
+    <script src="../../js/vue.js"></script>
+    <script src="../../js/element.js"></script>
+    <script src="./js/medivh.js"></script>
     <style>
-        body {
-            background-color: white;
-            color: #333;
-            padding: 20px;
-        }
-
         .header {
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 30px;
+            background-color: #f5f5f5;
+            padding: 10px;
         }
 
-        .header img {
-            width: 50px;
+        .logo {
+            width: 80px; /* Adjusted width to make the logo larger */
             height: auto;
-            margin-right: 20px;
+            margin-right: 10px;
         }
 
-        table {
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            overflow: hidden;
+        .title {
+            font-size: 24px; /* Adjust the font size as needed */
+            font-weight: bold;
+            margin-right: 20px; /* Adjust the margin as needed */
         }
 
-        th, td {
-            border: none;
-            padding: 15px;
-            text-align: center;
+        .menu {
+            display: flex;
+            gap: 20px;
         }
 
-        th {
-            background-color: #007bff;
-            color: white;
+        .search {
+            margin: 10px 0;
         }
 
-        tr:hover {
-            background-color: #e9ecef;
-        }
-
-        .navbar {
-            margin-bottom: 20px;
-        }
-
-        .btn {
-            background-color: #007bff;
-            border: none;
-        }
-
-        .btn:hover {
-            background-color: #0056b3;
+        .filter-container {
+            margin: 10px 0;
         }
     </style>
 </head>
 <body>
-<div class="container">
-    <div class="header">
-        <a href="https://medivh.tech" target="_blank">
-            <img src="images/logo.png" alt="Logo">
-        </a>
-        <h1>Method Call Statistics</h1>
-    </div>
-    <div class="mb-3">
-        <input type="text" id="search-input" class="form-control" placeholder="Search for a method"
-               oninput="searchMethod()">
-    </div>
-    <table class="table table-bordered">
-        <thead class="thead-light">
-        <tr>
-            <th>Method</th>
-            <th>Invoke Count</th>
-            <th>Total Cost</th>
-            <th>Max Cost</th>
-            <th>Min Cost</th>
-        </tr>
-        </thead>
-        <tbody id="data-body">
-        </tbody>
-    </table>
-
-    <nav>
-        <ul class="pagination justify-content-center" id="pagination">
-            <li class="page-item">
-                <button class="page-link" onclick="prevPage()" id="prev-button">Previous</button>
-            </li>
-            <li class="page-item disabled">
-                <span class="page-link" id="page-info"></span>
-            </li>
-            <li class="page-item">
-                <button class="page-link" onclick="nextPage()" id="next-button">Next</button>
-            </li>
-        </ul>
-    </nav>
-
-    <div class="mt-3">
-        <strong>Statistics:</strong>
-        <span id="stats"></span>
-    </div>
+<div id="app">
+    <el-container>
+        <el-header>
+            <div class="header">
+                <img src="../../images/logo.png" alt="Logo" class="logo">
+                <span class="title">Method Statistic</span>
+                <el-menu mode="horizontal" class="menu" @select="handleSelect" background-color="#f5f5f5">
+                </el-menu>
+            </div>
+        </el-header>
+        <el-main>
+            <el-input
+                    placeholder="搜索方法"
+                    v-model="searchQuery"
+                    class="search"
+                    @input="filterData"
+            ></el-input>
+            <el-table :data="paginatedData" @sort-change="handleSortChange" style="width: 100%">
+                <el-table-column
+                        prop="methodName"
+                        label="Method Name"
+                        sortable
+                ></el-table-column>
+                <el-table-column
+                        prop="invokeCount"
+                        label="Invoke Count"
+                        sortable
+                ></el-table-column>
+                <el-table-column
+                        prop="totalCost"
+                        label="Total Cost"
+                        sortable
+                ></el-table-column>
+                <el-table-column
+                        prop="maxCost"
+                        label="Max Cost"
+                        sortable
+                ></el-table-column>
+                <el-table-column
+                        prop="minCost"
+                        label="Min Cost"
+                        sortable
+                ></el-table-column>
+            </el-table>
+            <el-pagination
+                    :current-page="currentPage"
+                    :page-size="pageSize"
+                    :total="totalItems"
+                    @current-change="handleCurrentChange"
+                    layout="prev, pager, next, total">
+            </el-pagination>
+        </el-main>
+    </el-container>
 </div>
 
 <script>
-    let data = jsonData();
-    let filteredData = [];
-    let currentPage = 1;
-    const rowsPerPage = 20; // Fixed number of rows per page
+    new Vue({
+        el: '#app',
+        data() {
+            return {
+                currentPage: 1,
+                pageSize: 5,
+                totalItems: 0,
+                searchQuery: '',
+                minInvokeCount: null,
+                maxInvokeCount: null,
+                minTotalCost: null,
+                maxTotalCost: null,
+                minMaxCost: null,
+                maxMaxCost: null,
+                minMinCost: null,
+                maxMinCost: null,
+                tableData: jsonData(),
+                filteredData: []
+            };
+        },
+        mounted() {
+            this.totalItems = this.tableData.length;
+            this.filteredData = this.tableData;
+        },
+        computed: {
+            paginatedData() {
+                const start = (this.currentPage - 1) * this.pageSize;
+                return this.filteredData.slice(start, start + this.pageSize);
+            }
+        },
+        methods: {
+            handleCurrentChange(page) {
+                this.currentPage = page;
+            },
+            handleSelect(index) {
+                alert(`选择了菜单项：${index}`);
+            },
+            filterData() {
+                this.currentPage = 1;
+                this.filteredData = this.tableData.filter(item =>
+                    item.method.toLowerCase().includes(this.searchQuery.toLowerCase())
+                );
+                this.totalItems = this.filteredData.length;
+            },
+            handleSortChange({prop, order}) {
+                this.filteredData.sort((a, b) => {
+                    const aValue = a[prop];
+                    const bValue = b[prop];
 
-    function renderTable() {
-        const start = (currentPage - 1) * rowsPerPage;
-        const end = start + rowsPerPage;
-        const paginatedData = filteredData.slice(start, end);
-        const tbody = document.getElementById('data-body');
-        tbody.innerHTML = '';
-
-        paginatedData.forEach(item => {
-            const row = `<tr>
-                <td>${item.method}</td>
-                <td>${item.invokeCount}</td>
-                <td>${item.totalCost}</td>
-                <td>${item.maxCost}</td>
-                <td>${item.minCost}</td>
-            </tr>`;
-            tbody.innerHTML += row;
-        });
-
-        updateStats();
-        updatePagination();
-    }
-
-    function updateStats() {
-        const totalInvokeCount = filteredData.reduce((sum, item) => sum + item.invokeCount, 0);
-        const totalCost = filteredData.reduce((sum, item) => sum + item.totalCost, 0);
-        document.getElementById('stats').textContent = `Total Invokes: ${totalInvokeCount}, Total Cost: ${totalCost}`;
-    }
-
-    function updatePagination() {
-        const totalPages = Math.ceil(filteredData.length / rowsPerPage);
-        document.getElementById('page-info').textContent = `${currentPage} of ${totalPages}`;
-        document.getElementById('prev-button').disabled = currentPage === 1;
-        document.getElementById('next-button').disabled = currentPage === totalPages;
-    }
-
-    function nextPage() {
-        const totalPages = Math.ceil(filteredData.length / rowsPerPage);
-        if (currentPage < totalPages) {
-            currentPage++;
-            renderTable();
+                    if (order === 'ascending') {
+                        return aValue - bValue;
+                    } else if (order === 'descending') {
+                        return bValue - aValue;
+                    }
+                    return 0;
+                });
+                this.currentPage = 1; 
+                this.totalItems = this.filteredData.length; 
+            }
         }
-    }
-
-    function prevPage() {
-        if (currentPage > 1) {
-            currentPage--;
-            renderTable();
-        }
-    }
-
-    function jumpToPage() {
-        const page = parseInt(document.getElementById('jump-to-page').value);
-        const totalPages = Math.ceil(filteredData.length / rowsPerPage);
-        if (page >= 1 && page <= totalPages) {
-            currentPage = page;
-            renderTable();
-        }
-    }
-
-    function searchMethod() {
-        const query = document.getElementById('search-input').value.toLowerCase();
-        filteredData = data.filter(item => item.method.toLowerCase().includes(query));
-        currentPage = 1;
-        renderTable();
-    }
-
-    filteredData = data;
-    renderTable();
+    });
 </script>
 </body>
 </html>

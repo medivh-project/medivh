@@ -6,6 +6,7 @@ import java.util.*
 import org.gradle.api.Project
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.SetProperty
+import tech.medivh.core.MedivhMode
 import tech.medivh.core.MedivhParam
 import javax.inject.Inject
 
@@ -15,25 +16,31 @@ import javax.inject.Inject
  **/
 open class MedivhExtension @Inject constructor(objects: ObjectFactory, private val project: Project) {
 
-    val includePackage: SetProperty<String> = objects.setProperty(String::class.java)
+    private val includePackage: SetProperty<String> = objects.setProperty(String::class.java)
+
+    private var mode: MedivhMode = MedivhMode.NORMAL
 
     fun include(packageName: String) {
         val currentPackages = includePackage.getOrElse(emptySet())
         includePackage.set(currentPackages + packageName)
     }
 
-    fun skip(): Boolean {
+    fun mutliThread() {
+        mode = MedivhMode.MULTI_THREAD
+    }
+
+    internal fun skip(): Boolean {
         return includePackage.getOrElse(emptySet()).isEmpty()
     }
 
-    fun toParams(): String {
-        val sb = StringBuilder()
+    internal fun toParams(): String {
+        val params = hashMapOf<String, String>()
         val packageNames = includePackage.getOrElse(emptySet())
-        if (packageNames.isNotEmpty()) {
-            sb.append("${MedivhParam.INCLUDE.key}=${packageNames.joinToString(",")}").append(";")
-        }
-        sb.append("${MedivhParam.REPORT_DIR.key}=${reportDir()}")
-        return sb.toString()
+        params[MedivhParam.INCLUDE.key] = packageNames.joinToString(",")
+        params[MedivhParam.REPORT_DIR.key] = reportDir()
+        params[MedivhParam.MODE.key] = mode.name
+        
+        return params.map { "${it.key}=${it.value}" }.joinToString(";")
     }
 
     private fun reportDir(): String {
