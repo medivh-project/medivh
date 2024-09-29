@@ -51,7 +51,7 @@ object MultiThreadTimeReporter : TimeReporter {
     }
 
     override fun htmlTemplateName(): String {
-        return "report.html"
+        return "report-mt.html"
     }
 
     override fun generateJsonString(): String {

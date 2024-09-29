@@ -60,7 +60,21 @@
                     class="search"
                     @input="filterData"
             ></el-input>
-            <el-table :data="paginatedData" @sort-change="handleSortChange" style="width: 100%">
+            <el-table :data="paginatedData" @sort-change="handleSortChange"
+                      style="width: 100%">
+                <el-table-column type="expand">
+                    <template slot-scope="props">
+                        <div>
+                            <el-table :data="props.row.threadInvoke" border style="width: 100%">
+                                <el-table-column prop="threadName" label="Thread Name"></el-table-column>
+                                <el-table-column prop="invokeInfo.invokeCount" label="Invoke Count"></el-table-column>
+                                <el-table-column prop="invokeInfo.totalCost" label="Total Cost"></el-table-column>
+                                <el-table-column prop="invokeInfo.maxCost" label="Max Cost"></el-table-column>
+                                <el-table-column prop="invokeInfo.minCost" label="Min Cost"></el-table-column>
+                            </el-table>
+                        </div>
+                    </template>
+                </el-table-column>
                 <el-table-column
                         prop="methodName"
                         label="Method Name"
@@ -116,7 +130,11 @@
                 minMinCost: null,
                 maxMinCost: null,
                 tableData: jsonData(),
-                filteredData: []
+                filteredData: [],
+                chartData: {
+                    categories: ['方法A', '方法B', '方法C', '方法D', '方法E'],
+                    values: [10, 5, 8, 15, 7]
+                }
             };
         },
         mounted() {
@@ -157,7 +175,7 @@
                 });
                 this.currentPage = 1; 
                 this.totalItems = this.filteredData.length; 
-            }
+            },
         }
     });
 </script>
