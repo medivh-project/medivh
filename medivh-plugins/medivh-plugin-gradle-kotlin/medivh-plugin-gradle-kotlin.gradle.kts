@@ -18,6 +18,8 @@ dependencies {
 
 
 gradlePlugin {
+    website = "https://medivh.tech"
+    vcsUrl = "https://github.com/medivh-project/medivh.git"
     plugins {
         create("medivh") {
             id = "tech.medivh.plugin.gradle"
@@ -26,6 +28,7 @@ gradlePlugin {
             version = project.version.toString()
             displayName = "function monitor"
             description = "monitor your function without intrusion"
+            tags = setOf("test", "monitor", "function")
         }
     }
 }

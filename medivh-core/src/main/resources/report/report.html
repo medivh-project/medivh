@@ -96,24 +96,13 @@
             <li class="page-item">
                 <button class="page-link" onclick="prevPage()" id="prev-button">Previous</button>
             </li>
+            <li class="page-item disabled">
+                <span class="page-link" id="page-info"></span>
+            </li>
             <li class="page-item">
                 <button class="page-link" onclick="nextPage()" id="next-button">Next</button>
             </li>
         </ul>
-        <div class="d-flex justify-content-center mt-2">
-            <span id="page-info" class="mr-2"></span>
-            <input type="number" id="jump-to-page" class="form-control" style="width: 60px;" placeholder="Page" min="1">
-            <button class="btn btn-primary ml-2" onclick="jumpToPage()">Go</button>
-        </div>
-        <div class="d-flex justify-content-center mt-2">
-            <label for="rows-per-page" class="mr-2">Rows per page:</label>
-            <select id="rows-per-page" class="form-control" style="width: 80px;" onchange="changeRowsPerPage()">
-                <option value="10">10</option>
-                <option value="20" selected>20</option>
-                <option value="50">50</option>
-                <option value="100">100</option>
-            </select>
-        </div>
     </nav>
 
     <div class="mt-3">
@@ -126,7 +115,7 @@
     let data = jsonData();
     let filteredData = [];
     let currentPage = 1;
-    let rowsPerPage = 20;
+    const rowsPerPage = 20; // Fixed number of rows per page
 
     function renderTable() {
         const start = (currentPage - 1) * rowsPerPage;
@@ -137,12 +126,12 @@
 
         paginatedData.forEach(item => {
             const row = `<tr>
-                    <td>${item.method}</td>
-                    <td>${item.invokeCount}</td>
-                    <td>${item.totalCost}</td>
-                    <td>${item.maxCost}</td>
-                    <td>${item.minCost}</td>
-                </tr>`;
+                <td>${item.method}</td>
+                <td>${item.invokeCount}</td>
+                <td>${item.totalCost}</td>
+                <td>${item.maxCost}</td>
+                <td>${item.minCost}</td>
+            </tr>`;
             tbody.innerHTML += row;
         });
 
@@ -158,7 +147,7 @@
 
     function updatePagination() {
         const totalPages = Math.ceil(filteredData.length / rowsPerPage);
-        document.getElementById('page-info').textContent = `Page ${currentPage} of ${totalPages}`;
+        document.getElementById('page-info').textContent = `${currentPage} of ${totalPages}`;
         document.getElementById('prev-button').disabled = currentPage === 1;
         document.getElementById('next-button').disabled = currentPage === totalPages;
     }
@@ -185,12 +174,6 @@
             currentPage = page;
             renderTable();
         }
-    }
-
-    function changeRowsPerPage() {
-        rowsPerPage = parseInt(document.getElementById('rows-per-page').value);
-        currentPage = 1;
-        renderTable();
     }
 
     function searchMethod() {
