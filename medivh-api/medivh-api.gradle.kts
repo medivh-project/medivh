@@ -1,25 +1,31 @@
 plugins {
     kotlin("jvm")
     `java-gradle-plugin`
-    `maven-publish`
+    id("tech.medivh.plugin.publisher") version "1.0.0"
 }
 
-dependencies {
-}
-
-
-java {
-    withJavadocJar()
-    withSourcesJar()
-}
-
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            groupId = project.group.toString()
-            artifactId = project.name
-            version = project.version.toString()
-            from(components["java"])
+medivhPublisher {
+    pom {
+        url = "https://github.com/medivh-project/medivh"
+        licenses {
+            license {
+                name = "GPL-3.0 license"
+                url = "https://www.gnu.org/licenses/gpl-3.0.txt"
+            }
+        }
+        developers {
+            developer {
+                id = "gxz"
+                name = "Xuan-Zhang Gong"
+                email = "gongxuanzhangmelt@gmail.com"
+            }
+        }
+        scm {
+            connection = null
+            url = "https://github.com/medivh-project/medivh"
         }
     }
 }
+
+
+

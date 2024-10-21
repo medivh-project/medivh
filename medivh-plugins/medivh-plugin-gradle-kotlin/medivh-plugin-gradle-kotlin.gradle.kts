@@ -1,3 +1,4 @@
+
 val byteBuddyVersion: String by medivhVersion
 val jacksonVersion: String by medivhVersion
 
@@ -11,7 +12,7 @@ plugins {
 
 
 dependencies {
-    api(project(":medivh-core"))
+    implementation(project(":medivh-core"))
     implementation("net.bytebuddy:byte-buddy:$byteBuddyVersion")
     implementation("net.bytebuddy:byte-buddy-agent:$byteBuddyVersion")
 }

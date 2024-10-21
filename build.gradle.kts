@@ -12,7 +12,7 @@ allprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
 
     group = "tech.medivh"
-    version = "0.0.1"
+    version = "0.0.2"
 
     repositories {
         mavenLocal()

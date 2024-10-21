@@ -3,9 +3,9 @@ val byteBuddyVersion: String by medivhVersion
 
 plugins {
     kotlin("jvm")
-    `maven-publish`
     `java-gradle-plugin`
     insertAgent
+    id("tech.medivh.plugin.publisher") version "1.0.0"
 }
 
 dependencies {
@@ -14,10 +14,31 @@ dependencies {
     implementation("com.alibaba.fastjson2:fastjson2:$fastjson2Version")
 }
 
-java {
-    withJavadocJar()
-    withSourcesJar()
+
+
+medivhPublisher {
+    pom {
+        url = "https://github.com/medivh-project/medivh"
+        licenses {
+            license {
+                name = "GPL-3.0 license"
+                url = "https://www.gnu.org/licenses/gpl-3.0.txt"
+            }
+        }
+        developers {
+            developer {
+                id = "gxz"
+                name = "Xuan-Zhang Gong"
+                email = "gongxuanzhangmelt@gmail.com"
+            }
+        }
+        scm {
+            connection = null
+            url = "https://github.com/medivh-project/medivh"
+        }
+    }
 }
+
 
 tasks.jar {
     manifest {
