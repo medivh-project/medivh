@@ -23,9 +23,11 @@ class MedivhGradlePlugin : Plugin<Project> {
         }
 
         project.afterEvaluate {
+            val byteBuddyVersion = "1.15.1"
             val medivhVersion = project.extensions.extraProperties["medivhVersion"]
             project.dependencies.add("implementation", "tech.medivh:medivh-api:${medivhVersion}")
-
+            project.dependencies.add("testImplementation", "net.bytebuddy:byte-buddy-agent:$byteBuddyVersion")
+            project.dependencies.add("testImplementation", "net.bytebuddy:byte-buddy:$byteBuddyVersion")
             val copyAgent = project.tasks.register("copyAgent", CopyAgentTask::class.java, medivhVersion)
 
             project.tasks.register("copyReportZip", CopyReportZipTask::class.java)
