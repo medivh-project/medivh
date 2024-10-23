@@ -65,7 +65,7 @@ class InsertAgentPlugin : Plugin<Project> {
 
     private fun zipReport(project: Project): File {
         val reportDir = project.resources.text.fromFile("src/main/resources/report/").asFile()
-        val zipReportTargetFile = project.layout.buildDirectory.dir("libs").get().file("report.zip").asFile
+        val zipReportTargetFile = project.layout.buildDirectory.dir("libs").get().file("medivh-report.zip").asFile
         ZipOutputStream(FileOutputStream(zipReportTargetFile)).use { zipOutput ->
             reportDir.walkTopDown().filter { it.isFile }.forEach { file ->
                 val zipEntry = ZipEntry(file.relativeTo(reportDir).path)

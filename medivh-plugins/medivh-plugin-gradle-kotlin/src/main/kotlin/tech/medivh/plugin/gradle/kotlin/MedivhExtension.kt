@@ -48,7 +48,6 @@ open class MedivhExtension @Inject constructor(objects: ObjectFactory, private v
         LocalDate.now().apply {
             val reportRoot = project.layout.buildDirectory.dir("medivh/reports").get().asFile
             val targetDir = File(reportRoot, "/$year$monthValue$dayOfMonth/$testToken")
-            targetDir.mkdirs()
             return targetDir.path
         }
     }

@@ -1,165 +1,189 @@
-<!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <title>Medivh-Report</title>
-    <link rel="stylesheet" href="../../css/element.css">
-    <script src="../../js/vue.js"></script>
-    <script src="../../js/element.js"></script>
+    <title>API Call Report</title>
+    <link rel="stylesheet" type="text/css" href="css/datatables.min.css">
+    <script type="text/javascript" src="js/jquery-3.7.1.min.js"></script>
+    <script type="text/javascript" src="js/datatables.min.js"></script>
     <script src="./js/medivh.js"></script>
     <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0;
+            padding: 0;
+        }
+        .container { 
+            width: 95%; 
+            margin: 0 auto; 
+            padding-top: 20px;
+        }
         .header {
             display: flex;
             align-items: center;
-            justify-content: center;
-            background-color: #f5f5f5;
-            padding: 10px;
+            justify-content: space-between;
+            margin-bottom: 20px;
         }
-
-        .logo {
-            width: 80px; 
+        .logo-title {
+            display: flex;
+            align-items: center;
+        }
+        .logo { 
+            max-width: 100px;
             height: auto;
-            margin-right: 10px;
-        }
-
-        .title {
-            font-size: 24px;
-            font-weight: bold;
             margin-right: 20px;
         }
-
-        .menu {
-            display: flex;
-            gap: 20px;
+        h1 { 
+            margin: 0;
+            font-size: 24px;
         }
-
-        .search {
-            margin: 10px 0;
+        #apiTable td, #apiTable th {
+            text-align: center;
         }
-
-        .filter-container {
-            margin: 10px 0;
+        #languageSelector {
+            padding: 5px;
         }
     </style>
 </head>
 <body>
-<div id="app">
-    <el-container>
-        <el-header>
-            <div class="header">
-                <img src="../../images/logo.png" alt="Logo" class="logo">
-                <span class="title">Method Statistic</span>
-                <el-menu mode="horizontal" class="menu" @select="handleSelect" background-color="#f5f5f5">
-                </el-menu>
+    <div class="container">
+        <div class="header">
+            <div class="logo-title">
+                <img src="images/logo.png" alt="Company Logo" class="logo">
+                <h1 id="reportTitle">API Call Report</h1>
             </div>
-        </el-header>
-        <el-main>
-            <el-input
-                    placeholder="搜索方法"
-                    v-model="searchQuery"
-                    class="search"
-                    @input="filterData"
-            ></el-input>
-            <el-table :data="paginatedData" @sort-change="handleSortChange" style="width: 100%">
-                <el-table-column
-                        prop="methodName"
-                        label="Method Name"
-                        sortable
-                ></el-table-column>
-                <el-table-column
-                        prop="invokeCount"
-                        label="Invoke Count"
-                        sortable
-                ></el-table-column>
-                <el-table-column
-                        prop="totalCost"
-                        label="Total Cost"
-                        sortable
-                ></el-table-column>
-                <el-table-column
-                        prop="maxCost"
-                        label="Max Cost"
-                        sortable
-                ></el-table-column>
-                <el-table-column
-                        prop="minCost"
-                        label="Min Cost"
-                        sortable
-                ></el-table-column>
-            </el-table>
-            <el-pagination
-                    :current-page="currentPage"
-                    :page-size="pageSize"
-                    :total="totalItems"
-                    @current-change="handleCurrentChange"
-                    layout="prev, pager, next, total">
-            </el-pagination>
-        </el-main>
-    </el-container>
-</div>
+            <select id="languageSelector">
+                <option value="en">English</option>
+                <option value="zh">中文</option>
+            </select>
+        </div>
+        <table id="apiTable" class="display">
+            <thead>
+                <tr>
+                    <th id="methodName">Method Name</th>
+                    <th id="invokeCount">Invoke Count</th>
+                    <th id="totalCost">Total Cost</th>
+                    <th id="maxCost">Max Cost</th>
+                    <th id="minCost">Min Cost</th>
+                    <th id="avgCost">Avg Cost</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
 
-<script>
-    new Vue({
-        el: '#app',
-        data() {
-            return {
-                currentPage: 1,
-                pageSize: 5,
-                totalItems: 0,
-                searchQuery: '',
-                minInvokeCount: null,
-                maxInvokeCount: null,
-                minTotalCost: null,
-                maxTotalCost: null,
-                minMaxCost: null,
-                maxMaxCost: null,
-                minMinCost: null,
-                maxMinCost: null,
-                tableData: jsonData(),
-                filteredData: []
-            };
-        },
-        mounted() {
-            this.totalItems = this.tableData.length;
-            this.filteredData = this.tableData;
-        },
-        computed: {
-            paginatedData() {
-                const start = (this.currentPage - 1) * this.pageSize;
-                return this.filteredData.slice(start, start + this.pageSize);
-            }
-        },
-        methods: {
-            handleCurrentChange(page) {
-                this.currentPage = page;
-            },
-            handleSelect(index) {
-                alert(`select : ${index}`);
-            },
-            filterData() {
-                this.currentPage = 1;
-                this.filteredData = this.tableData.filter(item =>
-                    item.methodName.toLowerCase().includes(this.searchQuery.toLowerCase())
-                );
-                this.totalItems = this.filteredData.length;
-            },
-            handleSortChange({prop, order}) {
-                this.filteredData.sort((a, b) => {
-                    const aValue = a[prop];
-                    const bValue = b[prop];
-
-                    if (order === 'ascending') {
-                        return aValue - bValue;
-                    } else if (order === 'descending') {
-                        return bValue - aValue;
-                    }
-                    return 0;
+    <script>
+        function generateRandomData(count) {
+            const methods = ['getUserInfo', 'updateProfile', 'searchProducts', 'placeOrder', 'getOrderStatus', 'sendNotification', 'generateReport', 'processPayment', 'uploadFile', 'validateUser', 'createAccount', 'deleteAccount', 'resetPassword', 'updateInventory', 'trackShipment', 'processRefund', 'generateInvoice', 'scheduleAppointment', 'cancelSubscription', 'updatePaymentMethod'];
+            const data = [];
+            for (let i = 0; i < count; i++) {
+                const invokeCount = Math.floor(Math.random() * 10000) + 1;
+                const avgCost = Math.random() * 0.5 + 0.01;
+                data.push({
+                    "methodName": methods[i % methods.length],
+                    "invokeCount": invokeCount,
+                    "totalCost": +(invokeCount * avgCost).toFixed(2),
+                    "maxCost": +(avgCost * (Math.random() + 1)).toFixed(2),
+                    "minCost": +(avgCost * Math.random()).toFixed(2),
+                    "avgCost": +avgCost.toFixed(2)
                 });
-                this.currentPage = 1; 
-                this.totalItems = this.filteredData.length; 
             }
+            return data;
         }
-    });
-</script>
+
+        const apiData = jsonData();
+
+        let table;
+
+        $(document).ready(function() {
+            table = $('#apiTable').DataTable({
+                data: apiData,
+                columns: [
+                    { data: 'methodName', orderable: false },
+                    { data: 'invokeCount' },
+                    { data: 'totalCost' },
+                    { data: 'maxCost' },
+                    { data: 'minCost' },
+                    { data: 'avgCost' }
+                ],
+                order: [[5, 'desc']],
+                pageLength: 10,
+                searching: true,
+                paging: true,
+                info: true,
+                lengthChange: false,
+                language: {
+                    paginate: {
+                        first: 'First',
+                        last: 'Last',
+                        next: 'Next',
+                        previous: 'Previous'
+                    },
+                    info: "Showing _START_ to _END_ of _TOTAL_ entries",
+                    infoEmpty: "Showing 0 to 0 of 0 entries",
+                    search: "Search:"
+                }
+            });
+
+            $('#languageSelector').change(function() {
+                updateLanguage($(this).val());
+            });
+        });
+
+        function updateLanguage(lang) {
+            const translations = {
+                en: {
+                    reportTitle: "API Call Report",
+                    methodName: "Method Name",
+                    invokeCount: "Invoke Count",
+                    totalCost: "Total Cost",
+                    maxCost: "Max Cost",
+                    minCost: "Min Cost",
+                    avgCost: "Avg Cost",
+                    paginate: {
+                        first: 'First',
+                        last: 'Last',
+                        next: 'Next',
+                        previous: 'Previous'
+                    },
+                    info: "Showing _START_ to _END_ of _TOTAL_ entries",
+                    infoEmpty: "Showing 0 to 0 of 0 entries",
+                    search: "Search:"
+                },
+                zh: {
+                    reportTitle: "函数调用报告",
+                    methodName: "方法名",
+                    invokeCount: "调用次数",
+                    totalCost: "总成本",
+                    maxCost: "最大成本",
+                    minCost: "最小成本",
+                    avgCost: "平均成本",
+                    paginate: {
+                        first: '首页',
+                        last: '末页',
+                        next: '下一页',
+                        previous: '上一页'
+                    },
+                    info: "显示第 _START_ 至 _END_ 条记录，共 _TOTAL_ 条",
+                    infoEmpty: "显示第 0 至 0 条记录，共 0 条",
+                    search: "搜索:"
+                }
+            };
+
+            $('#reportTitle').text(translations[lang].reportTitle);
+            $('#methodName').text(translations[lang].methodName);
+            $('#invokeCount').text(translations[lang].invokeCount);
+            $('#totalCost').text(translations[lang].totalCost);
+            $('#maxCost').text(translations[lang].maxCost);
+            $('#minCost').text(translations[lang].minCost);
+            $('#avgCost').text(translations[lang].avgCost);
+
+            table.columns().header().to$().each(function(index) {
+                $(this).text(translations[lang][$(this).attr('id')]);
+            });
+
+            table.language = translations[lang];
+            table.draw();
+        }
+    </script>
 </body>
 </html>

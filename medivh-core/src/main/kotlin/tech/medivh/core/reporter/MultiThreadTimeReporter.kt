@@ -56,7 +56,6 @@ object MultiThreadTimeReporter : TimeReporter {
 
     override fun generateJsonString(): String {
         val jsonArray = JSONArray()
-        println(statisticMap)
         statisticMap.forEach { (methodName, threadMap) ->
             val statistic = MultiThreadStatistic(methodName)
             threadMap.forEach { (threadName, invokeInfo) ->

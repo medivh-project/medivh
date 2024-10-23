@@ -13,7 +13,7 @@ open class CopyReportZipTask : MedivhTask() {
         this.description = "copy report zip to build medivh directory"
     }
 
-    private val zipName = "report.zip"
+    private val zipName = "medivh-report.zip"
 
     @get:OutputFile
     val outputFile = project.layout.buildDirectory.dir("medivh").get().file(zipName).asFile
