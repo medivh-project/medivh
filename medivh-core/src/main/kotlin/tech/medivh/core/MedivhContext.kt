@@ -23,6 +23,8 @@ class MedivhContext(vars: String?) {
 
     private lateinit var mode: MedivhMode
 
+    private lateinit var language: Language
+
     init {
         vars?.let {
             it.split(";").forEach { kv ->
@@ -34,13 +36,17 @@ class MedivhContext(vars: String?) {
                         MedivhParam.INCLUDE -> include.addAll(value as List<String>)
                         MedivhParam.REPORT_DIR -> reportDir = value as String
                         MedivhParam.MODE -> mode = MedivhMode.valueOf(value as String)
+                        MedivhParam.LANGUAGE -> language = value as Language
                     }
                 }
             }
         }
+        
     }
 
     fun mode() = mode
+
+    fun language() = language
 
     fun includeMatchers(): ElementMatcher<TypeDescription> {
         var matcher = ElementMatchers.none<TypeDescription>()

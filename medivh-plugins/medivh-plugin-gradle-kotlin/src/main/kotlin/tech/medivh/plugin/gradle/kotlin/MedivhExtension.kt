@@ -6,6 +6,7 @@ import java.util.*
 import org.gradle.api.Project
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.SetProperty
+import tech.medivh.core.Language
 import tech.medivh.core.MedivhMode
 import tech.medivh.core.MedivhParam
 import javax.inject.Inject
@@ -19,6 +20,8 @@ open class MedivhExtension @Inject constructor(objects: ObjectFactory, private v
     private val includePackage: SetProperty<String> = objects.setProperty(String::class.java)
 
     private var mode: MedivhMode = MedivhMode.NORMAL
+
+    private var language: Language = Language.EN
 
     fun include(packageName: String) {
         val currentPackages = includePackage.getOrElse(emptySet())
@@ -39,7 +42,8 @@ open class MedivhExtension @Inject constructor(objects: ObjectFactory, private v
         params[MedivhParam.INCLUDE.key] = packageNames.joinToString(",")
         params[MedivhParam.REPORT_DIR.key] = reportDir()
         params[MedivhParam.MODE.key] = mode.name
-        
+        params[MedivhParam.LANGUAGE.key] = language.name
+
         return params.map { "${it.key}=${it.value}" }.joinToString(";")
     }
 
@@ -50,6 +54,10 @@ open class MedivhExtension @Inject constructor(objects: ObjectFactory, private v
             val targetDir = File(reportRoot, "/$year$monthValue$dayOfMonth/$testToken")
             return targetDir.path
         }
+    }
+
+    fun language(language: Language) {
+        this.language = language
     }
 }
 

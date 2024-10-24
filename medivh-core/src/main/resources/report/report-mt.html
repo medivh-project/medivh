@@ -76,8 +76,8 @@
                 <h1 id="reportTitle">API Call Report</h1>
             </div>
             <select id="languageSelector">
-                <option value="en" selected>English</option>
-                <option value="zh">中文</option>
+                <option value="EN" selected>English</option>
+                <option value="ZH">中文</option>
             </select>
         </div>
         <table id="apiTable" class="display">
@@ -208,7 +208,7 @@
 
         function formatThreadDetails(d, lang) {
             const translations = {
-                en: {
+                EN: {
                     threadName: "Thread Name",
                     threadInvokeCount: "Invoke Count",
                     threadTotalCost: "Total Cost",
@@ -217,7 +217,7 @@
                     noThreadInfo: "No thread information available",
                     thread: "Thread"
                 },
-                zh: {
+                ZH: {
                     threadName: "线程名",
                     threadInvokeCount: "调用次数",
                     threadTotalCost: "总成本",
@@ -322,6 +322,8 @@
             table.language = translations[lang];
             table.draw();
         }
+        $('#languageSelector').val(defaultLanguage());
+        updateLanguage(defaultLanguage());
     </script>
 </body>
 </html>

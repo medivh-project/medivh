@@ -51,8 +51,8 @@
                 <h1 id="reportTitle">API Call Report</h1>
             </div>
             <select id="languageSelector">
-                <option value="en">English</option>
-                <option value="zh">中文</option>
+                <option value="EN">English</option>
+                <option value="ZH">中文</option>
             </select>
         </div>
         <table id="apiTable" class="display">
@@ -131,7 +131,7 @@
 
         function updateLanguage(lang) {
             const translations = {
-                en: {
+                EN: {
                     reportTitle: "API Call Report",
                     methodName: "Method Name",
                     invokeCount: "Invoke Count",
@@ -149,7 +149,7 @@
                     infoEmpty: "Showing 0 to 0 of 0 entries",
                     search: "Search:"
                 },
-                zh: {
+                ZH: {
                     reportTitle: "函数调用报告",
                     methodName: "方法名",
                     invokeCount: "调用次数",
@@ -184,6 +184,8 @@
             table.language = translations[lang];
             table.draw();
         }
+        $('#languageSelector').val(defaultLanguage());
+        updateLanguage(defaultLanguage());
     </script>
 </body>
 </html>

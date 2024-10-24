@@ -30,4 +30,11 @@ data object ListResolver : ParamResolver<List<String>> {
     }
 }
 
+data object LanguageResolver : ParamResolver<Language> {
+
+    override fun resolve(value: String): Language {
+        return Language.valueOf(value)
+    }
+}
+
 

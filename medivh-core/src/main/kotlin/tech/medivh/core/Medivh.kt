@@ -4,6 +4,7 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.lang.instrument.Instrumentation
+import java.text.MessageFormat
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 import net.bytebuddy.agent.builder.AgentBuilder
@@ -24,25 +25,20 @@ object Medivh {
 
         Runtime.getRuntime().addShutdownHook(Thread {
             val timeReport = context.mode().timeReport
-            val dir = context.targetDir()
             // dir = /build/medivh/reports/time/uuid
-            if (!dir.exists()) {
-                dir.mkdirs()
-            }
+            val dir = context.targetDir()
             val reportZip = dir.parentFile.parentFile.parentFile.resolve("medivh-report.zip")
             val reportDir = dir.resolve("report/")
             reportDir.mkdirs()
             unzip(reportZip, reportDir)
-            val medivhJs = reportDir.resolve("js/").resolve("medivh.js")
-            medivhJs.parentFile.mkdirs()
-            medivhJs.writeText(generateMedivhJsContent(timeReport.generateJsonString()))
+            MedivhJsGenerator(context).generateJs()
             reportDir.resolve(timeReport.htmlTemplateName()).copyTo(reportDir.resolve("index.html.temp")).apply {
                 this.parentFile.listFiles { file -> file.extension == "html" }?.forEach {
                     it.delete()
                 }
                 val indexHtml = reportDir.resolve("index.html")
                 this.renameTo(indexHtml)
-                println("you can open file://${indexHtml.absolutePath} to see the report")
+                println(i18n(context.language(), "tip.seeReport", indexHtml.absolutePath))
             }
         })
 
@@ -59,13 +55,6 @@ object Medivh {
 
     }
 
-    private fun generateMedivhJsContent(json: String): String {
-        return """
-            function jsonData() {
-                return $json;
-            }
-        """.trimIndent()
-    }
 
     private fun unzip(zipFile: File, reportDir: File) {
         if (reportDir.resolve("report/js").exists()) {
@@ -97,4 +86,8 @@ const val githubUrl = "https://www.github.com/medivh-project/meidvh"
 
 fun unexpectedly(): Nothing {
     throw IllegalStateException("There seems to be a problem, please report back on $githubUrl")
+}
+
+fun i18n(language: Language, key: String, vararg arguments: String): String {
+    return MessageFormat.format(language.bundle.getString(key), *arguments)
 }
