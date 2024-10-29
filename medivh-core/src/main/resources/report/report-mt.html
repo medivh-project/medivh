@@ -6,41 +6,49 @@
     <script type="text/javascript" src="js/jquery.dataTables.min.js"></script>
     <script src="./js/medivh.js"></script>
     <style>
-        body { 
-            font-family: Arial, sans-serif; 
+        body {
+            font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
         }
-        .container { 
-            width: 95%; 
-            margin: 0 auto; 
+
+        .container {
+            width: 95%;
+            margin: 0 auto;
             padding-top: 20px;
         }
+
         .header {
             display: flex;
             align-items: center;
             justify-content: space-between;
             margin-bottom: 20px;
         }
+
         .logo-title {
             display: flex;
             align-items: center;
         }
-        .logo { 
+
+        .logo {
             max-width: 100px;
             height: auto;
             margin-right: 20px;
         }
-        h1 { 
+
+        h1 {
             margin: 0;
             font-size: 24px;
         }
+
         #apiTable td, #apiTable th {
             text-align: center;
         }
+
         #languageSelector {
             padding: 5px;
         }
+
         .thread-details {
             display: none;
             margin-top: 10px;
@@ -48,7 +56,7 @@
             background-color: #f0f0f0;
             border-radius: 5px;
         }
-        
+
         .shown + tr .thread-details {
             display: block;
         }
@@ -56,6 +64,7 @@
         td.details-control {
             cursor: pointer;
         }
+
         td.details-control:before {
             content: '\25B6';
             display: block;
@@ -63,267 +72,268 @@
             font-size: 14px;
             color: #555;
         }
+
         tr.shown td.details-control:before {
             content: '\25BC';
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="logo-title">
-                <img src="images/logo.png" alt="Company Logo" class="logo">
-                <h1 id="reportTitle">API Call Report</h1>
-            </div>
-            <select id="languageSelector">
-                <option value="EN" selected>English</option>
-                <option value="ZH">中文</option>
-            </select>
+<div class="container">
+    <div class="header">
+        <div class="logo-title">
+            <img src="images/logo.png" alt="Company Logo" class="logo">
+            <h1 id="reportTitle">API Call Report</h1>
         </div>
-        <table id="apiTable" class="display">
-            <thead>
-                <tr>
-                    <th></th>
-                    <th id="methodName">Method Name</th>
-                    <th id="invokeCount">Invoke Count</th>
-                    <th id="totalCost">Total Cost</th>
-                    <th id="maxCost">Max Cost</th>
-                    <th id="minCost">Min Cost</th>
-                    <th id="avgCost">Avg Cost</th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
+        <select id="languageSelector">
+            <option value="EN" selected>English</option>
+            <option value="ZH">中文</option>
+        </select>
     </div>
+    <table id="apiTable" class="display">
+        <thead>
+        <tr>
+            <th></th>
+            <th id="methodName">Method Name</th>
+            <th id="invokeCount">Invoke Count</th>
+            <th id="totalCost">Total Cost</th>
+            <th id="maxCost">Max Cost</th>
+            <th id="minCost">Min Cost</th>
+            <th id="avgCost">Avg Cost</th>
+        </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
 
-    <script>
-        // Generate random data
-        function generateRandomData(count) {
-            const methods = ['getUserInfo', 'updateProfile', 'searchProducts', 'placeOrder', 'getOrderStatus', 'sendNotification', 'generateReport', 'processPayment', 'uploadFile', 'validateUser'];
-            const data = [];
-            for (let i = 0; i < count; i++) {
-                const invokeCount = Math.floor(Math.random() * 10000) + 1;
-                const avgCost = Math.random() * 0.5 + 0.01;
-                const threadCount = Math.floor(Math.random() * 5) + 1;
-                const threadInvoke = [];
-                
-                let totalThreadInvokes = 0;
-                for (let j = 0; j < threadCount; j++) {
-                    const threadInvokeCount = j === threadCount - 1 
-                        ? invokeCount - totalThreadInvokes 
-                        : Math.floor(Math.random() * (invokeCount - totalThreadInvokes));
-                    totalThreadInvokes += threadInvokeCount;
-                    
-                    threadInvoke.push({
-                        threadName: `线程-${j+1}`,
-                        invokeInfo: {
-                            invokeCount: threadInvokeCount,
-                            totalCost: +(threadInvokeCount * avgCost).toFixed(2),
-                            maxCost: +(avgCost * (Math.random() + 1)).toFixed(2),
-                            minCost: +(avgCost * Math.random()).toFixed(2)
-                        }
-                    });
-                }
+<script>
+    // Generate random data
+    function generateRandomData(count) {
+        const methods = ['getUserInfo', 'updateProfile', 'searchProducts', 'placeOrder', 'getOrderStatus', 'sendNotification', 'generateReport', 'processPayment', 'uploadFile', 'validateUser'];
+        const data = [];
+        for (let i = 0; i < count; i++) {
+            const invokeCount = Math.floor(Math.random() * 10000) + 1;
+            const avgCost = Math.random() * 0.5 + 0.01;
+            const threadCount = Math.floor(Math.random() * 5) + 1;
+            const threadInvoke = [];
 
-                data.push({
-                    "methodName": methods[i % methods.length],
-                    "invokeCount": invokeCount,
-                    "totalCost": +(invokeCount * avgCost).toFixed(2),
-                    "maxCost": +(avgCost * (Math.random() + 1)).toFixed(2),
-                    "minCost": +(avgCost * Math.random()).toFixed(2),
-                    "avgCost": +avgCost.toFixed(2),
-                    "threadInvoke": threadInvoke
+            let totalThreadInvokes = 0;
+            for (let j = 0; j < threadCount; j++) {
+                const threadInvokeCount = j === threadCount - 1
+                    ? invokeCount - totalThreadInvokes
+                    : Math.floor(Math.random() * (invokeCount - totalThreadInvokes));
+                totalThreadInvokes += threadInvokeCount;
+
+                threadInvoke.push({
+                    threadName: `线程-${j + 1}`,
+                    invokeInfo: {
+                        invokeCount: threadInvokeCount,
+                        totalCost: +(threadInvokeCount * avgCost).toFixed(2),
+                        maxCost: +(avgCost * (Math.random() + 1)).toFixed(2),
+                        minCost: +(avgCost * Math.random()).toFixed(2)
+                    }
                 });
             }
-            return data;
+
+            data.push({
+                "methodName": methods[i % methods.length],
+                "invokeCount": invokeCount,
+                "totalCost": +(invokeCount * avgCost).toFixed(2),
+                "maxCost": +(avgCost * (Math.random() + 1)).toFixed(2),
+                "minCost": +(avgCost * Math.random()).toFixed(2),
+                "avgCost": +avgCost.toFixed(2),
+                "threadInvoke": threadInvoke
+            });
         }
+        return data;
+    }
 
-        const apiData = jsonData();
+    const apiData = jsonData();
 
-        let table;
+    let table;
 
-        $(document).ready(function() {
-            table = $('#apiTable').DataTable({
-                data: apiData,
-                columns: [
-                    {
-                        className: 'details-control',
-                        orderable: false,
-                        data: null,
-                        defaultContent: '',
-                        width: '30px'
-                    },
-                    { data: 'methodName', orderable: false },
-                    { data: 'invokeCount' },
-                    { data: 'totalCost' },
-                    { data: 'maxCost' },
-                    { data: 'minCost' },
-                    { data: 'avgCost' }
-                ],
-                order: [[6, 'desc']],
-                pageLength: 10,
-                searching: true,
-                paging: true,
-                info: true,
-                lengthChange: false,
-                language: {
-                    paginate: {
-                        first: 'First',
-                        last: 'Last',
-                        next: 'Next',
-                        previous: 'Previous'
-                    },
-                    info: "Showing _START_ to _END_ of _TOTAL_ entries",
-                    infoEmpty: "Showing 0 to 0 of 0 entries",
-                    search: "Search:"
-                }
-            });
-
-            $('#apiTable tbody').on('click', 'td.details-control', function () {
-                var tr = $(this).closest('tr');
-                var row = table.row(tr);
-
-                if (row.child.isShown()) {
-                    row.child.hide();
-                    tr.removeClass('shown');
-                }
-                else {
-                    var lang = $('#languageSelector').val();
-                    var threadDetails = formatThreadDetails(row.data(), lang);
-                    row.child(threadDetails).show();
-                    tr.addClass('shown');
-                    
-                    row.child().show();
-                    tr.next().find('.thread-details').slideDown();
-                }
-            });
-
-            updateLanguage('en');
-
-            $('#languageSelector').change(function() {
-                updateLanguage($(this).val());
-            });
+    $(document).ready(function () {
+        table = $('#apiTable').DataTable({
+            data: apiData,
+            columns: [
+                {
+                    className: 'details-control',
+                    orderable: false,
+                    data: null,
+                    defaultContent: '',
+                    width: '30px'
+                },
+                {data: 'methodName', orderable: false},
+                {data: 'invokeCount'},
+                {data: 'totalCost'},
+                {data: 'maxCost'},
+                {data: 'minCost'},
+                {data: 'avgCost'}
+            ],
+            order: [[6, 'desc']],
+            pageLength: 10,
+            searching: true,
+            paging: true,
+            info: true,
+            lengthChange: false,
+            language: {
+                paginate: {
+                    first: 'First',
+                    last: 'Last',
+                    next: 'Next',
+                    previous: 'Previous'
+                },
+                info: "Showing _START_ to _END_ of _TOTAL_ entries",
+                infoEmpty: "Showing 0 to 0 of 0 entries",
+                search: "Search:"
+            }
         });
 
-        function formatThreadDetails(d, lang) {
-            const translations = {
-                EN: {
-                    threadName: "Thread Name",
-                    threadInvokeCount: "Invoke Count",
-                    threadTotalCost: "Total Cost",
-                    threadMaxCost: "Max Cost",
-                    threadMinCost: "Min Cost",
-                    noThreadInfo: "No thread information available",
-                    thread: "Thread"
-                },
-                ZH: {
-                    threadName: "线程名",
-                    threadInvokeCount: "调用次数",
-                    threadTotalCost: "总成本",
-                    threadMaxCost: "最大成本",
-                    threadMinCost: "最小成本",
-                    noThreadInfo: "没有可用的线程信息",
-                    thread: "线程"
-                }
-            };
+        $('#apiTable tbody').on('click', 'td.details-control', function () {
+            var tr = $(this).closest('tr');
+            var row = table.row(tr);
 
-            let threadDetails = '<div class="thread-details" style="background-color: #f9f9f9; padding: 10px; margin-top: 5px; border: 1px solid #ddd;">';
-            threadDetails += '<table id="threadTable" cellpadding="5" cellspacing="0" border="0" style="width: 100%; border-collapse: collapse;">';
-            threadDetails += `<thead><tr style="background-color: #f1f1f1;">
+            if (row.child.isShown()) {
+                row.child.hide();
+                tr.removeClass('shown');
+            } else {
+                var lang = $('#languageSelector').val();
+                var threadDetails = formatThreadDetails(row.data(), lang);
+                row.child(threadDetails).show();
+                tr.addClass('shown');
+
+                row.child().show();
+                tr.next().find('.thread-details').slideDown();
+            }
+        });
+
+        updateLanguage('en');
+
+        $('#languageSelector').change(function () {
+            updateLanguage($(this).val());
+        });
+    });
+
+    function formatThreadDetails(d, lang) {
+        const translations = {
+            EN: {
+                threadName: "Thread Name",
+                threadInvokeCount: "Invoke Count",
+                threadTotalCost: "Total Cost",
+                threadMaxCost: "Max Cost",
+                threadMinCost: "Min Cost",
+                noThreadInfo: "No thread information available",
+                thread: "Thread"
+            },
+            ZH: {
+                threadName: "线程名",
+                threadInvokeCount: "调用次数",
+                threadTotalCost: "总成本",
+                threadMaxCost: "最大成本",
+                threadMinCost: "最小成本",
+                noThreadInfo: "没有可用的线程信息",
+                thread: "线程"
+            }
+        };
+
+        let threadDetails = '<div class="thread-details" style="background-color: #f9f9f9; padding: 10px; margin-top: 5px; border: 1px solid #ddd;">';
+        threadDetails += '<table id="threadTable" cellpadding="5" cellspacing="0" border="0" style="width: 100%; border-collapse: collapse;">';
+        threadDetails += `<thead><tr style="background-color: #f1f1f1;">
                 <th>${translations[lang].threadName}</th>
                 <th>${translations[lang].threadInvokeCount}</th>
                 <th>${translations[lang].threadTotalCost}</th>
                 <th>${translations[lang].threadMaxCost}</th>
                 <th>${translations[lang].threadMinCost}</th>
                 </tr></thead>`;
-            threadDetails += '<tbody>';
-            
-            if (d.threadInvoke && d.threadInvoke.length > 0) {
-                d.threadInvoke.forEach((thread, index) => {
-                    const translatedThreadName = lang === 'en' 
-                        ? `Thread-${index + 1}`
-                        : `${translations[lang].thread}-${index + 1}`;
-                    threadDetails += `<tr style="border-bottom: 1px solid #ddd;">
+        threadDetails += '<tbody>';
+
+        if (d.threadInvoke && d.threadInvoke.length > 0) {
+            d.threadInvoke.forEach((thread, index) => {
+                const translatedThreadName = lang === 'en'
+                    ? `Thread-${index + 1}`
+                    : `${translations[lang].thread}-${index + 1}`;
+                threadDetails += `<tr style="border-bottom: 1px solid #ddd;">
                         <td>${translatedThreadName}</td>
                         <td>${thread.invokeInfo.invokeCount}</td>
                         <td>${thread.invokeInfo.totalCost.toFixed(2)}</td>
                         <td>${thread.invokeInfo.maxCost.toFixed(2)}</td>
                         <td>${thread.invokeInfo.minCost.toFixed(2)}</td>
                     </tr>`;
-                });
-            } else {
-                threadDetails += `<tr><td colspan="5" style="text-align: center;">${translations[lang].noThreadInfo}</td></tr>`;
-            }
-            
-            threadDetails += '</tbody></table></div>';
-            return threadDetails;
+            });
+        } else {
+            threadDetails += `<tr><td colspan="5" style="text-align: center;">${translations[lang].noThreadInfo}</td></tr>`;
         }
 
-        function updateLanguage(lang) {
-            const translations = {
-                en: {
-                    reportTitle: "API Call Report",
-                    methodName: "Method Name",
-                    invokeCount: "Invoke Count",
-                    totalCost: "Total Cost",
-                    maxCost: "Max Cost",
-                    minCost: "Min Cost",
-                    avgCost: "Avg Cost",
-                    paginate: {
-                        first: 'First',
-                        last: 'Last',
-                        next: 'Next',
-                        previous: 'Previous'
-                    },
-                    info: "Showing _START_ to _END_ of _TOTAL_ entries",
-                    infoEmpty: "Showing 0 to 0 of 0 entries",
-                    search: "Search:"
+        threadDetails += '</tbody></table></div>';
+        return threadDetails;
+    }
+
+    function updateLanguage(lang) {
+        const translations = {
+            en: {
+                reportTitle: "API Call Report",
+                methodName: "Method Name",
+                invokeCount: "Invoke Count",
+                totalCost: "Total Cost",
+                maxCost: "Max Cost",
+                minCost: "Min Cost",
+                avgCost: "Avg Cost",
+                paginate: {
+                    first: 'First',
+                    last: 'Last',
+                    next: 'Next',
+                    previous: 'Previous'
                 },
-                zh: {
-                    reportTitle: "API调用报告",
-                    methodName: "方法名",
-                    invokeCount: "调用次数",
-                    totalCost: "总成本",
-                    maxCost: "最大成本",
-                    minCost: "最小成本",
-                    avgCost: "平均成本",
-                    paginate: {
-                        first: '首页',
-                        last: '末页',
-                        next: '下一页',
-                        previous: '上一页'
-                    },
-                    info: "显示第 _START_ 至 _END_ 条记录，共 _TOTAL_ 条",
-                    infoEmpty: "显示第 0 至 0 条记录，共 0 条",
-                    search: "搜索:"
-                }
-            };
+                info: "Showing _START_ to _END_ of _TOTAL_ entries",
+                infoEmpty: "Showing 0 to 0 of 0 entries",
+                search: "Search:"
+            },
+            zh: {
+                reportTitle: "API调用报告",
+                methodName: "方法名",
+                invokeCount: "调用次数",
+                totalCost: "总成本",
+                maxCost: "最大成本",
+                minCost: "最小成本",
+                avgCost: "平均成本",
+                paginate: {
+                    first: '首页',
+                    last: '末页',
+                    next: '下一页',
+                    previous: '上一页'
+                },
+                info: "显示第 _START_ 至 _END_ 条记录，共 _TOTAL_ 条",
+                infoEmpty: "显示第 0 至 0 条记录，共 0 条",
+                search: "搜索:"
+            }
+        };
 
-            $('#reportTitle').text(translations[lang].reportTitle);
-            $('#methodName').text(translations[lang].methodName);
-            $('#invokeCount').text(translations[lang].invokeCount);
-            $('#totalCost').text(translations[lang].totalCost);
-            $('#maxCost').text(translations[lang].maxCost);
-            $('#minCost').text(translations[lang].minCost);
-            $('#avgCost').text(translations[lang].avgCost);
+        $('#reportTitle').text(translations[lang].reportTitle);
+        $('#methodName').text(translations[lang].methodName);
+        $('#invokeCount').text(translations[lang].invokeCount);
+        $('#totalCost').text(translations[lang].totalCost);
+        $('#maxCost').text(translations[lang].maxCost);
+        $('#minCost').text(translations[lang].minCost);
+        $('#avgCost').text(translations[lang].avgCost);
 
-            table.columns().header().to$().each(function(index) {
-                $(this).text(translations[lang][$(this).attr('id')]);
-            });
+        table.columns().header().to$().each(function (index) {
+            $(this).text(translations[lang][$(this).attr('id')]);
+        });
 
-            table.rows().every(function() {
-                if (this.child.isShown()) {
-                    var threadDetails = formatThreadDetails(this.data(), lang);
-                    this.child(threadDetails).show();
-                }
-            });
+        table.rows().every(function () {
+            if (this.child.isShown()) {
+                var threadDetails = formatThreadDetails(this.data(), lang);
+                this.child(threadDetails).show();
+            }
+        });
 
-            table.language = translations[lang];
-            table.draw();
-        }
-        $('#languageSelector').val(defaultLanguage());
-        updateLanguage(defaultLanguage());
-    </script>
+        table.language = translations[lang];
+        table.draw();
+    }
+
+    $('#languageSelector').val(defaultLanguage());
+    updateLanguage(defaultLanguage());
+</script>
 </body>
 </html>

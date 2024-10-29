@@ -4,13 +4,14 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.lang.instrument.Instrumentation
-import java.text.MessageFormat
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 import net.bytebuddy.agent.builder.AgentBuilder
 import net.bytebuddy.asm.Advice
 import net.bytebuddy.matcher.ElementMatchers
 import tech.medivh.api.DebugTime
+import tech.medivh.core.interceptor.MultiThreadInterceptor
+import tech.medivh.core.interceptor.NormalInterceptor
 
 
 /**
@@ -34,10 +35,10 @@ object Medivh {
             MedivhJsGenerator(context).generateJs()
             reportDir.resolve(timeReport.htmlTemplateName()).copyTo(reportDir.resolve("index.html.temp")).apply {
                 this.parentFile.listFiles { file -> file.extension == "html" }?.forEach {
-                    it.delete()
+                    check(it.delete()) { i18n(context.language(), "error.fileDeleteFailed", it.path) }
                 }
                 val indexHtml = reportDir.resolve("index.html")
-                this.renameTo(indexHtml)
+                check(this.renameTo(indexHtml)) { i18n(context.language(), "error.fileRenameFailed", indexHtml.path) }
                 println(i18n(context.language(), "tip.seeReport", indexHtml.absolutePath))
             }
         })
@@ -77,17 +78,4 @@ object Medivh {
             }
         }
     }
-
-
-}
-
-
-const val githubUrl = "https://www.github.com/medivh-project/meidvh"
-
-fun unexpectedly(): Nothing {
-    throw IllegalStateException("There seems to be a problem, please report back on $githubUrl")
-}
-
-fun i18n(language: Language, key: String, vararg arguments: String): String {
-    return MessageFormat.format(language.bundle.getString(key), *arguments)
 }

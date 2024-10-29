@@ -15,7 +15,7 @@ class MedivhJsGenerator(private val context: MedivhContext) {
         medivhJs.appendText("\n${defaultLanguageFunction()}")
     }
 
-    
+
     private fun generateMedivhJsContent(json: String): String {
         return """
             function jsonData() {
@@ -23,7 +23,7 @@ class MedivhJsGenerator(private val context: MedivhContext) {
             }
         """.trimIndent()
     }
-    
+
     private fun defaultLanguageFunction(): String {
         return """
             function defaultLanguage() {

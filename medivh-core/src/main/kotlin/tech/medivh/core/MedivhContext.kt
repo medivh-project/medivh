@@ -41,7 +41,7 @@ class MedivhContext(vars: String?) {
                 }
             }
         }
-        
+
     }
 
     fun mode() = mode

@@ -1,7 +1,6 @@
 package tech.medivh.core.statistic
 
 
-
 /**
  * @author gxz gongxuanzhangmelt@gmail.com
  **/

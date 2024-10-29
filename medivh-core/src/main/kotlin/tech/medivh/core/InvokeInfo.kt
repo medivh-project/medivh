@@ -5,15 +5,24 @@ package tech.medivh.core
  * @author gxz gongxuanzhangmelt@gmail.com
  **/
 data class InvokeInfo(
-    var invokeCount: Long,
     var totalCost: Long,
-    var maxCost: Long,
-    var minCost: Long
+    var invokeCount: Long = 1,
+    var maxCost: Long = totalCost,
+    var minCost: Long = totalCost
 ) {
-    fun merge(other: InvokeInfo) {
-        this.invokeCount += other.invokeCount
-        this.totalCost += other.totalCost
-        this.maxCost = this.maxCost.coerceAtLeast(other.maxCost)
-        this.minCost = this.minCost.coerceAtMost(other.minCost)
+
+    companion object {
+        /**
+         * This function modifies the original value
+         */
+        fun merge(x: InvokeInfo, y: InvokeInfo): InvokeInfo {
+
+            return x.apply {
+                totalCost += y.totalCost
+                invokeCount += y.invokeCount
+                maxCost = maxCost.coerceAtLeast(y.maxCost)
+                minCost = minCost.coerceAtMost(y.minCost)
+            }
+        }
     }
 }

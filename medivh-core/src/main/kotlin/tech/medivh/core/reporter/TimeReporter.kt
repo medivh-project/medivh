@@ -6,15 +6,7 @@ package tech.medivh.core.reporter
  **/
 interface TimeReporter {
 
-    /**
-     * method start
-     */
-    fun start(token: String)
-
-    /**
-     * method end
-     */
-    fun end(token: String)
+    fun report(executeInfo: ExecuteInfo)
 
     /**
      * generate html
