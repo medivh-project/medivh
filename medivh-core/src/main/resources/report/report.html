@@ -107,10 +107,30 @@
             columns: [
                 {data: 'methodName', orderable: false},
                 {data: 'invokeCount'},
-                {data: 'totalCost'},
-                {data: 'maxCost'},
-                {data: 'minCost'},
-                {data: 'avgCost'}
+                {
+                    data: 'totalCost',
+                    render: function(data) {
+                        return Number(data).toFixed(5);
+                    }
+                },
+                {
+                    data: 'maxCost',
+                    render: function(data) {
+                        return Number(data).toFixed(5);
+                    }
+                },
+                {
+                    data: 'minCost',
+                    render: function(data) {
+                        return Number(data).toFixed(5);
+                    }
+                },
+                {
+                    data: 'avgCost',
+                    render: function(data) {
+                        return Number(data).toFixed(5);
+                    }
+                }
             ],
             order: [[5, 'desc']],
             pageLength: 10,
