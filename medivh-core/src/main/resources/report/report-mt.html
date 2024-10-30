@@ -86,8 +86,8 @@
             <h1 id="reportTitle">API Call Report</h1>
         </div>
         <select id="languageSelector">
-            <option value="EN" selected>English</option>
-            <option value="ZH">中文</option>
+            <option value="en" selected>English</option>
+            <option value="zh">中文</option>
         </select>
     </div>
     <table id="apiTable" class="display">
@@ -166,10 +166,30 @@
                 },
                 {data: 'methodName', orderable: false},
                 {data: 'invokeCount'},
-                {data: 'totalCost'},
-                {data: 'maxCost'},
-                {data: 'minCost'},
-                {data: 'avgCost'}
+                {
+                    data: 'totalCost',
+                    render: function(data) {
+                        return Number(data).toFixed(5);
+                    }
+                },
+                {
+                    data: 'maxCost',
+                    render: function(data) {
+                        return Number(data).toFixed(5);
+                    }
+                },
+                {
+                    data: 'minCost',
+                    render: function(data) {
+                        return Number(data).toFixed(5);
+                    }
+                },
+                {
+                    data: 'avgCost',
+                    render: function(data) {
+                        return Number(data).toFixed(5);
+                    }
+                }
             ],
             order: [[6, 'desc']],
             pageLength: 10,
@@ -191,15 +211,15 @@
         });
 
         $('#apiTable tbody').on('click', 'td.details-control', function () {
-            var tr = $(this).closest('tr');
-            var row = table.row(tr);
+            const tr = $(this).closest('tr');
+            const row = table.row(tr);
 
             if (row.child.isShown()) {
                 row.child.hide();
                 tr.removeClass('shown');
             } else {
-                var lang = $('#languageSelector').val();
-                var threadDetails = formatThreadDetails(row.data(), lang);
+                const lang = $('#languageSelector').val();
+                const threadDetails = formatThreadDetails(row.data(), lang);
                 row.child(threadDetails).show();
                 tr.addClass('shown');
 
@@ -208,30 +228,34 @@
             }
         });
 
-        updateLanguage('en');
 
         $('#languageSelector').change(function () {
             updateLanguage($(this).val());
         });
+
+        const dl = defaultLanguage().toLowerCase();
+        updateLanguage(dl);
     });
 
     function formatThreadDetails(d, lang) {
         const translations = {
-            EN: {
+            en: {
                 threadName: "Thread Name",
                 threadInvokeCount: "Invoke Count",
-                threadTotalCost: "Total Cost",
-                threadMaxCost: "Max Cost",
-                threadMinCost: "Min Cost",
+                threadTotalCost: "Total Time (ms)",
+                threadMaxCost: "Max Time (ms)",
+                threadMinCost: "Min Time (ms)",
+                threadPercentage: "Percentage",
                 noThreadInfo: "No thread information available",
                 thread: "Thread"
             },
-            ZH: {
+            zh: {
                 threadName: "线程名",
                 threadInvokeCount: "调用次数",
-                threadTotalCost: "总成本",
-                threadMaxCost: "最大成本",
-                threadMinCost: "最小成本",
+                threadTotalCost: "总耗时(ms)",
+                threadMaxCost: "最大耗时(ms)",
+                threadMinCost: "最小耗时(ms)",
+                threadPercentage: "耗时占比",
                 noThreadInfo: "没有可用的线程信息",
                 thread: "线程"
             }
@@ -245,6 +269,7 @@
                 <th>${translations[lang].threadTotalCost}</th>
                 <th>${translations[lang].threadMaxCost}</th>
                 <th>${translations[lang].threadMinCost}</th>
+                <th>${translations[lang].threadPercentage}</th>
                 </tr></thead>`;
         threadDetails += '<tbody>';
 
@@ -253,12 +278,14 @@
                 const translatedThreadName = lang === 'en'
                     ? `Thread-${index + 1}`
                     : `${translations[lang].thread}-${index + 1}`;
+                const percentage = ((thread.invokeInfo.totalCost / d.totalCost) * 100).toFixed(2);
                 threadDetails += `<tr style="border-bottom: 1px solid #ddd;">
                         <td>${translatedThreadName}</td>
                         <td>${thread.invokeInfo.invokeCount}</td>
-                        <td>${thread.invokeInfo.totalCost.toFixed(2)}</td>
-                        <td>${thread.invokeInfo.maxCost.toFixed(2)}</td>
-                        <td>${thread.invokeInfo.minCost.toFixed(2)}</td>
+                        <td>${Number(thread.invokeInfo.totalCost).toFixed(5)}</td>
+                        <td>${Number(thread.invokeInfo.maxCost).toFixed(5)}</td>
+                        <td>${Number(thread.invokeInfo.minCost).toFixed(5)}</td>
+                        <td>${percentage}%</td>
                     </tr>`;
             });
         } else {
@@ -275,10 +302,10 @@
                 reportTitle: "API Call Report",
                 methodName: "Method Name",
                 invokeCount: "Invoke Count",
-                totalCost: "Total Cost",
-                maxCost: "Max Cost",
-                minCost: "Min Cost",
-                avgCost: "Avg Cost",
+                totalCost: "Total Time (ms)",
+                maxCost: "Max Time (ms)",
+                minCost: "Min Time (ms)",
+                avgCost: "Avg Time (ms)",
                 paginate: {
                     first: 'First',
                     last: 'Last',
@@ -293,10 +320,10 @@
                 reportTitle: "API调用报告",
                 methodName: "方法名",
                 invokeCount: "调用次数",
-                totalCost: "总成本",
-                maxCost: "最大成本",
-                minCost: "最小成本",
-                avgCost: "平均成本",
+                totalCost: "总耗时(ms)",
+                maxCost: "最大耗时(ms)",
+                minCost: "最小耗时(ms)",
+                avgCost: "平均耗时(ms)",
                 paginate: {
                     first: '首页',
                     last: '末页',
@@ -323,17 +350,13 @@
 
         table.rows().every(function () {
             if (this.child.isShown()) {
-                var threadDetails = formatThreadDetails(this.data(), lang);
+                const threadDetails = formatThreadDetails(this.data(), lang);
                 this.child(threadDetails).show();
             }
         });
-
         table.language = translations[lang];
         table.draw();
     }
-
-    $('#languageSelector').val(defaultLanguage());
-    updateLanguage(defaultLanguage());
 </script>
 </body>
 </html>

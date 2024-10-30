@@ -58,8 +58,8 @@
             <h1 id="reportTitle">API Call Report</h1>
         </div>
         <select id="languageSelector">
-            <option value="EN">English</option>
-            <option value="ZH">中文</option>
+            <option value="en">English</option>
+            <option value="zh">中文</option>
         </select>
     </div>
     <table id="apiTable" class="display">
@@ -134,18 +134,21 @@
         $('#languageSelector').change(function () {
             updateLanguage($(this).val());
         });
+
+        const dl = defaultLanguage().toLowerCase();
+        updateLanguage(dl);
     });
 
     function updateLanguage(lang) {
         const translations = {
-            EN: {
+            en: {
                 reportTitle: "API Call Report",
                 methodName: "Method Name",
                 invokeCount: "Invoke Count",
-                totalCost: "Total Cost",
-                maxCost: "Max Cost",
-                minCost: "Min Cost",
-                avgCost: "Avg Cost",
+                totalCost: "Total Time (ms)",
+                maxCost: "Max Time (ms)",
+                minCost: "Min Time (ms)",
+                avgCost: "Avg Time (ms)",
                 paginate: {
                     first: 'First',
                     last: 'Last',
@@ -156,14 +159,14 @@
                 infoEmpty: "Showing 0 to 0 of 0 entries",
                 search: "Search:"
             },
-            ZH: {
+            zh: {
                 reportTitle: "函数调用报告",
                 methodName: "方法名",
                 invokeCount: "调用次数",
-                totalCost: "总成本",
-                maxCost: "最大成本",
-                minCost: "最小成本",
-                avgCost: "平均成本",
+                totalCost: "总耗时(ms)",
+                maxCost: "最大耗时(ms)",
+                minCost: "最小耗时(ms)",
+                avgCost: "平均耗时(ms)",
                 paginate: {
                     first: '首页',
                     last: '末页',
@@ -192,8 +195,6 @@
         table.draw();
     }
 
-    $('#languageSelector').val(defaultLanguage());
-    updateLanguage(defaultLanguage());
 </script>
 </body>
 </html>
