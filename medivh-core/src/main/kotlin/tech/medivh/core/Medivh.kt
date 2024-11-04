@@ -58,8 +58,8 @@ object Medivh {
                         it.annotationType.name == debugTimeName
                     }
                     debugTime?.let {
-                        val desc = resolveDebugTime(it)
-                        mode.timeReport.setup(MethodSetup(MethodToken.fromMethodDescription(method), desc))
+                        val debugTimeDesc = resolveDebugTime(it)
+                        mode.timeReport.setup(MethodSetup(MethodToken.fromMethodDescription(method), debugTimeDesc))
                     }
                 }
                 builder.method(ElementMatchers.isAnnotatedWith(DebugTime::class.java))
