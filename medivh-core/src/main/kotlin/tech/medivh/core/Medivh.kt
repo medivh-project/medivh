@@ -8,6 +8,7 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 import net.bytebuddy.agent.builder.AgentBuilder
 import net.bytebuddy.asm.Advice
+import net.bytebuddy.description.annotation.AnnotationDescription
 import net.bytebuddy.matcher.ElementMatchers
 import tech.medivh.api.DebugTime
 import tech.medivh.core.interceptor.MultiThreadInterceptor
@@ -43,19 +44,34 @@ object Medivh {
             }
         })
 
-        val advice = when (context.mode()) {
+        val mode = context.mode()
+        val advice = when (mode) {
             MedivhMode.NORMAL -> Advice.to(NormalInterceptor::class.java)
             MedivhMode.MULTI_THREAD -> Advice.to(MultiThreadInterceptor::class.java)
         }
 
+        val debugTimeName = DebugTime::class.java.name
         AgentBuilder.Default().type(context.includeMatchers())
-            .transform { builder, _, _, _, _ ->
+            .transform { builder, desc, _, _, _ ->
+                desc.declaredMethods.forEach { method ->
+                    val debugTime = method.asDefined().declaredAnnotations.find {
+                        it.annotationType.name == debugTimeName
+                    }
+                    debugTime?.let {
+                        val desc = resolveDebugTime(it)
+                        mode.timeReport.setup(MethodSetup(MethodToken.fromMethodDescription(method), desc))
+                    }
+                }
                 builder.method(ElementMatchers.isAnnotatedWith(DebugTime::class.java))
                     .intercept(advice)
             }.installOn(inst)
 
     }
 
+
+    private fun resolveDebugTime(debugTime: AnnotationDescription): DebugTimeDesc {
+        return DebugTimeDesc(debugTime.getValue("expectTime").resolve() as Long)
+    }
 
     private fun unzip(zipFile: File, reportDir: File) {
         if (reportDir.resolve("report/js").exists()) {

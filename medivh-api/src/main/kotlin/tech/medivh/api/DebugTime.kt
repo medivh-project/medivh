@@ -9,4 +9,4 @@ package tech.medivh.api
  */
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.RUNTIME)
-annotation class DebugTime
+annotation class DebugTime(val expectTime: Long = 0L)

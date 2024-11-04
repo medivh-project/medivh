@@ -12,7 +12,7 @@ open class MultiThreadStatistic(val methodName: String) {
     var totalCost: Long = 0
     var maxCost: Long = 0
     var minCost: Long = 0
-
+    var expectTime: Long = 0
 
     val avgCost: Double
         get() {

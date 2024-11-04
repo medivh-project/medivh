@@ -6,13 +6,14 @@ import java.util.concurrent.ThreadFactory
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import tech.medivh.core.InvokeInfo
+import tech.medivh.core.MethodToken
 import tech.medivh.core.statistic.NormalStatistic
 
 
 /**
  * @author gxz gongxuanzhangmelt@gmail.com
  **/
-object NormalReporter : TimeReporter {
+object NormalReporter : AbstractTimeReport() {
 
 
     private val normalThreadFactory = ThreadFactory { r ->
@@ -28,7 +29,7 @@ object NormalReporter : TimeReporter {
 
     override fun report(executeInfo: ExecuteInfo) {
         threadPool.submit {
-            val token = "${executeInfo.invokeClassName}#${executeInfo.methodName}"
+            val token = MethodToken.fromExecuteInfo(executeInfo)
             statisticMap.merge(token, InvokeInfo(executeInfo.cost), InvokeInfo::merge)
         }
     }
@@ -39,12 +40,13 @@ object NormalReporter : TimeReporter {
 
     override fun generateJsonString(): String {
         val result = JSONArray()
-        statisticMap.forEach { (methodName, invokeInfo) ->
-            val statistic = NormalStatistic(methodName)
+        statisticMap.forEach { (methodToken, invokeInfo) ->
+            val statistic = NormalStatistic(methodToken)
             statistic.invokeCount = invokeInfo.invokeCount
             statistic.totalCost = invokeInfo.totalCost
             statistic.maxCost = invokeInfo.maxCost
             statistic.minCost = invokeInfo.minCost
+            statistic.expectTime = methodSetupMap[methodToken]?.expectTime ?: 0
             result.add(statistic)
         }
         return result.toJSONString()
