@@ -3,6 +3,7 @@ package tech.medivh.plugin.gradle.kotlin
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.testing.Test
+import tech.medivh.core.i18n
 
 
 /**
@@ -38,14 +39,7 @@ class MedivhGradlePlugin : Plugin<Project> {
                 test.dependsOn("copyAgent")
                 test.dependsOn("copyReportZip")
                 if (medivhExtension.skip()) {
-                    val warnMessage = """
-                        Medivh Warn:no package to include,please use medivh.include("your package name").
-                        example in build.gradle.kts:
-                        medivh {
-                            include("org.example")
-                        }
-                    """.trimIndent()
-                    project.logger.warn(warnMessage)
+                    project.logger.warn(i18n(medivhExtension.properties.language, "warn.includeSkip"))
                     return@withType
                 }
                 test.jvmArgs("-javaagent:${copyAgent.get().outputFile}=${medivhExtension.javaagentArgs()}")

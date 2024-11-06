@@ -16,7 +16,7 @@ import javax.inject.Inject
  **/
 open class MedivhExtension @Inject constructor(private val project: Project) {
 
-    private val properties = MedivhProperties()
+    internal val properties = MedivhProperties()
 
     fun include(packageName: String) {
         properties.includePackage += packageName
