@@ -13,7 +13,7 @@ class MedivhGradlePlugin : Plugin<Project> {
 
     override fun apply(project: Project) {
 
-        val medivhExtension = project.extensions.create("medivh", MedivhExtension::class.java, project.objects, project)
+        val medivhExtension = project.extensions.create("medivh", MedivhExtension::class.java, project)
 
         val resourceStream = this::class.java.classLoader.getResourceAsStream("medivh.version")
         resourceStream?.bufferedReader()?.use { reader ->
@@ -48,7 +48,7 @@ class MedivhGradlePlugin : Plugin<Project> {
                     project.logger.warn(warnMessage)
                     return@withType
                 }
-                test.jvmArgs("-javaagent:${copyAgent.get().outputFile}=${medivhExtension.toParams()}")
+                test.jvmArgs("-javaagent:${copyAgent.get().outputFile}=${medivhExtension.javaagentArgs()}")
             }
         }
     }

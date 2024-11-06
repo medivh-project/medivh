@@ -1,50 +1,49 @@
 package tech.medivh.plugin.gradle.kotlin
 
+import com.alibaba.fastjson2.JSONObject
 import java.io.File
 import java.time.LocalDate
 import java.util.*
 import org.gradle.api.Project
-import org.gradle.api.model.ObjectFactory
-import org.gradle.api.provider.SetProperty
 import tech.medivh.core.Language
-import tech.medivh.core.MedivhMode
-import tech.medivh.core.MedivhParam
+import tech.medivh.core.env.MedivhProperties
+import tech.medivh.core.env.RunningMode
 import javax.inject.Inject
 
 
 /**
  * @author gxz gongxuanzhangmelt@gmail.com
  **/
-open class MedivhExtension @Inject constructor(objects: ObjectFactory, private val project: Project) {
+open class MedivhExtension @Inject constructor(private val project: Project) {
 
-    private val includePackage: SetProperty<String> = objects.setProperty(String::class.java)
-
-    private var mode: MedivhMode = MedivhMode.NORMAL
-
-    private var language: Language = Language.EN
+    private val properties = MedivhProperties()
 
     fun include(packageName: String) {
-        val currentPackages = includePackage.getOrElse(emptySet())
-        includePackage.set(currentPackages + packageName)
+        properties.includePackage += packageName
     }
 
     fun mutliThread() {
-        mode = MedivhMode.MULTI_THREAD
+        properties.runningMode = RunningMode.MULTI_THREAD
+    }
+
+    fun ignoreBelowCount(count: Int) {
+        properties.ignoreBelowCount = count
+    }
+
+    fun language(language: Language) {
+        properties.language = language
     }
 
     internal fun skip(): Boolean {
-        return includePackage.getOrElse(emptySet()).isEmpty()
+        return properties.includePackage.isEmpty()
     }
 
-    internal fun toParams(): String {
-        val params = hashMapOf<String, String>()
-        val packageNames = includePackage.getOrElse(emptySet())
-        params[MedivhParam.INCLUDE.key] = packageNames.joinToString(",")
-        params[MedivhParam.REPORT_DIR.key] = reportDir()
-        params[MedivhParam.MODE.key] = mode.name
-        params[MedivhParam.LANGUAGE.key] = language.name
 
-        return params.map { "${it.key}=${it.value}" }.joinToString(";")
+    internal fun javaagentArgs(): String {
+        if (properties.reportDir.isEmpty()) {
+            properties.reportDir = reportDir()
+        }
+        return JSONObject.toJSONString(properties)
     }
 
     private fun reportDir(): String {
@@ -54,10 +53,6 @@ open class MedivhExtension @Inject constructor(objects: ObjectFactory, private v
             val targetDir = File(reportRoot, "/$year$monthValue$dayOfMonth/$testToken")
             return targetDir.path
         }
-    }
-
-    fun language(language: Language) {
-        this.language = language
     }
 }
 

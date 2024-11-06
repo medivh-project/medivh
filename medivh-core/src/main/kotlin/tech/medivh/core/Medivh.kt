@@ -11,6 +11,8 @@ import net.bytebuddy.asm.Advice
 import net.bytebuddy.description.annotation.AnnotationDescription
 import net.bytebuddy.matcher.ElementMatchers
 import tech.medivh.api.DebugTime
+import tech.medivh.core.env.MedivhContext
+import tech.medivh.core.env.RunningMode
 import tech.medivh.core.interceptor.MultiThreadInterceptor
 import tech.medivh.core.interceptor.NormalInterceptor
 
@@ -28,7 +30,7 @@ object Medivh {
         Runtime.getRuntime().addShutdownHook(Thread {
             val timeReport = context.mode().timeReport
             // dir = /build/medivh/reports/time/uuid
-            val dir = context.targetDir()
+            val dir = context.reportDir()
             val reportZip = dir.parentFile.parentFile.parentFile.resolve("medivh-report.zip")
             val reportDir = dir.resolve("report/")
             reportDir.mkdirs()
@@ -46,8 +48,8 @@ object Medivh {
 
         val mode = context.mode()
         val advice = when (mode) {
-            MedivhMode.NORMAL -> Advice.to(NormalInterceptor::class.java)
-            MedivhMode.MULTI_THREAD -> Advice.to(MultiThreadInterceptor::class.java)
+            RunningMode.NORMAL -> Advice.to(NormalInterceptor::class.java)
+            RunningMode.MULTI_THREAD -> Advice.to(MultiThreadInterceptor::class.java)
         }
 
         val debugTimeName = DebugTime::class.java.name

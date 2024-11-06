@@ -9,7 +9,7 @@ import tech.medivh.core.MethodSetup
  **/
 abstract class AbstractTimeReport : TimeReporter {
 
-    internal val methodSetupMap = HashMap<String, DebugTimeDesc>()
+    protected val methodSetupMap = HashMap<String, DebugTimeDesc>()
 
     override fun setup(methodSetup: MethodSetup) {
         methodSetupMap[methodSetup.methodToken] = methodSetup.debugTimeDesc
