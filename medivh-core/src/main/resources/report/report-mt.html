@@ -63,7 +63,8 @@
             style="width: 100%"
             border
             show-overflow-tooltip
-            @expand-change="handleExpand">
+            @expand-change="handleExpand"
+            :default-sort="{ prop: 'performanceRate', order: 'descending' }">
         <el-table-column type="expand">
             <template #default="props">
                 <el-table :data="props.row.threadInvoke" border>
@@ -134,7 +135,11 @@
                 {{ Number(scope.row.avgCost).toFixed(5) }}
             </template>
         </el-table-column>
-        <el-table-column :label="translations[currentLang].performanceRate">
+        <el-table-column
+                :label="translations[currentLang].performanceRate"
+                prop="performanceRate"
+                sortable
+                :sort-method="sortByPerformance">
             <template #default="scope">
                 <span v-if="scope.row.expectTime < 1" style="color: #67C23A">
                     <el-icon><Check /></el-icon>
@@ -149,8 +154,12 @@
                                 placement="top-start"
                                 :title="translations[currentLang].warningTitle"
                                 :width="200"
-                                trigger="hover"
-                                :content="translations[currentLang].performanceWarning">
+                                trigger="hover">
+                            <template #default>
+                                <div>{{ translations[currentLang].performanceWarning }}</div>
+                                <div>{{ translations[currentLang].expectTimeInfo }}: {{ scope.row.expectTime }}ms</div>
+                                <div>{{ translations[currentLang].actualTimeInfo }}: {{ scope.row.avgCost ? scope.row.avgCost.toFixed(2) : '0' }}ms</div>
+                            </template>
                             <template #reference>
                                 <span style="color: #F56C6C">
                                     {{ ((scope.row.avgCost / scope.row.expectTime) * 100).toFixed(2) + '%' }}
@@ -166,11 +175,11 @@
 
     <div class="pagination-wrapper">
         <el-pagination
-                v-model:current-page="currentPage"
-                v-model:page-size="pageSize"
-                :page-sizes="[10, 20, 50, 100]"
+                background
+                layout="total, prev, pager, next"
+                :current-page="currentPage"
+                :page-size="pageSize"
                 :total="tableData.length"
-                layout="total, sizes, prev, pager, next, jumper"
                 @size-change="handleSizeChange"
                 @current-change="handleCurrentChange"/>
     </div>
@@ -205,6 +214,8 @@
                         performanceRate: "Performance Rate",
                         warningTitle: "Performance Warning",
                         performanceWarning: "The average execution time exceeds the expected time",
+                        expectTimeInfo: "Expected Time",
+                        actualTimeInfo: "Actual Time",
                     },
                     zh: {
                         reportTitle: "API调用报告",
@@ -225,6 +236,8 @@
                         performanceRate: "达标率",
                         warningTitle: "性能警告",
                         performanceWarning: "平均执行时间超出预期时间",
+                        expectTimeInfo: "预期时间",
+                        actualTimeInfo: "实际时间",
                     }
                 }
             }
@@ -242,46 +255,22 @@
         methods: {
             loadData() {
                 this.tableData = jsonData();
-                console.log('Table data:', this.tableData);
-            },
-            handleSizeChange(val) {
-                this.pageSize = val;
-                this.currentPage = 1;
             },
             handleCurrentChange(val) {
                 this.currentPage = val;
             },
             handleExpand(row, expandedRows) {
-                console.log(row, expandedRows);
-            },
-            a(row){
-                console.log(row,"asdfasdf")
-                return ""
-            },
-            formatThreadData(row) {
-                console.log(row)
-                if (!row.threadInvoke || row.threadInvoke.length === 0) {
-                    return [{
-                        threadName: this.translations[this.currentLang].noThreadInfo,
-                        invokeCount: '-',
-                        totalCost: '-',
-                        maxCost: '-',
-                        minCost: '-',
-                        percentage: '-'
-                    }];
-                }
 
-                return row.threadInvoke.map((thread, index) => {
-                    const percentage = ((thread.invokeInfo.totalCost / row.totalCost) * 100).toFixed(2);
-                    return {
-                        threadName: `${this.translations[this.currentLang].thread}-${index + 1}`,
-                        invokeCount: thread.invokeInfo.invokeCount,
-                        totalCost: Number(thread.invokeInfo.totalCost).toFixed(5),
-                        maxCost: Number(thread.invokeInfo.maxCost).toFixed(5),
-                        minCost: Number(thread.invokeInfo.minCost).toFixed(5),
-                        percentage: `${percentage}%`
-                    };
-                });
+            },
+
+            sortByPerformance(a, b) {
+                const rateA = a.expectTime < 1 ? 0 : (a.avgCost / a.expectTime);
+                const rateB = b.expectTime < 1 ? 0 : (b.avgCost / b.expectTime);
+
+                if (rateA === rateB) {
+                    return b.expectTime - a.expectTime;
+                }
+                return rateA - rateB;
             }
         }
     });
