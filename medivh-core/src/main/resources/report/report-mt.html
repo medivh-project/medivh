@@ -1,9 +1,11 @@
+<!DOCTYPE html>
 <html>
 <head>
     <title>API Call Report</title>
-    <script src="js/jquery-3.7.1.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="css/jquery.dataTables.min.css">
-    <script type="text/javascript" src="js/jquery.dataTables.min.js"></script>
+    <link rel="stylesheet" href="./css/index.css">
+    <script src="./js/vue.global.js"></script>
+    <script src="./js/element-plus.js"></script>
+    <script src="./js/index.iife.min.js"></script>
     <script src="./js/medivh.js"></script>
     <style>
         body {
@@ -36,327 +38,259 @@
             margin-right: 20px;
         }
 
-        h1 {
-            margin: 0;
-            font-size: 24px;
-        }
-
-        #apiTable td, #apiTable th {
-            text-align: center;
-        }
-
-        #languageSelector {
-            padding: 5px;
-        }
-
-        .thread-details {
-            display: none;
-            margin-top: 10px;
-            padding: 10px;
-            background-color: #f0f0f0;
-            border-radius: 5px;
-        }
-
-        .shown + tr .thread-details {
-            display: block;
-        }
-
-        td.details-control {
-            cursor: pointer;
-        }
-
-        td.details-control:before {
-            content: '\25B6';
-            display: block;
-            text-align: center;
-            font-size: 14px;
-            color: #555;
-        }
-
-        tr.shown td.details-control:before {
-            content: '\25BC';
+        .pagination-wrapper {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
         }
     </style>
 </head>
 <body>
-<div class="container">
+<div id="app" class="container">
     <div class="header">
         <div class="logo-title">
             <img src="images/logo.png" alt="Company Logo" class="logo">
-            <h1 id="reportTitle">API Call Report</h1>
+            <h1>{{ translations[currentLang].reportTitle }}</h1>
         </div>
-        <label for="languageSelector"></label><select id="languageSelector">
-            <option value="en" selected>English</option>
-            <option value="zh">中文</option>
-        </select>
+        <el-select v-model="currentLang" style="width: 120px">
+            <el-option value="en" label="English"></el-option>
+            <el-option value="zh" label="中文"></el-option>
+        </el-select>
     </div>
-    <table id="apiTable" class="display">
-        <thead>
-        <tr>
-            <th></th>
-            <th id="methodName">Method Name</th>
-            <th id="invokeCount">Invoke Count</th>
-            <th id="totalCost">Total Cost</th>
-            <th id="maxCost">Max Cost</th>
-            <th id="minCost">Min Cost</th>
-            <th id="avgCost">Avg Cost</th>
-        </tr>
-        </thead>
-        <tbody>
-        </tbody>
-    </table>
+
+    <el-table
+            :data="paginatedData"
+            style="width: 100%"
+            border
+            show-overflow-tooltip
+            @expand-change="handleExpand">
+        <el-table-column type="expand">
+            <template #default="props">
+                <el-table :data="props.row.threadInvoke" border>
+                    <el-table-column :label="translations[currentLang].threadName">
+                        <template #default="scope">
+                            {{ scope.row.threadName }}
+                        </template>
+                    </el-table-column>
+                    <el-table-column :label="translations[currentLang].threadInvokeCount">
+                        <template #default="scope">
+                            {{ scope.row.invokeInfo.invokeCount }}
+                        </template>
+                    </el-table-column>
+                    <el-table-column :label="translations[currentLang].threadTotalCost">
+                        <template #default="scope">
+                            {{ Number(scope.row.invokeInfo.totalCost).toFixed(5) }}
+                        </template>
+                    </el-table-column>
+                    <el-table-column :label="translations[currentLang].threadMaxCost">
+                        <template #default="scope">
+                            {{ Number(scope.row.invokeInfo.maxCost).toFixed(5) }}
+                        </template>
+                    </el-table-column>
+                    <el-table-column :label="translations[currentLang].threadMinCost">
+                        <template #default="scope">
+                            {{ Number(scope.row.invokeInfo.minCost).toFixed(5) }}
+                        </template>
+                    </el-table-column>
+                    <el-table-column :label="translations[currentLang].threadPercentage">
+                        <template #default="scope">
+                            {{ props.row.totalCost === 0 ? '0%' : ((scope.row.invokeInfo.totalCost / props.row.totalCost) * 100).toFixed(2) + '%' }}
+                        </template>
+                    </el-table-column>
+                </el-table>
+            </template>
+        </el-table-column>
+        <el-table-column
+                prop="methodName"
+                :label="translations[currentLang].methodName"
+                show-overflow-tooltip
+                min-width="200">
+            <template #default="scope">
+                {{ scope.row.methodName }}
+            </template>
+        </el-table-column>
+        <el-table-column :label="translations[currentLang].invokeCount" prop="invokeCount" sortable>
+            <template #default="scope">
+                {{ scope.row.invokeCount }}
+            </template>
+        </el-table-column>
+        <el-table-column :label="translations[currentLang].totalCost" prop="totalCost" sortable>
+            <template #default="scope">
+                {{ Number(scope.row.totalCost).toFixed(5) }}
+            </template>
+        </el-table-column>
+        <el-table-column :label="translations[currentLang].maxCost" prop="maxCost" sortable>
+            <template #default="scope">
+                {{ Number(scope.row.maxCost).toFixed(5) }}
+            </template>
+        </el-table-column>
+        <el-table-column :label="translations[currentLang].minCost" prop="minCost" sortable>
+            <template #default="scope">
+                {{ Number(scope.row.minCost).toFixed(5) }}
+            </template>
+        </el-table-column>
+        <el-table-column :label="translations[currentLang].avgCost" prop="avgCost" sortable>
+            <template #default="scope">
+                {{ Number(scope.row.avgCost).toFixed(5) }}
+            </template>
+        </el-table-column>
+        <el-table-column :label="translations[currentLang].performanceRate">
+            <template #default="scope">
+                <span v-if="scope.row.expectTime < 1" style="color: #67C23A">
+                    <el-icon><Check /></el-icon>
+                </span>
+                <template v-else>
+                    <span v-if="(scope.row.avgCost / scope.row.expectTime) <= 1" style="color: #67C23A">
+                        {{ ((scope.row.avgCost / scope.row.expectTime) * 100).toFixed(2) + '%' }}
+                        <el-icon><Check /></el-icon>
+                    </span>
+                    <span v-else>
+                        <el-popover
+                                placement="top-start"
+                                :title="translations[currentLang].warningTitle"
+                                :width="200"
+                                trigger="hover"
+                                :content="translations[currentLang].performanceWarning">
+                            <template #reference>
+                                <span style="color: #F56C6C">
+                                    {{ ((scope.row.avgCost / scope.row.expectTime) * 100).toFixed(2) + '%' }}
+                                    <el-icon><Warning /></el-icon>
+                                </span>
+                            </template>
+                        </el-popover>
+                    </span>
+                </template>
+            </template>
+        </el-table-column>
+    </el-table>
+
+    <div class="pagination-wrapper">
+        <el-pagination
+                v-model:current-page="currentPage"
+                v-model:page-size="pageSize"
+                :page-sizes="[10, 20, 50, 100]"
+                :total="tableData.length"
+                layout="total, sizes, prev, pager, next, jumper"
+                @size-change="handleSizeChange"
+                @current-change="handleCurrentChange"/>
+    </div>
 </div>
 
 <script>
-    // Generate random data
-    function generateRandomData(count) {
-        const methods = ['getUserInfo', 'updateProfile', 'searchProducts', 'placeOrder', 'getOrderStatus', 'sendNotification', 'generateReport', 'processPayment', 'uploadFile', 'validateUser'];
-        const data = [];
-        for (let i = 0; i < count; i++) {
-            const invokeCount = Math.floor(Math.random() * 10000) + 1;
-            const avgCost = Math.random() * 0.5 + 0.01;
-            const threadCount = Math.floor(Math.random() * 5) + 1;
-            const threadInvoke = [];
-
-            let totalThreadInvokes = 0;
-            for (let j = 0; j < threadCount; j++) {
-                const threadInvokeCount = j === threadCount - 1
-                    ? invokeCount - totalThreadInvokes
-                    : Math.floor(Math.random() * (invokeCount - totalThreadInvokes));
-                totalThreadInvokes += threadInvokeCount;
-
-                threadInvoke.push({
-                    threadName: `线程-${j + 1}`,
-                    invokeInfo: {
-                        invokeCount: threadInvokeCount,
-                        totalCost: +(threadInvokeCount * avgCost).toFixed(2),
-                        maxCost: +(avgCost * (Math.random() + 1)).toFixed(2),
-                        minCost: +(avgCost * Math.random()).toFixed(2)
-                    }
-                });
-            }
-
-            data.push({
-                "methodName": methods[i % methods.length],
-                "invokeCount": invokeCount,
-                "totalCost": +(invokeCount * avgCost).toFixed(2),
-                "maxCost": +(avgCost * (Math.random() + 1)).toFixed(2),
-                "minCost": +(avgCost * Math.random()).toFixed(2),
-                "avgCost": +avgCost.toFixed(2),
-                "threadInvoke": threadInvoke
-            });
-        }
-        return data;
-    }
-
-    const apiData = jsonData();
-
-    let table;
-
-    $(document).ready(function () {
-        table = $('#apiTable').DataTable({
-            data: apiData,
-            columns: [
-                {
-                    className: 'details-control',
-                    orderable: false,
-                    data: null,
-                    defaultContent: '',
-                    width: '30px'
-                },
-                {data: 'methodName', orderable: false},
-                {data: 'invokeCount'},
-                {
-                    data: 'totalCost',
-                    render: function (data) {
-                        return Number(data).toFixed(5);
-                    }
-                },
-                {
-                    data: 'maxCost',
-                    render: function (data) {
-                        return Number(data).toFixed(5);
-                    }
-                },
-                {
-                    data: 'minCost',
-                    render: function (data) {
-                        return Number(data).toFixed(5);
-                    }
-                },
-                {
-                    data: 'avgCost',
-                    render: function (data) {
-                        return Number(data).toFixed(5);
+    const {createApp} = Vue;
+    const app = createApp({
+        data() {
+            return {
+                currentLang: defaultLanguage().toLowerCase(),
+                tableData: [],
+                currentPage: 1,
+                pageSize: 10,
+                translations: {
+                    en: {
+                        reportTitle: "API Call Report",
+                        methodName: "Method Name",
+                        invokeCount: "Invoke Count",
+                        totalCost: "Total Time (ms)",
+                        maxCost: "Max Time (ms)",
+                        minCost: "Min Time (ms)",
+                        avgCost: "Avg Time (ms)",
+                        threadName: "Thread Name",
+                        threadInvokeCount: "Invoke Count",
+                        threadTotalCost: "Total Time (ms)",
+                        threadMaxCost: "Max Time (ms)",
+                        threadMinCost: "Min Time (ms)",
+                        threadPercentage: "Percentage",
+                        noThreadInfo: "No thread information available",
+                        thread: "Thread",
+                        performanceRate: "Performance Rate",
+                        warningTitle: "Performance Warning",
+                        performanceWarning: "The average execution time exceeds the expected time",
+                    },
+                    zh: {
+                        reportTitle: "API调用报告",
+                        methodName: "方法名",
+                        invokeCount: "调用次数",
+                        totalCost: "总耗时(ms)",
+                        maxCost: "最大耗时(ms)",
+                        minCost: "最小耗时(ms)",
+                        avgCost: "平均耗时(ms)",
+                        threadName: "线程名",
+                        threadInvokeCount: "调用次数",
+                        threadTotalCost: "总耗时(ms)",
+                        threadMaxCost: "最大耗时(ms)",
+                        threadMinCost: "最小耗时(ms)",
+                        threadPercentage: "耗时占比",
+                        noThreadInfo: "没有可用的线程信息",
+                        thread: "线程",
+                        performanceRate: "达标率",
+                        warningTitle: "性能警告",
+                        performanceWarning: "平均执行时间超出预期时间",
                     }
                 }
-            ],
-            order: [[6, 'desc']],
-            pageLength: 10,
-            searching: true,
-            paging: true,
-            info: true,
-            lengthChange: false,
-            language: {
-                paginate: {
-                    first: 'First',
-                    last: 'Last',
-                    next: 'Next',
-                    previous: 'Previous'
-                },
-                info: "Showing _START_ to _END_ of _TOTAL_ entries",
-                infoEmpty: "Showing 0 to 0 of 0 entries",
-                search: "Search:"
             }
-        });
-
-        $('#apiTable tbody').on('click', 'td.details-control', function () {
-            const tr = $(this).closest('tr');
-            const row = table.row(tr);
-
-            if (row.child.isShown()) {
-                row.child.hide();
-                tr.removeClass('shown');
-            } else {
-                const lang = $('#languageSelector').val();
-                const threadDetails = formatThreadDetails(row.data(), lang);
-                row.child(threadDetails).show();
-                tr.addClass('shown');
-
-                row.child().show();
-                tr.next().find('.thread-details').slideDown();
+        },
+        computed: {
+            paginatedData() {
+                const start = (this.currentPage - 1) * this.pageSize;
+                const end = start + this.pageSize;
+                return this.tableData.slice(start, end);
             }
-        });
+        },
+        mounted() {
+            this.loadData();
+        },
+        methods: {
+            loadData() {
+                this.tableData = jsonData();
+                console.log('Table data:', this.tableData);
+            },
+            handleSizeChange(val) {
+                this.pageSize = val;
+                this.currentPage = 1;
+            },
+            handleCurrentChange(val) {
+                this.currentPage = val;
+            },
+            handleExpand(row, expandedRows) {
+                console.log(row, expandedRows);
+            },
+            a(row){
+                console.log(row,"asdfasdf")
+                return ""
+            },
+            formatThreadData(row) {
+                console.log(row)
+                if (!row.threadInvoke || row.threadInvoke.length === 0) {
+                    return [{
+                        threadName: this.translations[this.currentLang].noThreadInfo,
+                        invokeCount: '-',
+                        totalCost: '-',
+                        maxCost: '-',
+                        minCost: '-',
+                        percentage: '-'
+                    }];
+                }
 
-
-        $('#languageSelector').change(function () {
-            updateLanguage($(this).val());
-        });
-
-        const dl = defaultLanguage().toLowerCase();
-        updateLanguage(dl);
+                return row.threadInvoke.map((thread, index) => {
+                    const percentage = ((thread.invokeInfo.totalCost / row.totalCost) * 100).toFixed(2);
+                    return {
+                        threadName: `${this.translations[this.currentLang].thread}-${index + 1}`,
+                        invokeCount: thread.invokeInfo.invokeCount,
+                        totalCost: Number(thread.invokeInfo.totalCost).toFixed(5),
+                        maxCost: Number(thread.invokeInfo.maxCost).toFixed(5),
+                        minCost: Number(thread.invokeInfo.minCost).toFixed(5),
+                        percentage: `${percentage}%`
+                    };
+                });
+            }
+        }
     });
 
-    function formatThreadDetails(d, lang) {
-        const translations = {
-            en: {
-                threadName: "Thread Name",
-                threadInvokeCount: "Invoke Count",
-                threadTotalCost: "Total Time (ms)",
-                threadMaxCost: "Max Time (ms)",
-                threadMinCost: "Min Time (ms)",
-                threadPercentage: "Percentage",
-                noThreadInfo: "No thread information available",
-                thread: "Thread"
-            },
-            zh: {
-                threadName: "线程名",
-                threadInvokeCount: "调用次数",
-                threadTotalCost: "总耗时(ms)",
-                threadMaxCost: "最大耗时(ms)",
-                threadMinCost: "最小耗时(ms)",
-                threadPercentage: "耗时占比",
-                noThreadInfo: "没有可用的线程信息",
-                thread: "线程"
-            }
-        };
+    app.component('Check', ElementPlusIconsVue.Check);
+    app.component('Warning', ElementPlusIconsVue.Warning);
 
-        let threadDetails = '<div class="thread-details" style="background-color: #f9f9f9; padding: 10px; margin-top: 5px; border: 1px solid #ddd;">';
-        threadDetails += '<table id="threadTable" cellpadding="5" cellspacing="0" border="0" style="width: 100%; border-collapse: collapse;">';
-        threadDetails += `<thead><tr style="background-color: #f1f1f1;">
-                <th>${translations[lang].threadName}</th>
-                <th>${translations[lang].threadInvokeCount}</th>
-                <th>${translations[lang].threadTotalCost}</th>
-                <th>${translations[lang].threadMaxCost}</th>
-                <th>${translations[lang].threadMinCost}</th>
-                <th>${translations[lang].threadPercentage}</th>
-                </tr></thead>`;
-        threadDetails += '<tbody>';
-
-        if (d.threadInvoke && d.threadInvoke.length > 0) {
-            d.threadInvoke.forEach((thread, index) => {
-                const translatedThreadName = lang === 'en'
-                    ? `Thread-${index + 1}`
-                    : `${translations[lang].thread}-${index + 1}`;
-                const percentage = ((thread.invokeInfo.totalCost / d.totalCost) * 100).toFixed(2);
-                threadDetails += `<tr style="border-bottom: 1px solid #ddd;">
-                        <td>${translatedThreadName}</td>
-                        <td>${thread.invokeInfo.invokeCount}</td>
-                        <td>${Number(thread.invokeInfo.totalCost).toFixed(5)}</td>
-                        <td>${Number(thread.invokeInfo.maxCost).toFixed(5)}</td>
-                        <td>${Number(thread.invokeInfo.minCost).toFixed(5)}</td>
-                        <td>${percentage}%</td>
-                    </tr>`;
-            });
-        } else {
-            threadDetails += `<tr><td colspan="5" style="text-align: center;">${translations[lang].noThreadInfo}</td></tr>`;
-        }
-
-        threadDetails += '</tbody></table></div>';
-        return threadDetails;
-    }
-
-    function updateLanguage(lang) {
-        const translations = {
-            en: {
-                reportTitle: "API Call Report",
-                methodName: "Method Name",
-                invokeCount: "Invoke Count",
-                totalCost: "Total Time (ms)",
-                maxCost: "Max Time (ms)",
-                minCost: "Min Time (ms)",
-                avgCost: "Avg Time (ms)",
-                paginate: {
-                    first: 'First',
-                    last: 'Last',
-                    next: 'Next',
-                    previous: 'Previous'
-                },
-                info: "Showing _START_ to _END_ of _TOTAL_ entries",
-                infoEmpty: "Showing 0 to 0 of 0 entries",
-                search: "Search:"
-            },
-            zh: {
-                reportTitle: "API调用报告",
-                methodName: "方法名",
-                invokeCount: "调用次数",
-                totalCost: "总耗时(ms)",
-                maxCost: "最大耗时(ms)",
-                minCost: "最小耗时(ms)",
-                avgCost: "平均耗时(ms)",
-                paginate: {
-                    first: '首页',
-                    last: '末页',
-                    next: '下一页',
-                    previous: '上一页'
-                },
-                info: "显示第 _START_ 至 _END_ 条记录，共 _TOTAL_ 条",
-                infoEmpty: "显示第 0 至 0 条记录，共 0 条",
-                search: "搜索:"
-            }
-        };
-
-        $('#reportTitle').text(translations[lang].reportTitle);
-        $('#methodName').text(translations[lang].methodName);
-        $('#invokeCount').text(translations[lang].invokeCount);
-        $('#totalCost').text(translations[lang].totalCost);
-        $('#maxCost').text(translations[lang].maxCost);
-        $('#minCost').text(translations[lang].minCost);
-        $('#avgCost').text(translations[lang].avgCost);
-
-        table.columns().header().to$().each(function (index) {
-            $(this).text(translations[lang][$(this).attr('id')]);
-        });
-
-        table.rows().every(function () {
-            if (this.child.isShown()) {
-                const threadDetails = formatThreadDetails(this.data(), lang);
-                this.child(threadDetails).show();
-            }
-        });
-        table.language = translations[lang];
-        table.draw();
-    }
+    app.use(ElementPlus);
+    app.mount('#app');
 </script>
 </body>
 </html>

@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test
 class I18nTest {
 
     @Test
-    fun i18nTest(){
+    fun i18nTest() {
         println(i18n(Language.ZH, "warn.includeSkip"))
         println(i18n(Language.EN, "warn.includeSkip"))
     }
