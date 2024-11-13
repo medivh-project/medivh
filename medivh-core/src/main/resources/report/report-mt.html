@@ -176,12 +176,16 @@
     <div class="pagination-wrapper">
         <el-pagination
                 background
-                layout="total, prev, pager, next"
+                layout="slot, prev, pager, next"
                 :current-page="currentPage"
                 :page-size="pageSize"
                 :total="tableData.length"
                 @size-change="handleSizeChange"
-                @current-change="handleCurrentChange"/>
+                @current-change="handleCurrentChange">
+            <template #default>
+                {{ currentLang === 'zh' ? `共 ${tableData.length} 条` : `Total ${tableData.length} items` }}
+            </template>
+        </el-pagination>
     </div>
 </div>
 

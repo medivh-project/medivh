@@ -65,42 +65,6 @@
             show-overflow-tooltip
             @expand-change="handleExpand"
             :default-sort="{ prop: 'performanceRate', order: 'descending' }">
-        <el-table-column type="expand">
-            <template #default="props">
-                <el-table :data="props.row.threadInvoke" border>
-                    <el-table-column :label="translations[currentLang].threadName">
-                        <template #default="scope">
-                            {{ scope.row.threadName }}
-                        </template>
-                    </el-table-column>
-                    <el-table-column :label="translations[currentLang].threadInvokeCount">
-                        <template #default="scope">
-                            {{ scope.row.invokeInfo.invokeCount }}
-                        </template>
-                    </el-table-column>
-                    <el-table-column :label="translations[currentLang].threadTotalCost">
-                        <template #default="scope">
-                            {{ Number(scope.row.invokeInfo.totalCost).toFixed(5) }}
-                        </template>
-                    </el-table-column>
-                    <el-table-column :label="translations[currentLang].threadMaxCost">
-                        <template #default="scope">
-                            {{ Number(scope.row.invokeInfo.maxCost).toFixed(5) }}
-                        </template>
-                    </el-table-column>
-                    <el-table-column :label="translations[currentLang].threadMinCost">
-                        <template #default="scope">
-                            {{ Number(scope.row.invokeInfo.minCost).toFixed(5) }}
-                        </template>
-                    </el-table-column>
-                    <el-table-column :label="translations[currentLang].threadPercentage">
-                        <template #default="scope">
-                            {{ props.row.totalCost === 0 ? '0%' : ((scope.row.invokeInfo.totalCost / props.row.totalCost) * 100).toFixed(2) + '%' }}
-                        </template>
-                    </el-table-column>
-                </el-table>
-            </template>
-        </el-table-column>
         <el-table-column
                 prop="methodName"
                 :label="translations[currentLang].methodName"
@@ -175,13 +139,17 @@
 
     <div class="pagination-wrapper">
         <el-pagination
-                v-model:current-page="currentPage"
-                v-model:page-size="pageSize"
-                :page-sizes="[10, 20, 50, 100]"
+                background
+                layout="slot, prev, pager, next"
+                :current-page="currentPage"
+                :page-size="pageSize"
                 :total="tableData.length"
-                layout="total, sizes, prev, pager, next, jumper"
                 @size-change="handleSizeChange"
-                @current-change="handleCurrentChange"/>
+                @current-change="handleCurrentChange">
+            <template #default>
+                {{ currentLang === 'zh' ? `共 ${tableData.length} 条` : `Total ${tableData.length} items` }}
+            </template>
+        </el-pagination>
     </div>
 </div>
 
@@ -256,10 +224,6 @@
             loadData() {
                 this.tableData = jsonData();
             },
-            handleSizeChange(val) {
-                this.pageSize = val;
-                this.currentPage = 1;
-            },
             handleCurrentChange(val) {
                 this.currentPage = val;
             },
@@ -267,31 +231,6 @@
 
             },
 
-            formatThreadData(row) {
-                console.log(row)
-                if (!row.threadInvoke || row.threadInvoke.length === 0) {
-                    return [{
-                        threadName: this.translations[this.currentLang].noThreadInfo,
-                        invokeCount: '-',
-                        totalCost: '-',
-                        maxCost: '-',
-                        minCost: '-',
-                        percentage: '-'
-                    }];
-                }
-
-                return row.threadInvoke.map((thread, index) => {
-                    const percentage = ((thread.invokeInfo.totalCost / row.totalCost) * 100).toFixed(2);
-                    return {
-                        threadName: `${this.translations[this.currentLang].thread}-${index + 1}`,
-                        invokeCount: thread.invokeInfo.invokeCount,
-                        totalCost: Number(thread.invokeInfo.totalCost).toFixed(5),
-                        maxCost: Number(thread.invokeInfo.maxCost).toFixed(5),
-                        minCost: Number(thread.invokeInfo.minCost).toFixed(5),
-                        percentage: `${percentage}%`
-                    };
-                });
-            },
             sortByPerformance(a, b) {
                 const rateA = a.expectTime < 1 ? 0 : (a.avgCost / a.expectTime);
                 const rateB = b.expectTime < 1 ? 0 : (b.avgCost / b.expectTime);
