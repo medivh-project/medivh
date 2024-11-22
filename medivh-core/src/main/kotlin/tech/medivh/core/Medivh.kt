@@ -1,11 +1,5 @@
 package tech.medivh.core
 
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.lang.instrument.Instrumentation
-import java.util.zip.ZipEntry
-import java.util.zip.ZipInputStream
 import net.bytebuddy.agent.builder.AgentBuilder
 import net.bytebuddy.asm.Advice
 import net.bytebuddy.description.annotation.AnnotationDescription
@@ -15,6 +9,12 @@ import tech.medivh.core.env.MedivhContext
 import tech.medivh.core.env.RunningMode
 import tech.medivh.core.interceptor.MultiThreadInterceptor
 import tech.medivh.core.interceptor.NormalInterceptor
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.lang.instrument.Instrumentation
+import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
 
 
 /**
@@ -42,7 +42,8 @@ object Medivh {
                 }
                 val indexHtml = reportDir.resolve("index.html")
                 check(this.renameTo(indexHtml)) { i18n(context.language(), "error.fileRenameFailed", indexHtml.path) }
-                println(i18n(context.language(), "tip.seeReport", indexHtml.absolutePath))
+                //  in windows, the path is like "C:\Users\xxx" but idea console can't recognize it is a file path
+                println(i18n(context.language(), "tip.seeReport", indexHtml.absolutePath.replace("\\", "/")))
             }
         })
 
