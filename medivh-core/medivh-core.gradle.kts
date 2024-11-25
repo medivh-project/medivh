@@ -1,5 +1,6 @@
 val fastjson2Version: String by medivhVersion
 val byteBuddyVersion: String by medivhVersion
+val mockitoKotlinVersion: String by medivhVersion
 
 plugins {
     kotlin("jvm")
@@ -10,6 +11,7 @@ plugins {
 
 dependencies {
     implementation(project(":medivh-api"))
+    testImplementation("org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}")
     implementation("net.bytebuddy:byte-buddy:$byteBuddyVersion")
     implementation("com.alibaba.fastjson2:fastjson2:$fastjson2Version")
 }

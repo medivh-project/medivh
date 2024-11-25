@@ -13,6 +13,7 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.lang.instrument.Instrumentation
+import java.util.*
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 
@@ -25,7 +26,8 @@ object Medivh {
     @JvmStatic
     fun premain(agentArgs: String?, inst: Instrumentation) {
 
-        val context = MedivhContext(agentArgs)
+        val properties = String(Base64.getUrlDecoder().decode(agentArgs))
+        val context = MedivhContext(properties)
 
         Runtime.getRuntime().addShutdownHook(Thread {
             val timeReport = context.mode().timeReport
@@ -98,3 +100,4 @@ object Medivh {
         }
     }
 }
+

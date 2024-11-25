@@ -1,13 +1,13 @@
 package tech.medivh.plugin.gradle.kotlin
 
 import com.alibaba.fastjson2.JSONObject
-import java.io.File
-import java.time.LocalDate
-import java.util.*
 import org.gradle.api.Project
 import tech.medivh.core.Language
 import tech.medivh.core.env.MedivhProperties
 import tech.medivh.core.env.RunningMode
+import java.io.File
+import java.time.LocalDate
+import java.util.*
 import javax.inject.Inject
 
 
@@ -22,7 +22,7 @@ open class MedivhExtension @Inject constructor(private val project: Project) {
         properties.includePackage += packageName
     }
 
-    fun mutliThread() {
+    fun multiThread() {
         properties.runningMode = RunningMode.MULTI_THREAD
     }
 
@@ -43,7 +43,8 @@ open class MedivhExtension @Inject constructor(private val project: Project) {
         if (properties.reportDir.isEmpty()) {
             properties.reportDir = reportDir()
         }
-        return JSONObject.toJSONString(properties)
+        val json = JSONObject.toJSONString(properties)
+        return Base64.getUrlEncoder().encodeToString(json.toByteArray())
     }
 
     private fun reportDir(): String {

@@ -1,5 +1,6 @@
 val byteBuddyVersion: String by medivhVersion
 val fastjson2Version: String by medivhVersion
+val mockitoKotlinVersion: String by medivhVersion
 
 plugins {
     kotlin("jvm")
@@ -14,9 +15,15 @@ dependencies {
     implementation("net.bytebuddy:byte-buddy:$byteBuddyVersion")
     implementation("net.bytebuddy:byte-buddy-agent:$byteBuddyVersion")
     implementation("com.alibaba.fastjson2:fastjson2:$fastjson2Version")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}")
+    testImplementation(kotlin("test"))
 }
 
+tasks.test {
+    useJUnitPlatform()
+}
 
+@Suppress("UnstableApiUsage")
 gradlePlugin {
     website = "https://medivh.tech"
     vcsUrl = "https://github.com/medivh-project/medivh.git"

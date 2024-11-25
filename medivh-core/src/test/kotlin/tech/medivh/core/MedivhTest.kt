@@ -29,7 +29,7 @@ class MedivhTest {
     @Test
     fun methodTest() {
         val advice = Advice.to(NormalInterceptor::class.java)
-        val desc = ByteBuddy()
+        ByteBuddy()
             .subclass(TestClass::class.java)
             .method(ElementMatchers.any())
             .intercept(advice)
@@ -37,7 +37,6 @@ class MedivhTest {
                 println(instrumentedType)
                 println(target)
                 target
-            }
-            .make()
+            }.make()
     }
 }
