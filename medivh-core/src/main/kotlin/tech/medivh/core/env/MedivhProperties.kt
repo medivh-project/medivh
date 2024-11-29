@@ -1,6 +1,7 @@
 package tech.medivh.core.env
 
 import tech.medivh.core.Language
+import java.util.*
 
 
 /**
@@ -12,7 +13,7 @@ open class MedivhProperties {
 
     var runningMode: RunningMode = RunningMode.NORMAL
 
-    var language: Language = Language.EN
+    var language: Language = Language.valueOf(Locale.getDefault().language.uppercase())
 
     var reportDir: String = ""
 
