@@ -4,6 +4,9 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.testing.Test
 import tech.medivh.core.i18n
+import tech.medivh.core.jfr.JfrAnalyzer
+import tech.medivh.core.reporter.JfrReporter
+import java.io.File
 
 
 /**

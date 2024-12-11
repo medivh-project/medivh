@@ -2,8 +2,7 @@ package tech.medivh.core
 
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
-import tech.medivh.core.interceptor.MultiThreadInterceptor
-import tech.medivh.core.interceptor.NormalInterceptor
+import tech.medivh.core.jfr.JfrInterceptor
 import kotlin.test.Ignore
 
 
@@ -15,10 +14,8 @@ class SupportUnused {
     @Test
     @Ignore
     fun testUnused() {
-        NormalInterceptor.onEnter()
-        NormalInterceptor.onExit(mock(), 0)
+        JfrInterceptor.onEnter()
+        JfrInterceptor.onExit(mock())
         Medivh
-        MultiThreadInterceptor.onEnter()
-        MultiThreadInterceptor.onExit(mock(), 0)
     }
 }
