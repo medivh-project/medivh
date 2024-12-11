@@ -18,4 +18,6 @@ class JfrRecord(event: RecordedEvent) {
     override fun toString(): String {
         return "JfrRecord(startTime=$startTime, duration=$duration, thread=$thread, method=$method, stackTrace=$stackTrace)"
     }
+
+
 }

@@ -12,6 +12,11 @@ class JfrThread(thread: RecordedThread) {
     val javaName = thread.javaName
     val javaThreadId = thread.javaThreadId
 
+
+    fun key(): String {
+        return javaName
+    }
+
     override fun toString(): String {
         return "JfrThread(osName='$osName', osThreadId=$osThreadId, javaName='$javaName', javaThreadId=$javaThreadId)"
     }
