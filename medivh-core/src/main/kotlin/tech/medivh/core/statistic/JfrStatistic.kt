@@ -8,14 +8,27 @@ import tech.medivh.core.jfr.JfrRecord
  */
 class JfrStatistic(record: JfrRecord) {
 
+    val methodName = "${record.method.className}#${record.method.name}"
     var invokeCount: Long = 1
     var totalCost: Long = record.duration.toMillis()
     var maxCost: Long = record.duration.toMillis()
     var minCost: Long = record.duration.toMillis()
     var expectTime: Long = 0
 
-    private val threadInvokeInfo = mutableMapOf<String, InvokeInfo>()
+    // this map support merge
+    private val threadInvokeMap = mutableMapOf(record.thread.javaName to InvokeInfo(record.duration.toMillis()))
 
+    val avgCost: Double
+        get() {
+            return totalCost.toDouble() / invokeCount
+        }
+
+    val threadInvoke: List<ThreadInvokeInfo>
+        get() {
+            return threadInvokeMap.map { (threadName, invokeInfo) ->
+                ThreadInvokeInfo(threadName, invokeInfo)
+            }
+        }
 
     companion object {
         fun merge(a: JfrStatistic, b: JfrStatistic): JfrStatistic {
@@ -23,8 +36,8 @@ class JfrStatistic(record: JfrRecord) {
             a.totalCost += b.totalCost
             a.maxCost = maxOf(a.maxCost, b.maxCost)
             a.minCost = minOf(a.minCost, b.minCost)
-            b.threadInvokeInfo.forEach { k, v ->
-                a.threadInvokeInfo.merge(k, v, InvokeInfo::merge)
+            b.threadInvokeMap.forEach { (k, v) ->
+                a.threadInvokeMap.merge(k, v, InvokeInfo::merge)
             }
             return a
         }
@@ -32,3 +45,5 @@ class JfrStatistic(record: JfrRecord) {
 
 
 }
+
+

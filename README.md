@@ -7,7 +7,8 @@
 
 ## 🔥 Medivh
 
-> Medivh is a convenient and easy-to-use monitoring component. You only need one annotation to get a function execution report.
+> Medivh is a convenient and easy-to-use monitoring component. You only need one annotation to get a function execution
+> report.
 
 See [web site](https://medivh.tech) for details on the project.
 
@@ -18,7 +19,7 @@ See [web site](https://medivh.tech) for details on the project.
 Gradle Plugin is Pending Approval，Currently only available through source code build
 
 Require:
->  JDK 17+
+> JDK 17+
 >
 >  kotlin 2+
 
@@ -85,15 +86,13 @@ class DemoClassTest{
 
 ## see the console output
 
-
 you will see output like this:
 
-> you can open  file:///xxx/report.html to see the report
+> you can open file:///xxx/report.html to see the report
 
 click the link above, you will see your Medivh report
 
-
-
 ## Complete Example
 
-this is a complete example, you can refer to this [example](https://github.com/medivh-project/medivh-demo-kotlin) to use Medivh
+this is a complete example, you can refer to this [example](https://github.com/medivh-project/medivh-demo-kotlin) to use
+Medivh

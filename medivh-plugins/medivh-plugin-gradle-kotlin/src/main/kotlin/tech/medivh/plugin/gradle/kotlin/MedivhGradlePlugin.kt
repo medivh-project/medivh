@@ -4,9 +4,6 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.testing.Test
 import tech.medivh.core.i18n
-import tech.medivh.core.jfr.JfrAnalyzer
-import tech.medivh.core.reporter.JfrReporter
-import java.io.File
 
 
 /**
@@ -45,9 +42,16 @@ class MedivhGradlePlugin : Plugin<Project> {
                     project.logger.warn(i18n(medivhExtension.properties.language, "warn.includeSkip"))
                     return@withType
                 }
-                test.jvmArgs("-javaagent:${copyAgent.get().outputFile}=${medivhExtension.javaagentArgs()}")
+                test.jvmArgs(
+                    "-javaagent:${copyAgent.get().outputFile}=${medivhExtension.javaagentArgs()}",
+                    "-XX:StartFlightRecording=filename=${medivhExtension.properties.reportDir}/medivh.jfr",
+                    "-Xlog:jfr+startup=error"
+                )
+                test.doLast {
+                    MedivhReporter(medivhExtension).report()
+                }
             }
         }
     }
-
 }
+

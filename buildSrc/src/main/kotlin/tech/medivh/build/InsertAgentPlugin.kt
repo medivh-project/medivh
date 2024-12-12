@@ -1,5 +1,7 @@
 package tech.medivh.build
 
+import org.gradle.api.Plugin
+import org.gradle.api.Project
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -9,11 +11,12 @@ import java.util.jar.JarFile
 import java.util.jar.JarOutputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
-import org.gradle.api.Plugin
-import org.gradle.api.Project
 
 
 /**
+ *
+ * insert some file into jar
+ *
  * @author gxz gongxuanzhangmelt@gmail.com
  **/
 class InsertAgentPlugin : Plugin<Project> {

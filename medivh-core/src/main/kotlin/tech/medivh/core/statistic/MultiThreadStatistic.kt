@@ -42,4 +42,4 @@ open class MultiThreadStatistic(val methodName: String) {
     }
 }
 
-data class ThreadInvokeInfo(val threadName: String, val invokeInfo: InvokeInfo)
+
