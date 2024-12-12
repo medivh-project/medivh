@@ -28,7 +28,6 @@ object Medivh {
             writer.close()
         })
 
-        val mode = context.mode()
         val advice = Advice.to(JfrInterceptor::class.java)
 
         val debugTimeName = DebugTime::class.java.name
@@ -40,7 +39,6 @@ object Medivh {
                     }
                     debugTime?.let {
                         val debugTimeDesc = resolveDebugTime(it)
-                        mode.timeReport.setup(MethodSetup(MethodToken.fromMethodDescription(method), debugTimeDesc))
                         writer.writeMethod(TagMethod(method.name, desc.name, debugTimeDesc.expectTime))
                     }
                 }
