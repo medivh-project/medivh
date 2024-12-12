@@ -14,30 +14,11 @@ See [web site](https://medivh.tech) for details on the project.
 
 <br/>
 
-## build from source
-
-Gradle Plugin is Pending Approval，Currently only available through source code build
-
-Require:
-> JDK 17+
->
->  kotlin 2+
-
-run the following command
-
-```shell
-git clone https://github.com/medivh-project/medivh.git
-
-cd medivh
-
-./gradlew build publishToMavenLocal
-
-```
 
 ## import gradle plugin in your project
 
 ```kts
-id("tech.medivh.plugin.gradle") version "0.0.1"
+id("tech.medivh.plugin.gradle") version "0.3.0"
 ```
 
 
@@ -84,13 +65,7 @@ class DemoClassTest{
 
 ```
 
-## see the console output
-
-you will see output like this:
-
-> you can open file:///xxx/report.html to see the report
-
-click the link above, you will see your Medivh report
+![Run your test](/doc/images/en.gif)
 
 ## Complete Example
 
