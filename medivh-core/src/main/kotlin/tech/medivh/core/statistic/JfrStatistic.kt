@@ -16,7 +16,7 @@ class JfrStatistic(record: JfrRecord) {
     var expectTime: Long = 0
 
     // this map support merge
-    private val threadInvokeMap = mutableMapOf(record.thread.javaName to InvokeInfo(record.duration.toMillis()))
+    private val threadInvokeMap = mutableMapOf(record.thread.key() to InvokeInfo(record.duration.toMillis()))
 
     val avgCost: Double
         get() {

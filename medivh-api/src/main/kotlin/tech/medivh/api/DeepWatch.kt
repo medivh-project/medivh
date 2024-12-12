@@ -9,4 +9,4 @@ package tech.medivh.api
  */
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.RUNTIME)
-annotation class DeepDebug(val expectTime: Long = 0L)
+annotation class DeepWatch

@@ -147,7 +147,7 @@
                 <template v-else>
                     <span v-if="(scope.row.avgCost / scope.row.expectTime) <= 1" style="color: #67C23A">
                         {{ ((scope.row.avgCost / scope.row.expectTime) * 100).toFixed(2) + '%' }}
-                        <el-icon><Check /></el-icon>{{scope.row.expectTime}}
+                        <el-icon><Check /></el-icon>
                     </span>
                     <span v-else>
                         <el-popover

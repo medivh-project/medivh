@@ -4,6 +4,7 @@ import com.alibaba.fastjson2.JSONObject
 import org.gradle.api.Project
 import tech.medivh.core.Language
 import tech.medivh.core.env.MedivhProperties
+import tech.medivh.core.env.RunningMode
 import java.io.File
 import java.time.LocalDate
 import java.util.*
@@ -19,6 +20,10 @@ open class MedivhExtension @Inject constructor(private val project: Project) {
 
     fun include(packageName: String) {
         properties.includePackage += packageName
+    }
+
+    fun deepMode() {
+        properties.runningMode = RunningMode.DEEP
     }
 
     fun ignoreBelowCount(count: Int) {

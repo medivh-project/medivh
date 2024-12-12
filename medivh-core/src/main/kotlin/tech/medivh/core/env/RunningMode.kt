@@ -7,4 +7,5 @@ package tech.medivh.core.env
 enum class RunningMode {
 
     NORMAL,
+    DEEP
 }
