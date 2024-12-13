@@ -12,7 +12,6 @@ class MedivhExtensionTest {
     fun supportUnused() {
         val extension = mock<MedivhExtension>()
         extension.include("test")
-        extension.multiThread()
         extension.ignoreBelowCount(1)
         extension.language(Language.ZH)
     }

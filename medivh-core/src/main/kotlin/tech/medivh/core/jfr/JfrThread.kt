@@ -13,11 +13,27 @@ class JfrThread(thread: RecordedThread) {
     val javaThreadId = thread.javaThreadId
 
 
-    fun key(): String {
-        return javaName
+    fun key(): Long {
+        return javaThreadId
     }
 
     override fun toString(): String {
-        return "JfrThread(osName='$osName', osThreadId=$osThreadId, javaName='$javaName', javaThreadId=$javaThreadId)"
+        return javaName
+    }
+
+
+    override fun hashCode(): Int {
+        return javaThreadId.hashCode()
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || javaClass != other.javaClass) return false
+
+        other as JfrThread
+
+        if (javaThreadId != other.javaThreadId) return false
+
+        return true
     }
 }

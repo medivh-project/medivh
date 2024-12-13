@@ -8,8 +8,8 @@ import jdk.jfr.consumer.RecordedMethod
  **/
 class JfrMethod(method: RecordedMethod) {
     val name: String = method.name
-    val className = method.type.name.substringBeforeLast("/")
-    val classFullName = method.type.name.replace("/", ".")
+    val className = method.type.name.substringAfterLast(".")
+    val classFullName = method.type.name
 
     fun key(): String {
         return "$classFullName#$name"

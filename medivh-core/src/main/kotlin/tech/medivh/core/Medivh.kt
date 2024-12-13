@@ -4,6 +4,7 @@ import net.bytebuddy.agent.builder.AgentBuilder
 import net.bytebuddy.asm.Advice
 import net.bytebuddy.description.annotation.AnnotationDescription
 import net.bytebuddy.description.method.MethodDescription
+import net.bytebuddy.description.type.TypeDescription
 import net.bytebuddy.matcher.ElementMatcher
 import net.bytebuddy.matcher.ElementMatchers
 import tech.medivh.api.DebugTime

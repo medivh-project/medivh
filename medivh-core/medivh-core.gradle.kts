@@ -11,9 +11,10 @@ plugins {
 
 dependencies {
     implementation(project(":medivh-api"))
-    testImplementation("org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}")
     implementation("net.bytebuddy:byte-buddy:$byteBuddyVersion")
     implementation("com.alibaba.fastjson2:fastjson2:$fastjson2Version")
+
+    testImplementation("org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}")
 }
 
 

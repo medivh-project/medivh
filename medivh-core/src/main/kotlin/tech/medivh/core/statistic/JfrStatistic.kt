@@ -16,7 +16,7 @@ class JfrStatistic(record: JfrRecord) {
     var expectTime: Long = 0
 
     // this map support merge
-    private val threadInvokeMap = mutableMapOf(record.thread.key() to InvokeInfo(record.duration.toMillis()))
+    private val threadInvokeMap = mutableMapOf(record.thread to InvokeInfo(record.duration.toMillis()))
 
     val avgCost: Double
         get() {
@@ -25,8 +25,8 @@ class JfrStatistic(record: JfrRecord) {
 
     val threadInvoke: List<ThreadInvokeInfo>
         get() {
-            return threadInvokeMap.map { (threadName, invokeInfo) ->
-                ThreadInvokeInfo(threadName, invokeInfo)
+            return threadInvokeMap.map { (thread, invokeInfo) ->
+                ThreadInvokeInfo(thread.javaName, invokeInfo)
             }
         }
 
