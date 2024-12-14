@@ -15,17 +15,27 @@ import java.io.File
  **/
 class JfrReverser(private val jfrFile: File) {
 
+    private val threadSet = mutableSetOf<JfrThread>()
 
     fun writeReverse() {
         val dataFileMap = mutableMapOf<JfrThread, ReverseFileWriter>()
         JfrAnalyzer().analysis(jfrFile) { record ->
             val node = EventNode.fromRecord(record)
-            dataFileMap.computeIfAbsent(record.thread) { ReverseFileWriter(jfrFile.parentFile, it) }.append(node)
+            dataFileMap.computeIfAbsent(record.thread) {
+                threadSet.add(it)
+                ReverseFileWriter(jfrFile.parentFile, it)
+            }.append(node)
         }
-        println("完事了")
         dataFileMap.values.forEach { it.flush() }
     }
 
+    fun readReverse() {
+        threadSet.forEach { thread ->
+            ReverseFileReader(jfrFile.parentFile, thread).readOrderNode { node ->
+                println(node)
+            }
+        }
+    }
 
 
 }

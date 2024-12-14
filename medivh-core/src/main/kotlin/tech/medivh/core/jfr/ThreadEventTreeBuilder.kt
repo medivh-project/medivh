@@ -27,7 +27,7 @@ class ThreadEventTreeBuilder(private val jfrThread: JfrThread) {
 
         val newNode = EventNode.fromRecord(record)
         while (stack.isNotEmpty() && stack.last().startTime >= newNode.endTime) {
-            stack.removeAt(stack.size - 1) // 弹出不包含当前节点的节点
+            stack.removeAt(stack.size - 1)
         }
         stack.last().children.add(newNode)
         stack.add(newNode)
