@@ -7,6 +7,27 @@ import java.time.Instant
 
 
 /**
+ *
+ * batch write event node to file.
+ *
+ * each batch of data is ordered.
+ * in data file :
+ *
+ * 6
+ * 7
+ * 8
+ * 9
+ * 10
+ * 1
+ * 2
+ * 3
+ * 4
+ * 5
+ *
+ * in index file:
+ * 6 offset
+ * 1 offset
+ *
  * @author gxz gongxuanzhangmelt@gmail.com
  **/
 class ReverseFileWriter(dir: File, jfrThread: JfrThread, bufferCapacity: Int = 1024 * 1024) {

@@ -18,25 +18,24 @@ class ThreadEventTreeBuilder(private val jfrThread: JfrThread) {
     private val root = EventNode(startTime = Instant.MIN, endTime = Instant.MAX, "")
     private val stack = mutableListOf(root)
     private var preStartTime = Instant.MIN
+
     /**
      * process a jfr record
-     * @param record must be in order by start time asc
+     * @param node must be in order by start time asc
      */
-    fun processRecord(record: JfrRecord) {
-        validateRecord(record)
+    fun processNode(node: EventNode) {
+        validateRecord(node)
 
-        val newNode = EventNode.fromRecord(record)
-        while (stack.isNotEmpty() && stack.last().startTime >= newNode.endTime) {
+        while (stack.isNotEmpty() && stack.last().startTime >= node.endTime) {
             stack.removeAt(stack.size - 1)
         }
-        stack.last().children.add(newNode)
-        stack.add(newNode)
+        stack.last().children.add(node)
+        stack.add(node)
     }
 
-    private fun validateRecord(record: JfrRecord) {
-        check(record.thread == jfrThread)
-        check(!preStartTime.isAfter(record.startTime))
-        preStartTime = record.startTime
+    private fun validateRecord(node: EventNode) {
+        check(!preStartTime.isAfter(node.startTime))
+        preStartTime = node.startTime
     }
 
     /**

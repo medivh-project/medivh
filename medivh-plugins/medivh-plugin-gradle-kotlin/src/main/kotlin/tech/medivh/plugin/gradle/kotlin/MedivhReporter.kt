@@ -3,9 +3,7 @@ package tech.medivh.plugin.gradle.kotlin
 import com.alibaba.fastjson2.JSONArray
 import tech.medivh.core.env.RunningMode
 import tech.medivh.core.i18n
-import tech.medivh.core.jfr.JfrAnalyzer
-import tech.medivh.core.jfr.JfrMethod
-import tech.medivh.core.jfr.JfrReverser
+import tech.medivh.core.jfr.*
 import tech.medivh.core.reporter.TagMethod
 import tech.medivh.core.reporter.TagMethodLogFileReader
 import tech.medivh.core.statistic.JfrStatistic
@@ -32,22 +30,25 @@ class MedivhReporter(private val medivhExtension: MedivhExtension) {
             return
         }
         deepReport()
-
     }
 
     private fun deepReport() {
         val jfrFile = File("${medivhExtension.properties.reportDir}/medivh.jfr")
         val reverser = JfrReverser(jfrFile)
         reverser.writeReverse()
-        reverser.readReverse()
-
+        val threadTree = mutableMapOf<JfrThread, ThreadEventTreeBuilder>()
+        reverser.readReverse { thread, node ->
+            threadTree.computeIfAbsent(thread) {
+                ThreadEventTreeBuilder(it)
+            }.processNode(node)
+        }
         analyzer.analysis(jfrFile) {
             statistic.merge(it.method, JfrStatistic(it), JfrStatistic::merge)
         }
-        val jsonArray = JSONArray(statistic.values)
-        JsGenerator(medivhExtension).generateJs(jsonArray.toJSONString())
-        val indexHtml = File(medivhExtension.properties.reportDir).resolve("index.html")
-        println(i18n(medivhExtension.properties.language, "tip.seeReport", indexHtml.absolutePath))
+//        val jsonArray = JSONArray(statistic.values)
+//        JsGenerator(medivhExtension).generateJs(jsonArray.toJSONString())
+//        val indexHtml = File(medivhExtension.properties.reportDir).resolve("index.html")
+//        println(i18n(medivhExtension.properties.language, "tip.seeReport", indexHtml.absolutePath))
     }
 
     private fun normalReport() {

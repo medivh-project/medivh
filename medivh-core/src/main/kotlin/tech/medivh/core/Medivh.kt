@@ -24,6 +24,7 @@ object Medivh {
 
     @JvmStatic
     fun premain(agentArgs: String?, inst: Instrumentation) {
+        println("Medivh 开始")
         val properties = String(Base64.getUrlDecoder().decode(agentArgs))
         val context = MedivhContext(properties)
         context.reportDir().mkdirs()

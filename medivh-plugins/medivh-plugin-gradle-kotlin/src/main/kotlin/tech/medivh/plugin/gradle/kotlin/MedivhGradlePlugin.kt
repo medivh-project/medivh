@@ -3,7 +3,11 @@ package tech.medivh.plugin.gradle.kotlin
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.testing.Test
+import org.gradle.api.tasks.testing.TestDescriptor
+import org.gradle.api.tasks.testing.TestListener
+import org.gradle.api.tasks.testing.TestResult
 import tech.medivh.core.i18n
+import tech.medivh.core.jfr.JfrInterceptor
 
 
 /**
@@ -35,6 +39,24 @@ class MedivhGradlePlugin : Plugin<Project> {
 
             project.tasks.register("copyReportZip", CopyReportZipTask::class.java)
 
+            project.tasks.withType(Test::class.java).configureEach {
+                it.addTestListener(object : TestListener {
+                    override fun beforeTest(descriptor: TestDescriptor) {
+                        println("改成了: ${descriptor.displayName}")
+                        JfrInterceptor.updateToken(descriptor.displayName)
+                    }
+
+                    override fun afterTest(descriptor: TestDescriptor, result: TestResult) {
+                    }
+
+                    override fun beforeSuite(suite: TestDescriptor) {
+                    }
+
+                    override fun afterSuite(suite: TestDescriptor, result: TestResult) {
+                    }
+                })
+            }
+
             project.tasks.withType(Test::class.java) { test ->
                 test.dependsOn("copyAgent")
                 test.dependsOn("copyReportZip")
@@ -51,6 +73,7 @@ class MedivhGradlePlugin : Plugin<Project> {
                     MedivhReporter(medivhExtension).report()
                 }
             }
+
         }
     }
 }

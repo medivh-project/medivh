@@ -29,10 +29,10 @@ class JfrReverser(private val jfrFile: File) {
         dataFileMap.values.forEach { it.flush() }
     }
 
-    fun readReverse() {
+    fun readReverse(action: (JfrThread, EventNode) -> Unit) {
         threadSet.forEach { thread ->
             ReverseFileReader(jfrFile.parentFile, thread).readOrderNode { node ->
-                println(node)
+                action(thread, node)
             }
         }
     }

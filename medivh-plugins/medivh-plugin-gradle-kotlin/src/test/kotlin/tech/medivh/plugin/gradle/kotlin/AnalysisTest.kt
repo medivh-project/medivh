@@ -1,8 +1,10 @@
 package tech.medivh.plugin.gradle.kotlin
 
+import jdk.jfr.consumer.RecordedEvent
+import jdk.jfr.consumer.RecordingFile
 import org.junit.jupiter.api.Test
-import tech.medivh.core.jfr.JfrReverser
-import java.io.File
+import tech.medivh.core.jfr.MethodInvokeEvent
+import kotlin.io.path.toPath
 
 
 /**
@@ -13,9 +15,15 @@ class AnalysisTest {
 
     @Test
     fun reverseTest() {
-        println(1)
-        JfrReverser(File("/Users/gongxuanzhang/Desktop/medivh.jfr")).writeReverse()
-
+        val url = this.javaClass.classLoader.getResource("aaa.jfr").toURI()
+        RecordingFile(url.toPath()).use { recordingFile ->
+            while (recordingFile.hasMoreEvents()) {
+                val event: RecordedEvent = recordingFile.readEvent()
+                if (event.eventType.name == MethodInvokeEvent::class.java.name) {
+                    println(event.getString("testCase"))
+                }
+            }
+        }
     }
 
 }
