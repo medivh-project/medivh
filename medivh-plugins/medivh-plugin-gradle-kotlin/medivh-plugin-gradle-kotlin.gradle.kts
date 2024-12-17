@@ -15,6 +15,7 @@ dependencies {
     implementation("net.bytebuddy:byte-buddy:$byteBuddyVersion")
     implementation("net.bytebuddy:byte-buddy-agent:$byteBuddyVersion")
     implementation("com.alibaba.fastjson2:fastjson2:$fastjson2Version")
+    implementation("org.junit.jupiter:junit-jupiter-api:5.11.3")
     testImplementation("org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}")
     testImplementation(kotlin("test"))
 }

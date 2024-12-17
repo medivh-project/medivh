@@ -1,5 +1,6 @@
 package tech.medivh.core.jfr
 
+import tech.medivh.core.InvokeInfo
 import java.time.Instant
 
 
@@ -13,11 +14,13 @@ import java.time.Instant
  *
  * @author gxz gongxuanzhangmelt@gmail.com
  **/
-class ThreadEventTreeBuilder(private val jfrThread: JfrThread) {
+class ThreadEventTreeBuilder(private val threadName: String) {
 
     private val root = EventNode(startTime = Instant.MIN, endTime = Instant.MAX, "")
-    private val stack = mutableListOf(root)
     private var preStartTime = Instant.MIN
+    private var minStartTime = Instant.MAX
+    private var maxEndTime = Instant.MIN
+    private var invokeInfoMap: MutableMap<String, InvokeInfo> = mutableMapOf()
 
     /**
      * process a jfr record
@@ -25,22 +28,56 @@ class ThreadEventTreeBuilder(private val jfrThread: JfrThread) {
      */
     fun processNode(node: EventNode) {
         validateRecord(node)
+        accumulate(node)
+        processNode(node, root)
+    }
 
-        while (stack.isNotEmpty() && stack.last().startTime >= node.endTime) {
-            stack.removeAt(stack.size - 1)
+    private fun accumulate(node: EventNode) {
+        //   duration unit
+        invokeInfoMap.merge(node.name, InvokeInfo(node.duration().toMillis()), InvokeInfo::merge)
+    }
+
+    private fun processNode(node: EventNode, parent: EventNode) {
+        val searchNodeParentNode = parent.children.binarySearch {
+            if (it.startTime.isAfter(node.startTime)) {
+                return@binarySearch 1
+            } else if (it.endTime.isBefore(node.endTime)) {
+                return@binarySearch -1
+            } else {
+                0
+            }
         }
-        stack.last().children.add(node)
-        stack.add(node)
+        if (searchNodeParentNode < 0) {
+            parent.children.add(node)
+            return
+        }
+        processNode(node, parent.children[searchNodeParentNode])
     }
 
     private fun validateRecord(node: EventNode) {
-        check(!preStartTime.isAfter(node.startTime))
+        check(!preStartTime.isAfter(node.startTime)) {
+            "jfr event is not order by start time"
+        }
         preStartTime = node.startTime
+        if (node.startTime < minStartTime) {
+            minStartTime = node.startTime
+        }
+        if (node.endTime > maxEndTime) {
+            maxEndTime = node.endTime
+        }
     }
 
     /**
      * return dummy root node
      */
-    fun getTree(): EventNode = root
+    fun getTree(): EventNode {
+        val dummy = EventNode(startTime = minStartTime, endTime = maxEndTime, "all")
+        dummy.children.addAll(root.children)
+        return dummy
+    }
+
+    fun getStatistics(): Map<String, InvokeInfo> {
+        return invokeInfoMap
+    }
 
 }

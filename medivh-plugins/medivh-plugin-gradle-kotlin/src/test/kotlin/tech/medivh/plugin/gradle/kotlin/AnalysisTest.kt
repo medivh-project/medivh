@@ -1,10 +1,8 @@
 package tech.medivh.plugin.gradle.kotlin
 
-import jdk.jfr.consumer.RecordedEvent
-import jdk.jfr.consumer.RecordingFile
 import org.junit.jupiter.api.Test
-import tech.medivh.core.jfr.MethodInvokeEvent
-import kotlin.io.path.toPath
+import tech.medivh.core.jfr.JfrEventClassifier
+import java.io.File
 
 
 /**
@@ -15,15 +13,12 @@ class AnalysisTest {
 
     @Test
     fun reverseTest() {
-        val url = this.javaClass.classLoader.getResource("aaa.jfr").toURI()
-        RecordingFile(url.toPath()).use { recordingFile ->
-            while (recordingFile.hasMoreEvents()) {
-                val event: RecordedEvent = recordingFile.readEvent()
-                if (event.eventType.name == MethodInvokeEvent::class.java.name) {
-                    println(event.getString("testCase"))
-                }
-            }
+        val classify = JfrEventClassifier(File(this.javaClass.classLoader.getResource("main.jfr").path)).classify()
+        classify.forEach {
+            val tree = it.buildTree()
         }
+        println(1)
     }
+
 
 }

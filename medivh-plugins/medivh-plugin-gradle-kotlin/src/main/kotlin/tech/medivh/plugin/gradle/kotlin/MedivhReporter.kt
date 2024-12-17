@@ -1,6 +1,7 @@
 package tech.medivh.plugin.gradle.kotlin
 
 import com.alibaba.fastjson2.JSONArray
+import com.alibaba.fastjson2.JSONObject
 import tech.medivh.core.env.RunningMode
 import tech.medivh.core.i18n
 import tech.medivh.core.jfr.*
@@ -33,18 +34,14 @@ class MedivhReporter(private val medivhExtension: MedivhExtension) {
     }
 
     private fun deepReport() {
-        val jfrFile = File("${medivhExtension.properties.reportDir}/medivh.jfr")
-        val reverser = JfrReverser(jfrFile)
-        reverser.writeReverse()
-        val threadTree = mutableMapOf<JfrThread, ThreadEventTreeBuilder>()
-        reverser.readReverse { thread, node ->
-            threadTree.computeIfAbsent(thread) {
-                ThreadEventTreeBuilder(it)
-            }.processNode(node)
+        val classify = JfrEventClassifier(File("${medivhExtension.properties.reportDir}/medivh.jfr")).classify()
+        classify.forEach {
+            val tree = it.buildTree()
         }
-        analyzer.analysis(jfrFile) {
-            statistic.merge(it.method, JfrStatistic(it), JfrStatistic::merge)
-        }
+        val dir = File(medivhExtension.properties.reportDir)
+        val reportZip = dir.parentFile.parentFile.parentFile.resolve("medivh-report.zip")
+        val reportDir = dir.resolve("report/")
+        unzip(reportZip, reportDir)
 //        val jsonArray = JSONArray(statistic.values)
 //        JsGenerator(medivhExtension).generateJs(jsonArray.toJSONString())
 //        val indexHtml = File(medivhExtension.properties.reportDir).resolve("index.html")

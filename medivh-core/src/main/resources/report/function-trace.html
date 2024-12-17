@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>函数调用链分析</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/element-plus/dist/index.css" />
+    <link rel="stylesheet" href="styles/function-trace.css" />
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.3.4/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/element-plus"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@element-plus/icons-vue"></script>
+    <script src="data/trace-data.js"></script>
+    <script>
+        function defaultLanguage() {
+            return navigator.language.toLowerCase().startsWith('zh') ? 'zh' : 'en';
+        }
+    </script>
+</head>
+<body>
+<div id="app" class="container">
+    <div class="header">
+        <div class="logo-title">
+            <div class="logo"></div>
+            <h1>{{ translations[currentLang].traceTitle }}</h1>
+        </div>
+        <div style="display: flex; gap: 20px; align-items: center;">
+            <el-input
+                    v-model="searchKeyword"
+                    :placeholder="translations[currentLang].searchPlaceholder"
+                    class="search-bar">
+                <template #prefix>
+                    <el-icon>
+                        <Search/>
+                    </el-icon>
+                </template>
+            </el-input>
+            <el-select v-model="currentLang" style="width: 120px">
+                <el-option value="en" label="English"></el-option>
+                <el-option value="zh" label="中文"></el-option>
+            </el-select>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="test-case-container">
+            <div class="test-list" v-show="!selectedThread">
+                <h3>{{ translations[currentLang].testCases }}</h3>
+                <div
+                        v-for="test in testCases"
+                        :key="test.name"
+                        class="test-case-item"
+                        :class="{ active: selectedTestCase && selectedTestCase.name === test.name }"
+                        @click="selectTestCase(test)">
+                    <div>{{ test.name }}</div>
+                    <div style="font-size: 12px; color: #909399;">
+                        {{ translations[currentLang].threadCount }}: {{ test.threads.length }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="thread-list" v-show="selectedTestCase && !selectedThread">
+                <div class="detail-header">
+                    <el-button type="text" @click="selectedTestCase = null" class="back-button">
+                        <el-icon><Back /></el-icon>
+                    </el-button>
+                    <h3>{{ translations[currentLang].threads }}</h3>
+                </div>
+                <div
+                        v-for="thread in selectedTestCase?.threads"
+                        :key="thread.name"
+                        class="thread-item"
+                        :class="{ active: selectedThread && selectedThread.name === thread.name }"
+                        @click="selectCaseThread(thread)">
+                    <div>{{ thread.name }}</div>
+                    <div style="font-size: 12px; color: #909399;">
+                        {{ translations[currentLang].functionCount }}: {{ calculateFunctionCount(thread.functionRoot) }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="flame-graph-container" v-show="selectedThread" style="flex: 1;">
+                <div class="detail-header">
+                    <el-button type="text" @click="closeFlameGraph" class="back-button">
+                        <el-icon><Back /></el-icon>
+                    </el-button>
+                    <h3>{{ selectedThread?.name }}</h3>
+                </div>
+                <div class="flame-graph" ref="flameGraph"></div>
+            </div>
+
+            <div v-if="selectedMethod" class="method-detail-container">
+                <div class="method-detail">
+                    <div class="detail-header">
+                        <h3>{{ translations[currentLang].methodDetail }}</h3>
+                        <el-button type="text" @click="selectedMethod = null">
+                            <el-icon>
+                                <Close/>
+                            </el-icon>
+                        </el-button>
+                    </div>
+                    <div class="method-stats">
+                        <div class="stat-item">
+                            <div class="stat-label">{{ translations[currentLang].methodName }}</div>
+                            <div class="stat-value">{{ selectedMethod.name }}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">{{ translations[currentLang].invokeCount }}</div>
+                            <div class="stat-value">{{ selectedMethod.invokeCount }}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">{{ translations[currentLang].avgCost }}</div>
+                            <div class="stat-value">{{ Number(selectedMethod.avgCost).toFixed(5) }}ms</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">{{ translations[currentLang].totalCost }}</div>
+                            <div class="stat-value">{{ Number(selectedMethod.value).toFixed(5) }}ms</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">{{ translations[currentLang].performanceRate }}</div>
+                            <div class="stat-value">
+                                <span :class="getPerformanceClass(selectedMethod)">
+                                    {{ calculatePerformanceRate(selectedMethod) }}
+                                    <el-icon v-if="isPerformanceGood(selectedMethod)"><Check/></el-icon>
+                                    <el-icon v-else><Warning/></el-icon>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const {createApp} = Vue;
+
+    const flameGraphData = {
+        convertToFlameData(data) {
+            const result = {
+                name: data.methodName,
+                value: data.totalCost,
+                children: []
+            };
+
+            if (data.children) {
+                result.children = data.children.map(child => this.convertToFlameData(child));
+            }
+
+            return result;
+        }
+    };
+
+    const app = createApp({
+        data() {
+            return {
+                currentLang: defaultLanguage(),
+                searchKeyword: '',
+                translations: {
+                    en: {
+                        traceTitle: "Function Call Trace Analysis",
+                        methodName: "Method Name",
+                        invokeCount: "Invoke Count",
+                        totalCost: "Total Time (ms)",
+                        avgCost: "Avg Time (ms)",
+                        performanceRate: "Performance Rate",
+                        searchPlaceholder: "Search function name...",
+                        methodDetail: "Method Details",
+                        testCases: "Test Cases",
+                        threads: "Threads",
+                        threadCount: "Threads",
+                        functionCount: "Functions",
+                        back: "Back"
+                    },
+                    zh: {
+                        traceTitle: "函数调用链分析",
+                        methodName: "方法名",
+                        invokeCount: "调用次数",
+                        totalCost: "总耗时(ms)",
+                        avgCost: "平均耗时(ms)",
+                        performanceRate: "达标率",
+                        searchPlaceholder: "搜索函数名称...",
+                        methodDetail: "方法详情",
+                        testCases: "测试用例",
+                        threads: "线程列表",
+                        threadCount: "线程数",
+                        functionCount: "函数数",
+                        back: "返回"
+                    }
+                },
+                rootFunctions: [],
+                selectedMethod: null,
+                testCases: testCasesData.testCases,
+                selectedTestCase: testCasesData.testCases[0] || null,
+                selectedThread: (testCasesData.testCases[0]?.threads[0]) || null
+            }
+        },
+        mounted() {
+            this.$nextTick(() => {
+                if (this.selectedThread?.functionRoot) {
+                    this.initFlameGraph(this.selectedThread.functionRoot);
+                }
+            });
+        },
+        methods: {
+            getPerformanceClass(row) {
+                return this.isPerformanceGood(row) ? 'performance-good' : 'performance-bad';
+            },
+            isPerformanceGood(row) {
+                return row.avgCost <= row.expectTime;
+            },
+            calculatePerformanceRate(row) {
+                if (row.expectTime < 1) return '0%';
+                return ((row.avgCost / row.expectTime) * 100).toFixed(2) + '%';
+            },
+
+            async initFlameGraph(data = traceData) {
+                console.log('initFlameGraph called');
+                const flameGraphEl = this.$refs.flameGraph;
+                if (!flameGraphEl) {
+                    console.error('Flame graph element not found');
+                    return;
+                }
+
+                const width = flameGraphEl.clientWidth || 800;
+                const height = flameGraphEl.clientHeight || 500;
+
+                console.log('Graph dimensions:', width, height);
+
+                d3.select(flameGraphEl).selectAll("*").remove();
+
+                const svg = d3.select(flameGraphEl)
+                    .append("svg")
+                    .attr("width", width)
+                    .attr("height", height);
+
+                const partition = data => {
+                    const root = d3.hierarchy(data)
+                        .sum(d => d.value)
+                        .sort((a, b) => b.value - a.value);
+                    return d3.partition()
+                        .size([width, height])(root);
+                };
+
+                const nodes = partition(data);
+
+                const color = d3.scaleOrdinal(d3.schemeCategory10);
+
+                const cell = svg
+                    .selectAll("g")
+                    .data(nodes.descendants())
+                    .join("g")
+                    .attr("transform", d => `translate(${d.x0},${height - d.y1})`);
+
+                cell.append("rect")
+                    .attr("width", d => d.x1 - d.x0)
+                    .attr("height", d => d.y1 - d.y0)
+                    .attr("fill", d => color(d.depth))
+                    .attr("class", d => `node-${d.data.name.replace(/[^a-zA-Z0-9]/g, '-')}`)
+                    .on("click", (event, d) => {
+                        svg.selectAll("rect").classed("highlighted", false);
+                        d3.select(event.currentTarget).classed("highlighted", true);
+                        this.selectedMethod = d.data;
+                    });
+
+                cell.append("text")
+                    .attr("x", 3)
+                    .attr("y", d => d.y1 - d.y0 - 4)
+                    .text(d => {
+                        const width = d.x1 - d.x0;
+                        const name = d.data.name;
+                        return width < 30 ? '' : name;
+                    })
+                    .attr("fill", "white")
+                    .style("font-size", "10px")
+                    .style("dominant-baseline", "text-after-edge");
+
+                const tooltip = d3.select(this.$refs.flameGraph)
+                    .append("div")
+                    .attr("class", "tooltip")
+                    .style("position", "absolute")
+                    .style("visibility", "hidden")
+                    .style("background-color", "rgba(0,0,0,0.8)")
+                    .style("color", "white")
+                    .style("padding", "5px")
+                    .style("border-radius", "3px")
+                    .style("font-size", "12px");
+
+                cell.selectAll("rect")
+                    .on("mouseover", (event, d) => {
+                        const tooltipWidth = 200;
+                        const tooltipHeight = 60;
+
+                        let left = event.pageX + 10;
+                        let top = event.pageY - 10;
+
+                        if (left + tooltipWidth > window.innerWidth) {
+                            left = event.pageX - tooltipWidth - 10;
+                        }
+
+                        if (top + tooltipHeight > window.innerHeight) {
+                            top = event.pageY - tooltipHeight - 10;
+                        }
+
+                        tooltip
+                            .style("visibility", "visible")
+                            .html(`
+                                ${d.data.name}<br/>
+                                ${this.translations[this.currentLang].totalCost}: ${d.data.value.toFixed(2)}ms
+                            `)
+                            .style("left", left + "px")
+                            .style("top", top + "px");
+
+                        d3.select(event.currentTarget).style("fill-opacity", 1);
+                    })
+                    .on("mousemove", (event) => {
+                        tooltip
+                            .style("top", (event.pageY - 10) + "px")
+                            .style("left", (event.pageX + 10) + "px");
+                    })
+                    .on("mouseout", (event) => {
+                        tooltip.style("visibility", "hidden");
+                        d3.select(event.currentTarget).style("fill-opacity", 0.8);
+                    });
+            },
+
+            closeMethodDetail() {
+                d3.select(this.$refs.flameGraph)
+                    .selectAll("rect")
+                    .classed("highlighted", false);
+                this.selectedMethod = null;
+            },
+
+            selectTestCase(testCase) {
+                this.selectedTestCase = testCase;
+                this.selectedThread = null;
+                this.selectedMethod = null;
+            },
+
+            selectCaseThread(thread) {
+                this.selectedThread = thread;
+                this.selectedMethod = null;
+
+                setTimeout(() => {
+                    if (thread.functionRoot && this.$refs.flameGraph) {
+                        this.initFlameGraph(thread.functionRoot);
+                    }
+                }, 100);
+            },
+
+            closeFlameGraph() {
+                this.selectedThread = null;
+                this.selectedMethod = null;
+            },
+
+            calculateFunctionCount(data) {
+                let count = 1;
+                if (data.children) {
+                    data.children.forEach(child => {
+                        count += this.calculateFunctionCount(child);
+                    });
+                }
+                return count;
+            }
+        }
+    });
+
+    app.component('Check', ElementPlusIconsVue.Check);
+    app.component('Warning', ElementPlusIconsVue.Warning);
+    app.component('Search', ElementPlusIconsVue.Search);
+    app.component('Close', ElementPlusIconsVue.Close);
+    app.component('Back', ElementPlusIconsVue.Back);
+
+    app.use(ElementPlus);
+    app.mount('#app');
+</script>
+</body>
+</html>

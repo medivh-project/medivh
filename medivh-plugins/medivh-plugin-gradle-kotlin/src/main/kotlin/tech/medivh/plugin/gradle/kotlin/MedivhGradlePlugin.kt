@@ -32,30 +32,13 @@ class MedivhGradlePlugin : Plugin<Project> {
             val fastjson2Version = "2.0.52"
             val medivhVersion = project.extensions.extraProperties["medivhVersion"]
             project.dependencies.add("implementation", "tech.medivh:medivh-api:${medivhVersion}")
+            project.dependencies.add("testImplementation", "tech.medivh:medivh-junit-extension:${medivhVersion}")
             project.dependencies.add("testImplementation", "net.bytebuddy:byte-buddy-agent:$byteBuddyVersion")
             project.dependencies.add("testImplementation", "net.bytebuddy:byte-buddy:$byteBuddyVersion")
             project.dependencies.add("testImplementation", "com.alibaba.fastjson2:fastjson2:$fastjson2Version")
             val copyAgent = project.tasks.register("copyAgent", CopyAgentTask::class.java, medivhVersion)
 
             project.tasks.register("copyReportZip", CopyReportZipTask::class.java)
-
-            project.tasks.withType(Test::class.java).configureEach {
-                it.addTestListener(object : TestListener {
-                    override fun beforeTest(descriptor: TestDescriptor) {
-                        println("改成了: ${descriptor.displayName}")
-                        JfrInterceptor.updateToken(descriptor.displayName)
-                    }
-
-                    override fun afterTest(descriptor: TestDescriptor, result: TestResult) {
-                    }
-
-                    override fun beforeSuite(suite: TestDescriptor) {
-                    }
-
-                    override fun afterSuite(suite: TestDescriptor, result: TestResult) {
-                    }
-                })
-            }
 
             project.tasks.withType(Test::class.java) { test ->
                 test.dependsOn("copyAgent")
@@ -67,7 +50,8 @@ class MedivhGradlePlugin : Plugin<Project> {
                 test.jvmArgs(
                     "-javaagent:${copyAgent.get().outputFile}=${medivhExtension.javaagentArgs()}",
                     "-XX:StartFlightRecording=filename=${medivhExtension.properties.reportDir}/medivh.jfr",
-                    "-Xlog:jfr+startup=error"
+                    "-Xlog:jfr+startup=error",
+                    "-Djunit.jupiter.extensions.autodetection.enabled=true"
                 )
                 test.doLast {
                     MedivhReporter(medivhExtension).report()
