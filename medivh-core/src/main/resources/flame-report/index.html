@@ -6,13 +6,14 @@
     <title>函数调用报告</title>
     
     <!-- 引入必要的依赖 -->
+    <script src="i18n.js" defer></script>
     <script src="https://registry.npmmirror.com/jquery/3.7.1/files/dist/jquery.min.js"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
     <script src="https://unpkg.com/element-plus"></script>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
     <script src="https://unpkg.com/@element-plus/icons-vue"></script>
-    <script src="data.js"></script>
+    <script src="config.js"></script>
     <script src="chart.js"></script>
     
     <style>
@@ -29,6 +30,7 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             display: flex;
             align-items: center;
+            justify-content: space-between;
         }
         
         .logo {
@@ -186,6 +188,12 @@
             flex: 1;
             transition: all 0.3s ease;
             position: relative;
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 12px 0 rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
         }
         
         .threads-panel {
@@ -195,6 +203,9 @@
         #chart {
             width: 100%;
             height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
         }
         
         .selected-thread {
@@ -445,6 +456,107 @@
             );
             border: none;
         }
+        
+        .chart-tabs {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chart-tabs :deep(.el-tabs__header) {
+            margin: 0 0 20px 0;
+            border-bottom: 2px solid #f0f2f5;
+        }
+        
+        .chart-tabs :deep(.el-tabs__nav-wrap::after) {
+            display: none;
+        }
+        
+        .chart-tabs :deep(.el-tabs__item) {
+            font-size: 15px;
+            height: 40px;
+            line-height: 40px;
+            padding: 0 20px;
+            transition: all 0.3s;
+        }
+        
+        .chart-tabs :deep(.el-tabs__item.is-active) {
+            font-weight: 600;
+            color: #409EFF;
+        }
+        
+        .chart-tabs :deep(.el-tabs__active-bar) {
+            height: 3px;
+            border-radius: 3px;
+            background: #409EFF;
+        }
+        
+        .chart-tabs :deep(.el-tabs__content) {
+            flex: 1;
+            overflow: hidden;
+            padding: 0;
+            height: calc(100% - 55px);  /* 减去标签页头部的高度 */
+        }
+        
+        .stats-container {
+            height: 100%;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px 0 rgba(0,0,0,0.1);
+        }
+        
+        #chart, #statsChart {
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* 标签页容器样式 */
+        .tabs-header {
+            padding: 0 0 20px 0;
+            border-bottom: 1px solid #e4e7ed;
+        }
+        
+        .tabs-content {
+            flex: 1;
+            position: relative;
+            margin-top: 20px;
+            height: calc(100% - 60px);  /* 减去标签页头部的高度 */
+        }
+        
+        .tab-pane {
+            height: 100%;
+            width: 100%;
+        }
+        
+        /* 语言选择器样式 */
+        .language-selector {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .language-selector .el-select {
+            width: 140px;
+        }
+        
+        .language-selector .el-select .el-input__wrapper {
+            background-color: #f5f7fa;
+            border-radius: 20px;
+            padding: 0 15px;
+            height: 36px;
+            transition: all 0.3s;
+        }
+        
+        .language-selector .el-select .el-input__wrapper:hover {
+            background-color: #ecf5ff;
+        }
+        
+        .language-label {
+            font-size: 14px;
+            color: #606266;
+        }
     </style>
 </head>
 <body>
@@ -452,7 +564,20 @@
         <!-- 头部 -->
         <div class="header">
             <img class="logo" src="image.png" alt="Logo">
-            <h1 class="title">函数调用报告</h1>
+            <h1 class="title">{{ i18nText.title }}</h1>
+            <div class="language-selector">
+                <span class="language-label">{{ i18nText.language }}</span>
+                <el-select v-model="currentLang" size="default" @change="handleLanguageChange">
+                    <el-option
+                        v-for="item in languages"
+                        :key="item.value"
+                        :label="item.label"
+                        :value="item.value">
+                        <span style="margin-right: 8px;">{{ item.flag }}</span>
+                        <span>{{ item.label }}</span>
+                    </el-option>
+                </el-select>
+            </div>
         </div>
         
         <!-- 主体内容 -->
@@ -463,7 +588,7 @@
                 <div class="panel" v-show="!selectedThread">
                     <div class="panel-header">
                         <el-icon class="panel-icon"><Files /></el-icon>
-                        <div class="section-title">测试用例</div>
+                        <div class="section-title">{{ i18nText.testCase.title }}</div>
                     </div>
                     <div class="test-cases">
                         <div v-for="testCase in testCases" 
@@ -503,7 +628,7 @@
                             <div class="detail-value">{{ selectedNode.value }} 次</div>
                         </div>
                         <div class="detail-item">
-                            <div class="detail-label">占总调用比例</div>
+                            <div class="detail-label">占用比例</div>
                             <div class="detail-value">{{ selectedNode.percentage.toFixed(2) }}%</div>
                         </div>
                         <div class="detail-item">
@@ -537,13 +662,122 @@
             
             <!-- 右侧图表 -->
             <div class="chart-container">
-                <div id="chart"></div>
+                <!-- 标签页移到顶部 -->
+                <div class="tabs-header">
+                    <el-radio-group v-model="activeTab" size="large">
+                        <el-radio-button :label="'flame'">{{ i18nText.chart.tabs.flame }}</el-radio-button>
+                        <el-radio-button :label="'table'">{{ i18nText.chart.tabs.table }}</el-radio-button>
+                    </el-radio-group>
+                </div>
+                
+                <!-- 内容区域 -->
+                <div class="tabs-content">
+                    <div v-show="activeTab === 'flame'" class="tab-pane">
+                        <div id="chart"></div>
+                    </div>
+                    <div v-show="activeTab === 'table'" class="tab-pane">
+                        <el-table
+                            :data="tableData"
+                            style="width: 100%"
+                            height="calc(100% - 20px)"
+                            :default-sort="{prop: 'value', order: 'descending'}"
+                        >
+                            <el-table-column 
+                                :prop="'name'" 
+                                :label="i18nText.chart.table.name" 
+                                width="300" />
+                            <el-table-column 
+                                :prop="'value'" 
+                                :label="i18nText.chart.table.callCount" 
+                                width="120" 
+                                sortable />
+                            <el-table-column prop="percentage" label="占比" width="120">
+                                <template #default="scope">
+                                    {{ scope.row.percentage }}%
+                                </template>
+                            </el-table-column>
+                            <el-table-column prop="id" label="函数ID" min-width="200" />
+                        </el-table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        const { createApp, ref, onMounted, computed } = Vue
+        // 确保在 Vue 应用启动前初始化 i18n
+        window.i18n = window.i18n || {
+            zh: {
+                title: '函数调用报告',
+                testCase: {
+                    title: '测试用例',
+                    select: '请选择测试用例'
+                },
+                thread: {
+                    title: '线程列表',
+                    select: '请选择线程'
+                },
+                currentSelection: '当前选择',
+                functionDetail: {
+                    title: '函数调用详情',
+                    name: '函数名称',
+                    callCount: '调用次数',
+                    percentage: '占用比例',
+                    id: '函数标识'
+                },
+                chart: {
+                    title: '函数调用火焰图',
+                    tabs: {
+                        flame: '火焰图',
+                        table: '数据表格'
+                    },
+                    table: {
+                        name: '函数名称',
+                        callCount: '调用次数',
+                        percentage: '占比',
+                        id: '函数ID'
+                    },
+                    noData: '请选择测试用例和线程'
+                },
+                language: '切换语言'
+            },
+            en: {
+                title: 'Function Call Report',
+                testCase: {
+                    title: 'Test Cases',
+                    select: 'Please select a test case'
+                },
+                thread: {
+                    title: 'Thread List',
+                    select: 'Please select a thread'
+                },
+                currentSelection: 'Current Selection',
+                functionDetail: {
+                    title: 'Function Call Details',
+                    name: 'Function Name',
+                    callCount: 'Call Count',
+                    percentage: 'Percentage',
+                    id: 'Function ID'
+                },
+                chart: {
+                    title: 'Function Call Flame Graph',
+                    tabs: {
+                        flame: 'Flame Graph',
+                        table: 'Data Table'
+                    },
+                    table: {
+                        name: 'Function Name',
+                        callCount: 'Call Count',
+                        percentage: 'Percentage',
+                        id: 'Function ID'
+                    },
+                    noData: 'Please select a test case and thread'
+                },
+                language: 'Switch Language'
+            }
+        };
+
+        const { createApp, ref, onMounted, computed, watch, nextTick } = Vue
         
         // 从 Element Plus 图标中导入需要的图标
         const { Files, Share, Close, Back } = ElementPlusIconsVue
@@ -560,67 +794,24 @@
                 const selectedTestCase = ref('')
                 const selectedThread = ref('')
                 
-                // 测试用例数据
-                const testCases = ref([
-                    { 
-                        value: 'test1', 
-                        label: '登录测试',
-                        description: '用户登录功能相关测试用例'
-                    },
-                    { 
-                        value: 'test2', 
-                        label: '支付测试',
-                        description: '支付流程相关测试用例'
-                    },
-                    { 
-                        value: 'test3', 
-                        label: '注册测试',
-                        description: '用户注册流程测试用例'
-                    },
-                    { 
-                        value: 'test4', 
-                        label: '商品测试',
-                        description: '商品相关功能测试用例'
-                    }
-                ])
-                
-                // 线程数据映射表
-                const threadMap = {
-                    test1: [
-                        { value: 'thread1_1', label: '主线程' },
-                        { value: 'thread1_2', label: '网络线程' },
-                        { value: 'thread1_3', label: '渲染线程' }
-                    ],
-                    test2: [
-                        { value: 'thread2_1', label: '支付主线程' },
-                        { value: 'thread2_2', label: '安全验证线程' }
-                    ],
-                    test3: [
-                        { value: 'thread3_1', label: '注册线程' },
-                        { value: 'thread3_2', label: '验证码线程' }
-                    ],
-                    test4: [
-                        { value: 'thread4_1', label: '商品加载线程' },
-                        { value: 'thread4_2', label: '缓存线程' }
-                    ]
-                }
+                // 从配置文件加载测试用例数据
+                const testCases = ref(window.appConfig.testCases)
                 
                 const threads = ref([])
                 
                 const getThreadLabel = (threadValue) => {
-                    const currentThreads = threadMap[selectedTestCase.value] || []
+                    const currentThreads = window.appConfig.threadMap[selectedTestCase.value] || []
                     const thread = currentThreads.find(t => t.value === threadValue)
                     return thread ? thread.label : ''
                 }
                 
                 const handleTestCaseClick = (testCase) => {
                     if (selectedTestCase.value === testCase.value) {
-                        // 如果点击当前选中的测试用例，则清除线程选择
                         selectedThread.value = ''
                     } else {
                         selectedTestCase.value = testCase.value
                         selectedThread.value = ''
-                        threads.value = threadMap[testCase.value] || []
+                        threads.value = window.appConfig.threadMap[testCase.value] || []
                     }
                     updateChart()
                 }
@@ -650,13 +841,71 @@
                     })
                 })
                 
+                const activeTab = ref('flame')
+                // 监听标签页切换
+                watch(activeTab, (newVal) => {
+                    // 切换标签页时关闭函数详情面板
+                    selectedNode.value = null;
+                    
+                    if (newVal === 'flame') {
+                        // 在下一个 tick 更新图表大小
+                        nextTick(() => {
+                            if (window.chartManager.chart) {
+                                window.chartManager.chart.resize()
+                            }
+                        })
+                    }
+                })
+                
+                const tableData = ref([])
+                
+                // 更新表格数据的方法
+                const updateTableData = () => {
+                    if (!window.chartManager.currentTestData) {
+                        tableData.value = []
+                        return
+                    }
+                    
+                    const data = []
+                    const processNode = (node) => {
+                        data.push({
+                            name: node.name,
+                            value: node.value,
+                            percentage: ((node.value / window.chartManager.currentTestData.value) * 100).toFixed(2),
+                            id: node.id
+                        })
+                        
+                        if (node.children) {
+                            node.children.forEach(child => processNode(child))
+                        }
+                    }
+                    
+                    processNode(window.chartManager.currentTestData)
+                    tableData.value = data.sort((a, b) => b.value - a.value)
+                }
+                
+                // 修改 updateChart 方法
                 const updateChart = () => {
                     if (selectedTestCase.value && selectedThread.value) {
                         window.chartManager.updateChart(selectedTestCase.value, selectedThread.value)
+                            .then(() => {
+                                updateTableData();
+                            })
+                            .catch(error => {
+                                ElMessage.error('加载数据失败：' + error.message);
+                            });
                     } else {
                         window.chartManager.clearChart()
+                        tableData.value = []
                     }
                 }
+                
+                // 监听窗口大小变化，调整图表大小
+                window.addEventListener('resize', () => {
+                    if (statsChart) {
+                        statsChart.resize()
+                    }
+                })
                 
                 // 添加返回按钮处理函数
                 const handleBack = () => {
@@ -669,6 +918,21 @@
                     return testCases.value.find(t => t.value === selectedTestCase.value) || {}
                 })
                 
+                // 添加语言相关的状态
+                const currentLang = ref('zh')
+                const languages = [
+                    { value: 'zh', label: '简体中文', flag: '🇨🇳' },
+                    { value: 'en', label: 'English', flag: '🇺🇸' }
+                ]
+                
+                // 语言切换处理函数
+                const handleLanguageChange = (lang) => {
+                    currentLang.value = lang
+                }
+                
+                // 创建 i18nText 计算属性
+                const i18nText = computed(() => window.i18n[currentLang.value])
+
                 return {
                     selectedTestCase,
                     selectedThread,
@@ -681,7 +945,13 @@
                     selectedNode,
                     closeDetail,
                     handleBack,
-                    getCurrentTestCase
+                    getCurrentTestCase,
+                    activeTab,
+                    tableData,
+                    languages,
+                    currentLang,
+                    handleLanguageChange,
+                    i18nText
                 }
             }
         })

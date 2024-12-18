@@ -4,6 +4,37 @@ class FlameGraphManager {
         this.currentData = null;
         this.renderItem = this.renderItem.bind(this);
         this.clickCallback = null;
+        this.currentTestCase = null;
+    }
+
+    async loadTestData(testCase) {
+        if (this.currentTestCase === testCase) {
+            return window.testData;
+        }
+        
+        try {
+            // 移除旧的脚本（如果存在）
+            const oldScript = document.getElementById('test-data-script');
+            if (oldScript) {
+                oldScript.remove();
+            }
+            
+            // 加载新的数据文件
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.id = 'test-data-script';
+                script.src = `data/${testCase}.js`;
+                script.onload = () => {
+                    this.currentTestCase = testCase;
+                    resolve(window.testData);
+                };
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        } catch (error) {
+            console.error('Error loading test data:', error);
+            throw error;
+        }
     }
 
     init(element) {
@@ -87,6 +118,7 @@ class FlameGraphManager {
                     item.name,
                     (item.value / rootVal) * 100
                 ],
+                className: item.className,
                 itemStyle: {
                     color: this.ColorTypes[item.name.split(' ')[0]]
                 }
@@ -185,7 +217,7 @@ class FlameGraphManager {
         }
     }
 
-    updateChart(testCase, thread) {
+    async updateChart(testCase, thread) {
         try {
             // 确保有测试用例和线程被选中
             if (!testCase || !thread) {
@@ -193,8 +225,10 @@ class FlameGraphManager {
                 return;
             }
 
-            // 使用全局变量中的数据
-            const flameData = window.flameData;
+            // 加载对应测试用例的数据文件
+            const testData = await this.loadTestData(testCase);
+            // 获取选中线程的数据
+            const flameData = testData[thread];
             this.currentData = flameData;
             const levelOfJson = this.heightOfJson(flameData);
 
@@ -219,9 +253,39 @@ class FlameGraphManager {
                 tooltip: {
                     formatter: (params) => {
                         const samples = params.value[2] - params.value[1];
-                        return `${params.marker} ${params.value[3]}: (${echarts.format.addCommas(samples)} samples, ${+params.value[4].toFixed(2)}%)`;
-                    }
+                        // 将纳秒转换为更易读的时间格式
+                        const formatTime = (ns) => {
+                            if (ns < 1000) return `${ns}ns`;
+                            if (ns < 1000000) return `${(ns/1000).toFixed(2)}μs`;
+                            if (ns < 1000000000) return `${(ns/1000000).toFixed(2)}ms`;
+                            return `${(ns/1000000000).toFixed(2)}s`;
+                        };
+                        
+                        const details = [
+                            `<div style="font-weight: bold;">${params.value[3]}</div>`,
+                            `<div style="margin-top: 4px; color: #409EFF; font-family: monospace;">`,
+                            `${params.data.className || 'Unknown'}`,
+                            `</div>`,
+                            `<div style="margin-top: 8px;">`,
+                            `执行时间: ${formatTime(samples)}`,
+                            `<br/>占比: ${+params.value[4].toFixed(2)}%`,
+                            `</div>`
+                        ];
+                        
+                        return details.join('<br/>');
+                    },
+                    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+                    borderColor: '#eee',
+                    borderWidth: 1,
+                    padding: [8, 12],
+                    textStyle: {
+                        color: '#666',
+                        fontSize: 12
+                    },
+                    extraCssText: 'box-shadow: 0 2px 8px rgba(0,0,0,0.15);'
                 },
+                animationDuration: 300,
+                animationEasing: 'cubicOut',
                 title: {
                     text: '函数调用火焰图',
                     left: 'center',
@@ -234,11 +298,44 @@ class FlameGraphManager {
                 },
                 toolbox: {
                     feature: {
-                        restore: {}
+                        restore: {},
+                        dataZoom: {
+                            yAxisIndex: 'none'
+                        },
+                        saveAsImage: {
+                            pixelRatio: 2
+                        }
                     },
                     right: 20,
                     top: 10
                 },
+                dataZoom: [
+                    {
+                        type: 'slider',
+                        show: true,
+                        xAxisIndex: [0],
+                        start: 0,
+                        end: 100,
+                        bottom: 10,
+                        height: 20,
+                        borderColor: '#ccc',
+                        textStyle: {
+                            color: '#666'
+                        }
+                    },
+                    {
+                        type: 'inside',
+                        xAxisIndex: [0],
+                        start: 0,
+                        end: 100,
+                        zoomOnMouseWheel: true,
+                        moveOnMouseMove: true,
+                        zoomLock: false,
+                        throttle: 100
+                    }
+                ],
+                progressive: 500,
+                progressiveThreshold: 3000,
                 xAxis: {
                     show: false,
                     type: 'value',
@@ -257,7 +354,9 @@ class FlameGraphManager {
                             x: [1, 2],
                             y: 0
                         },
-                        data: this.recursionJson(flameData)
+                        data: this.recursionJson(flameData),
+                        large: true,
+                        largeThreshold: 500
                     }
                 ]
             };
