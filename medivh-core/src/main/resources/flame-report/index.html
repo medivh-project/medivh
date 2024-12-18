@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>函数调用报告</title>
+    
+    <!-- 引入必要的依赖 -->
+    <script src="https://registry.npmmirror.com/jquery/3.7.1/files/dist/jquery.min.js"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+    <script src="https://unpkg.com/element-plus"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <script src="https://unpkg.com/@element-plus/icons-vue"></script>
+    <script src="data.js"></script>
+    <script src="chart.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        .header {
+            height: 60px;
+            padding: 0 20px;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo {
+            width: 40px;
+            height: 40px;
+            margin-right: 15px;
+        }
+        
+        .title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .main-container {
+            display: flex;
+            height: calc(100vh - 60px);
+            padding: 20px;
+            gap: 20px;
+            position: relative;
+        }
+        
+        .left-panels {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 320px;
+        }
+        
+        .panel {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+        }
+        
+        .panel-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .panel-icon {
+            font-size: 18px;
+            margin-right: 8px;
+            color: #409EFF;
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .test-cases {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .test-case-card {
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            background-color: #ffffff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid #e4e7ed;
+            box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.03);
+        }
+        
+        .test-case-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+            border-color: #e4e7ed;
+        }
+        
+        .test-case-card.active {
+            border-color: #409EFF;
+            background: linear-gradient(145deg, #ffffff, #f0f7ff);
+            box-shadow: 0 6px 16px rgba(64, 158, 255, 0.1);
+        }
+        
+        .test-case-card .title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #2c3e50;
+            white-space: normal;
+            line-height: 1.4;
+        }
+        
+        .test-case-card .desc {
+            font-size: 13px;
+            color: #606266;
+            line-height: 1.4;
+        }
+        
+        .threads-container {
+            margin-top: 20px;
+        }
+        
+        .thread-card {
+            padding: 14px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            background-color: #ffffff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid #e4e7ed;
+            box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.02);
+            color: #2c3e50;
+        }
+        
+        .thread-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        }
+        
+        .thread-card.active {
+            border-color: #409EFF;
+            background: linear-gradient(145deg, #ffffff, #f0f7ff);
+            box-shadow: 0 4px 12px rgba(64, 158, 255, 0.1);
+        }
+        
+        .thread-select-panel {
+            position: absolute;
+            left: 360px;
+            width: 280px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            transform: translateX(-20px);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+        
+        .thread-select-panel.show {
+            transform: translateX(0);
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .thread-select-panel.hide {
+            transform: translateX(-20px);
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        .chart-container {
+            flex: 1;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .threads-panel {
+            display: none;
+        }
+        
+        #chart {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .selected-thread {
+            margin-top: 8px;
+            padding: 6px 10px;
+            background-color: #f0f7ff;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #409EFF;
+            display: flex;
+            align-items: center;
+        }
+        
+        .detail-panel {
+            position: absolute;
+            left: 20px;
+            bottom: 20px;
+            width: 280px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            transform: translateY(20px);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+        
+        .detail-panel.show {
+            transform: translateY(0);
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .detail-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .detail-close {
+            cursor: pointer;
+            color: #909399;
+            transition: color 0.3s;
+        }
+        
+        .detail-close:hover {
+            color: #409EFF;
+        }
+        
+        .detail-item {
+            margin-bottom: 12px;
+        }
+        
+        .detail-label {
+            font-size: 13px;
+            color: #909399;
+            margin-bottom: 4px;
+        }
+        
+        .detail-value {
+            font-size: 14px;
+            color: #2c3e50;
+            word-break: break-all;
+        }
+        
+        .back-icon {
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        
+        .back-icon:hover {
+            color: #409EFF;
+        }
+        
+        .current-selection {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .selection-card {
+            padding: 12px;
+            background-color: #f5f7fa;
+            border-radius: 8px;
+        }
+        
+        .selection-label {
+            font-size: 12px;
+            color: #909399;
+            margin-bottom: 4px;
+        }
+        
+        .selection-value {
+            font-size: 14px;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+        
+        .function-detail {
+            margin-top: 12px;
+        }
+        
+        /* 移除原来的详情面板样式 */
+        .detail-panel {
+            display: none;
+        }
+        
+        /* 当前选择面板样式 */
+        .current-selection {
+            background: linear-gradient(145deg, #f0f7ff, #ffffff);
+            border-radius: 10px;
+            padding: 16px;
+            border: 1px solid #e6f0fc;
+        }
+
+        .selection-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .selection-desc {
+            font-size: 13px;
+            color: #409EFF;
+            padding: 4px 8px;
+            background-color: #ecf5ff;
+            border-radius: 4px;
+            display: inline-block;
+            margin-top: 4px;
+        }
+
+        /* 函数详情面板样式 */
+        .function-detail {
+            margin-top: 16px;
+            background: linear-gradient(145deg, #ffffff, #f8f9fa);
+            border: 1px solid #ebeef5;
+        }
+
+        .function-detail .panel-header {
+            border-bottom: 2px solid #ebeef5;
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+        }
+
+        .detail-content {
+            padding: 0 4px;
+        }
+
+        .detail-item {
+            margin-bottom: 16px;
+            padding: 8px;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+
+        .detail-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .detail-label {
+            font-size: 12px;
+            color: #909399;
+            margin-bottom: 6px;
+        }
+
+        .detail-value {
+            font-size: 14px;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+        /* 分隔线 */
+        .panel-divider {
+            height: 1px;
+            background: linear-gradient(to right, transparent, #e4e7ed, transparent);
+            margin: 20px 0;
+        }
+
+        /* 函数详情面板样式 */
+        .detail-content {
+            margin: 0 -20px;  /* 负边距延伸到父容器边缘 */
+            padding: 20px;
+            background: linear-gradient(145deg, #f8faff, #ffffff);
+            border-top: 1px solid #e6e8f0;
+            border-bottom: 1px solid #e6e8f0;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.03);
+        }
+
+        .detail-content .section-title {
+            color: #1a1f36;
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding-left: 12px;
+            border-left: 3px solid #409EFF;
+        }
+
+        .detail-item {
+            background: #ffffff;
+            margin-bottom: 12px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            border: 1px solid #edf2fc;
+            transition: all 0.3s ease;
+        }
+
+        .detail-item:hover {
+            transform: translateX(4px);
+            box-shadow: 0 4px 12px rgba(64, 158, 255, 0.1);
+            border-color: #409EFF;
+        }
+
+        .detail-label {
+            font-size: 12px;
+            color: #8792a8;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .detail-value {
+            font-size: 14px;
+            color: #1a1f36;
+            font-weight: 500;
+            line-height: 1.4;
+        }
+
+        /* 分隔线样式优化 */
+        .panel-divider {
+            height: 20px;
+            margin: 0 -20px;  /* 延伸到面板边缘 */
+            background: linear-gradient(to bottom, 
+                transparent,
+                rgba(0, 0, 0, 0.02) 50%,
+                transparent
+            );
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- 头部 -->
+        <div class="header">
+            <img class="logo" src="image.png" alt="Logo">
+            <h1 class="title">函数调用报告</h1>
+        </div>
+        
+        <!-- 主体内容 -->
+        <div class="main-container">
+            <!-- 左侧测试用例面板 -->
+            <div class="left-panels">
+                <!-- 测试用例选择面板 -->
+                <div class="panel" v-show="!selectedThread">
+                    <div class="panel-header">
+                        <el-icon class="panel-icon"><Files /></el-icon>
+                        <div class="section-title">测试用例</div>
+                    </div>
+                    <div class="test-cases">
+                        <div v-for="testCase in testCases" 
+                             :key="testCase.value"
+                             class="test-case-card"
+                             :class="{ active: selectedTestCase === testCase.value }"
+                             @click="handleTestCaseClick(testCase)">
+                            <div class="title">{{ testCase.label }}</div>
+                            <div class="desc">{{ testCase.description }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 当前选择状态和函数详情面板 -->
+                <div class="panel" v-show="selectedThread">
+                    <div class="panel-header">
+                        <el-icon class="panel-icon back-icon" @click="handleBack"><Back /></el-icon>
+                        <div class="section-title">当前选择</div>
+                    </div>
+                    <div class="current-selection">
+                        <div class="selection-title">{{ getCurrentTestCase.label }}</div>
+                        <div class="selection-desc">{{ getThreadLabel(selectedThread) }}</div>
+                    </div>
+
+                    <!-- 添加分隔线 -->
+                    <div class="panel-divider" v-if="selectedNode"></div>
+
+                    <!-- 函数详情部分 -->
+                    <div class="detail-content" v-if="selectedNode">
+                        <div class="section-title">函数调用详情</div>
+                        <div class="detail-item">
+                            <div class="detail-label">函数名称</div>
+                            <div class="detail-value">{{ selectedNode.name }}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">调用次数</div>
+                            <div class="detail-value">{{ selectedNode.value }} 次</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">占总调用比例</div>
+                            <div class="detail-value">{{ selectedNode.percentage.toFixed(2) }}%</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">函数标识</div>
+                            <div class="detail-value">{{ selectedNode.id }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 线程选择面板 -->
+            <div class="thread-select-panel" 
+                 :class="{ 
+                     show: selectedTestCase && !selectedThread,
+                     hide: selectedThread 
+                 }">
+                <div class="panel-header">
+                    <el-icon class="panel-icon"><Share /></el-icon>
+                    <div class="section-title">线程列表</div>
+                </div>
+                <div v-if="selectedTestCase" class="threads-container">
+                    <div v-for="thread in threads" 
+                         :key="thread.value"
+                         class="thread-card"
+                         :class="{ active: selectedThread === thread.value }"
+                         @click="handleThreadClick(thread)">
+                        {{ thread.label }}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 右侧图表 -->
+            <div class="chart-container">
+                <div id="chart"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp, ref, onMounted, computed } = Vue
+        
+        // 从 Element Plus 图标中导入需要的图标
+        const { Files, Share, Close, Back } = ElementPlusIconsVue
+        
+        const app = createApp({
+            // 注册图标组件
+            components: {
+                Files,
+                Share,
+                Close,
+                Back
+            },
+            setup() {
+                const selectedTestCase = ref('')
+                const selectedThread = ref('')
+                
+                // 测试用例数据
+                const testCases = ref([
+                    { 
+                        value: 'test1', 
+                        label: '登录测试',
+                        description: '用户登录功能相关测试用例'
+                    },
+                    { 
+                        value: 'test2', 
+                        label: '支付测试',
+                        description: '支付流程相关测试用例'
+                    },
+                    { 
+                        value: 'test3', 
+                        label: '注册测试',
+                        description: '用户注册流程测试用例'
+                    },
+                    { 
+                        value: 'test4', 
+                        label: '商品测试',
+                        description: '商品相关功能测试用例'
+                    }
+                ])
+                
+                // 线程数据映射表
+                const threadMap = {
+                    test1: [
+                        { value: 'thread1_1', label: '主线程' },
+                        { value: 'thread1_2', label: '网络线程' },
+                        { value: 'thread1_3', label: '渲染线程' }
+                    ],
+                    test2: [
+                        { value: 'thread2_1', label: '支付主线程' },
+                        { value: 'thread2_2', label: '安全验证线程' }
+                    ],
+                    test3: [
+                        { value: 'thread3_1', label: '注册线程' },
+                        { value: 'thread3_2', label: '验证码线程' }
+                    ],
+                    test4: [
+                        { value: 'thread4_1', label: '商品加载线程' },
+                        { value: 'thread4_2', label: '缓存线程' }
+                    ]
+                }
+                
+                const threads = ref([])
+                
+                const getThreadLabel = (threadValue) => {
+                    const currentThreads = threadMap[selectedTestCase.value] || []
+                    const thread = currentThreads.find(t => t.value === threadValue)
+                    return thread ? thread.label : ''
+                }
+                
+                const handleTestCaseClick = (testCase) => {
+                    if (selectedTestCase.value === testCase.value) {
+                        // 如果点击当前选中的测试用例，则清除线程选择
+                        selectedThread.value = ''
+                    } else {
+                        selectedTestCase.value = testCase.value
+                        selectedThread.value = ''
+                        threads.value = threadMap[testCase.value] || []
+                    }
+                    updateChart()
+                }
+                
+                const handleThreadClick = (thread) => {
+                    selectedThread.value = thread.value
+                    updateChart()
+                }
+                
+                // 添加选中节点的状态
+                const selectedNode = ref(null)
+                
+                // 添加关闭详情面板的方法
+                const closeDetail = () => {
+                    selectedNode.value = null
+                }
+                
+                onMounted(() => {
+                    window.chartManager.init(document.getElementById('chart'))
+                    window.chartManager.onNodeClick((node) => {
+                        selectedNode.value = {
+                            name: node.name,
+                            value: node.value[2] - node.value[1],
+                            percentage: node.value[4],
+                            id: node.name
+                        }
+                    })
+                })
+                
+                const updateChart = () => {
+                    if (selectedTestCase.value && selectedThread.value) {
+                        window.chartManager.updateChart(selectedTestCase.value, selectedThread.value)
+                    } else {
+                        window.chartManager.clearChart()
+                    }
+                }
+                
+                // 添加返回按钮处理函数
+                const handleBack = () => {
+                    selectedThread.value = ''
+                    selectedNode.value = null
+                }
+                
+                // 添加当前测试用例的计算属性
+                const getCurrentTestCase = computed(() => {
+                    return testCases.value.find(t => t.value === selectedTestCase.value) || {}
+                })
+                
+                return {
+                    selectedTestCase,
+                    selectedThread,
+                    testCases,
+                    threads,
+                    handleTestCaseClick,
+                    handleThreadClick,
+                    updateChart,
+                    getThreadLabel,
+                    selectedNode,
+                    closeDetail,
+                    handleBack,
+                    getCurrentTestCase
+                }
+            }
+        })
+        
+        app.use(ElementPlus)
+        app.mount('#app')
+    </script>
+</body>
+</html>

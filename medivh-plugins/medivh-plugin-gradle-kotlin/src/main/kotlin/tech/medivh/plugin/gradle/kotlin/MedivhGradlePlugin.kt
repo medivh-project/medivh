@@ -3,11 +3,7 @@ package tech.medivh.plugin.gradle.kotlin
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.testing.Test
-import org.gradle.api.tasks.testing.TestDescriptor
-import org.gradle.api.tasks.testing.TestListener
-import org.gradle.api.tasks.testing.TestResult
 import tech.medivh.core.i18n
-import tech.medivh.core.jfr.JfrInterceptor
 
 
 /**

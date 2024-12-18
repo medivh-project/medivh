@@ -1,10 +1,12 @@
 package tech.medivh.plugin.gradle.kotlin
 
+import com.alibaba.fastjson2.JSON
 import com.alibaba.fastjson2.JSONArray
-import com.alibaba.fastjson2.JSONObject
 import tech.medivh.core.env.RunningMode
 import tech.medivh.core.i18n
-import tech.medivh.core.jfr.*
+import tech.medivh.core.jfr.JfrAnalyzer
+import tech.medivh.core.jfr.JfrEventClassifier
+import tech.medivh.core.jfr.JfrMethod
 import tech.medivh.core.reporter.TagMethod
 import tech.medivh.core.reporter.TagMethodLogFileReader
 import tech.medivh.core.statistic.JfrStatistic
@@ -34,18 +36,24 @@ class MedivhReporter(private val medivhExtension: MedivhExtension) {
     }
 
     private fun deepReport() {
-        val classify = JfrEventClassifier(File("${medivhExtension.properties.reportDir}/medivh.jfr")).classify()
-        classify.forEach {
-            val tree = it.buildTree()
-        }
         val dir = File(medivhExtension.properties.reportDir)
         val reportZip = dir.parentFile.parentFile.parentFile.resolve("medivh-report.zip")
         val reportDir = dir.resolve("report/")
         unzip(reportZip, reportDir)
-//        val jsonArray = JSONArray(statistic.values)
-//        JsGenerator(medivhExtension).generateJs(jsonArray.toJSONString())
-//        val indexHtml = File(medivhExtension.properties.reportDir).resolve("index.html")
-//        println(i18n(medivhExtension.properties.language, "tip.seeReport", indexHtml.absolutePath))
+        generateTraceData(reportDir.resolve("data/"))
+        val indexHtml = reportDir.resolve("function-trace.html")
+        println(i18n(medivhExtension.properties.language, "tip.seeReport", indexHtml.absolutePath))
+    }
+
+    private fun generateTraceData(dir: File) {
+        if (!dir.exists()) {
+            dir.mkdirs()
+        }
+        val classifier = JfrEventClassifier(File("${medivhExtension.properties.reportDir}/medivh.jfr"))
+        val testCaseReportList = classifier.classify()
+        val jsFile = dir.resolve("trace-data.js")
+        jsFile.appendText("const testCasesData = ")
+        jsFile.appendText(JSON.toJSONString(testCaseReportList))
     }
 
     private fun normalReport() {

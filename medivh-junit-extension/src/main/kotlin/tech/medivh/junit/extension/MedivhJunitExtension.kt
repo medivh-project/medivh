@@ -4,9 +4,12 @@ import org.junit.jupiter.api.extension.BeforeTestExecutionCallback
 import org.junit.jupiter.api.extension.ExtensionContext
 import tech.medivh.core.jfr.JfrInterceptor
 
+/**
+ * Used to isolate different test cases
+ * @author gongxuanzhangmelt@gmail.com
+ */
 class MedivhJunitExtension : BeforeTestExecutionCallback {
     override fun beforeTestExecution(context: ExtensionContext) {
-        println("开始执行测试: " + context.displayName)
         JfrInterceptor.updateToken(context.displayName)
     }
 }

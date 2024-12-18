@@ -1,13 +1,10 @@
 package tech.medivh.core.jfr
 
-import org.gradle.internal.impldep.com.fasterxml.jackson.databind.util.LinkedNode
 import org.slf4j.LoggerFactory
 import java.io.BufferedOutputStream
 import java.io.File
-import java.io.RandomAccessFile
 import java.nio.ByteBuffer
 import java.time.Instant
-import java.util.*
 
 
 /**
@@ -92,8 +89,6 @@ class ExternalSorterWriter(dir: File, jfrThread: JfrThread, testCase: JfrMethod,
     companion object {
         private val log = LoggerFactory.getLogger(ExternalSorterWriter::class.java)
     }
-
-
 
 
 }

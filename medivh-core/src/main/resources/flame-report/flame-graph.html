@@ -1,0 +1,252 @@
+<!--
+	此示例下载自 https://echarts.apache.org/examples/zh/editor.html?c=flame-graph
+-->
+<!DOCTYPE html>
+<html lang="en" style="height: 100%">
+<head>
+  <meta charset="utf-8">
+</head>
+<body style="height: 100%; margin: 0">
+  <div id="container" style="height: 100%"></div>
+
+  <script type="text/javascript" src="https://registry.npmmirror.com/jquery/3.7.1/files/dist/jquery.min.js"></script>
+  <script type="text/javascript" src="https://registry.npmmirror.com/echarts/5.5.1/files/dist/echarts.min.js"></script>
+  
+  <!-- Uncomment this line if you want to dataTool extension
+  <script type="text/javascript" src="https://registry.npmmirror.com/echarts/5.5.1/files/dist/extension/dataTool.min.js"></script>
+  -->
+  <!-- Uncomment this line if you want to use gl extension
+  <script type="text/javascript" src="https://registry.npmmirror.com/echarts-gl/2/files/dist/echarts-gl.min.js"></script>
+  -->
+  <!-- Uncomment this line if you want to echarts-stat extension
+  <script type="text/javascript" src="https://registry.npmmirror.com/echarts-stat/latest/files/dist/ecStat.min.js"></script>
+  -->
+  <!-- Uncomment this line if you want to echarts-graph-modularity extension
+  <script type="text/javascript" src="https://registry.npmmirror.com/echarts-graph-modularity/2/files/dist/echarts-graph-modularity.min.js"></script>
+  -->
+  <!-- Uncomment this line if you want to use map
+  <script type="text/javascript" src="https://registry.npmmirror.com/echarts/4.9.0/files/map/js/world.js"></script>
+  -->
+  <!-- Uncomment these two lines if you want to use bmap extension
+  <script type="text/javascript" src="https://api.map.baidu.com/api?v=3.0&ak=YOUR_API_KEY"></script>
+  <script type="text/javascript" src="https://registry.npmmirror.com/echarts/5.5.1/files/dist/extension/bmap.min.js"></script>
+  -->
+
+  <script type="text/javascript">
+    var dom = document.getElementById('container');
+    var myChart = echarts.init(dom, null, {
+      renderer: 'canvas',
+      useDirtyRect: false
+    });
+    var app = {};
+    var ROOT_PATH = 'https://echarts.apache.org/examples';
+    var option;
+
+    const ColorTypes = {
+  root: '#8fd3e8',
+  genunix: '#d95850',
+  unix: '#eb8146',
+  ufs: '#ffb248',
+  FSS: '#f2d643',
+  namefs: '#ebdba4',
+  doorfs: '#fcce10',
+  lofs: '#b5c334',
+  zfs: '#1bca93'
+};
+const filterJson = (json, id) => {
+  if (id == null) {
+    return json;
+  }
+  const recur = (item, id) => {
+    if (item.id === id) {
+      return item;
+    }
+    for (const child of item.children || []) {
+      const temp = recur(child, id);
+      if (temp) {
+        item.children = [temp];
+        item.value = temp.value; // change the parents' values
+        return item;
+      }
+    }
+  };
+  return recur(json, id) || json;
+};
+const recursionJson = (jsonObj, id) => {
+  const data = [];
+  const filteredJson = filterJson(structuredClone(jsonObj), id);
+  const rootVal = filteredJson.value;
+  const recur = (item, start = 0, level = 0) => {
+    const temp = {
+      name: item.id,
+      // [level, start_val, end_val, name, percentage]
+      value: [
+        level,
+        start,
+        start + item.value,
+        item.name,
+        (item.value / rootVal) * 100
+      ],
+      itemStyle: {
+        color: ColorTypes[item.name.split(' ')[0]]
+      }
+    };
+    data.push(temp);
+    let prevStart = start;
+    for (const child of item.children || []) {
+      recur(child, prevStart, level + 1);
+      prevStart = prevStart + child.value;
+    }
+  };
+  recur(filteredJson);
+  return data;
+};
+const heightOfJson = (json) => {
+  const recur = (item, level = 0) => {
+    if ((item.children || []).length === 0) {
+      return level;
+    }
+    let maxLevel = level;
+    for (const child of item.children) {
+      const tempLevel = recur(child, level + 1);
+      maxLevel = Math.max(maxLevel, tempLevel);
+    }
+    return maxLevel;
+  };
+  return recur(json);
+};
+const renderItem = (params, api) => {
+  const level = api.value(0);
+  const start = api.coord([api.value(1), level]);
+  const end = api.coord([api.value(2), level]);
+  const height = ((api.size && api.size([0, 1])) || [0, 20])[1];
+  const width = end[0] - start[0];
+  return {
+    type: 'rect',
+    transition: ['shape'],
+    shape: {
+      x: start[0],
+      y: start[1] - height / 2,
+      width,
+      height: height - 2 /* itemGap */,
+      r: 2
+    },
+    style: {
+      fill: api.visual('color')
+    },
+    emphasis: {
+      style: {
+        stroke: '#000'
+      }
+    },
+    textConfig: {
+      position: 'insideLeft'
+    },
+    textContent: {
+      style: {
+        text: api.value(3),
+        fontFamily: 'Verdana',
+        fill: '#000',
+        width: width - 4,
+        overflow: 'truncate',
+        ellipsis: '..',
+        truncateMinChar: 1
+      },
+      emphasis: {
+        style: {
+          stroke: '#000',
+          lineWidth: 0.5
+        }
+      }
+    }
+  };
+};
+myChart.showLoading();
+$.get(ROOT_PATH + '/data/asset/data/stack-trace.json', (stackTrace) => {
+  myChart.hideLoading();
+  const levelOfOriginalJson = heightOfJson(stackTrace);
+  option = {
+    backgroundColor: {
+      type: 'linear',
+      x: 0,
+      y: 0,
+      x2: 0,
+      y2: 1,
+      colorStops: [
+        {
+          offset: 0.05,
+          color: '#eee'
+        },
+        {
+          offset: 0.95,
+          color: '#eeeeb0'
+        }
+      ]
+    },
+    tooltip: {
+      formatter: (params) => {
+        const samples = params.value[2] - params.value[1];
+        return `${params.marker} ${
+          params.value[3]
+        }: (${echarts.format.addCommas(
+          samples
+        )} samples, ${+params.value[4].toFixed(2)}%)`;
+      }
+    },
+    title: [
+      {
+        text: 'Flame Graph',
+        left: 'center',
+        top: 10,
+        textStyle: {
+          fontFamily: 'Verdana',
+          fontWeight: 'normal',
+          fontSize: 20
+        }
+      }
+    ],
+    toolbox: {
+      feature: {
+        restore: {}
+      },
+      right: 20,
+      top: 10
+    },
+    xAxis: {
+      show: false
+    },
+    yAxis: {
+      show: false,
+      max: levelOfOriginalJson
+    },
+    series: [
+      {
+        type: 'custom',
+        renderItem,
+        encode: {
+          x: [0, 1, 2],
+          y: 0
+        },
+        data: recursionJson(stackTrace)
+      }
+    ]
+  };
+  myChart.setOption(option);
+  myChart.on('click', (params) => {
+    const data = recursionJson(stackTrace, params.data.name);
+    const rootValue = data[0].value[2];
+    myChart.setOption({
+      xAxis: { max: rootValue },
+      series: [{ data }]
+    });
+  });
+});
+
+    if (option && typeof option === 'object') {
+      myChart.setOption(option);
+    }
+
+    window.addEventListener('resize', myChart.resize);
+  </script>
+</body>
+</html>
