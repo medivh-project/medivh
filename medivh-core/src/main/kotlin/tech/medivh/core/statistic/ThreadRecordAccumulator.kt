@@ -2,7 +2,6 @@ package tech.medivh.core.statistic
 
 import tech.medivh.core.InvokeInfo
 import tech.medivh.core.jfr.FlameNode
-import java.math.BigDecimal
 import java.time.Duration
 import java.time.Instant
 
@@ -38,7 +37,7 @@ class ThreadRecordAccumulator(val name: String) {
         val mergedChildren = mergeChildren(root.children)
         var rootDuration = Duration.ZERO
         mergedChildren.forEach {
-            rootDuration += it.duration
+            rootDuration += it.value
         }
         val rootRecord = FunctionRecord(root.name, root.className, rootDuration)
         rootRecord.children.addAll(mergedChildren)

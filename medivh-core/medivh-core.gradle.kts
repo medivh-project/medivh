@@ -11,6 +11,7 @@ plugins {
 
 dependencies {
     implementation(project(":medivh-api"))
+    implementation("com.alibaba.fastjson2:fastjson2-kotlin:${fastjson2Version}")
     implementation("net.bytebuddy:byte-buddy:$byteBuddyVersion")
     implementation("com.alibaba.fastjson2:fastjson2:$fastjson2Version")
     testImplementation("org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}")

@@ -74,9 +74,6 @@ class ReverseFileWriter(dir: File, jfrThread: JfrThread, bufferCapacity: Int = 1
     }
 
 
-    private fun Instant.serialize(): Long {
-        return this.epochSecond * 1_000_000_000 + this.nano.toLong()
-    }
 
     companion object {
         private val log = LoggerFactory.getLogger(ReverseFileWriter::class.java)

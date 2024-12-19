@@ -1,289 +1,799 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-    <title>API Call Report</title>
-    <link rel="stylesheet" href="./css/index.css">
-    <script src="./js/vue.global.js"></script>
-    <script src="./js/element-plus.full.min.js"></script>
-    <script src="./js/index.iife.min.js"></script>
-    <script src="./js/medivh.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title v-text="i18nText.title">函数调用报告</title>
+    <link rel="icon" type="image/png" href="image.png">
+    
+    <script src="medivh.js"></script>
+    <script src="https://registry.npmmirror.com/jquery/3.7.1/files/dist/jquery.min.js"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css" />
+    <script src="https://unpkg.com/element-plus"></script>
+    <script src="https://unpkg.com/@element-plus/icons-vue@2.1.0/dist/index.iife.min.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <script src="chart.js"></script>
+    
     <style>
-        body {
-            font-family: Arial, sans-serif;
+        * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
         }
-
-        .container {
-            width: 95%;
-            margin: 0 auto;
-            padding-top: 20px;
+        
+        body {
+            background-color: #f0f2f5;
         }
-
+        
         .header {
+            height: 60px;
+            padding: 0 20px;
+            background-color: #fff;
+            border-bottom: 1px solid #e4e7ed;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 20px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
         }
-
-        .logo-title {
+        
+        .logo {
+            width: 32px;
+            height: 32px;
+            margin-right: 12px;
+            object-fit: contain;
+        }
+        
+        .title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .main-container {
+            display: flex;
+            height: calc(100vh - 60px);
+            padding: 20px;
+            gap: 20px;
+            position: relative;
+        }
+        
+        .left-panels {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 320px;
+            max-height: calc(100vh - 100px);
+            overflow-y: auto;
+        }
+        
+        .panel {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px 0 rgba(0, 0, 0, 0.02);
+            border: 1px solid #e4e7ed;
+        }
+        
+        .panel-header {
             display: flex;
             align-items: center;
+            margin-bottom: 16px;
         }
-
-        .logo {
-            max-width: 100px;
-            height: auto;
-            margin-right: 20px;
+        
+        .panel-icon {
+            font-size: 18px;
+            margin-right: 8px;
+            color: #409EFF;
         }
-
-        .pagination-wrapper {
-            margin-top: 20px;
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .test-cases {
             display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .test-case-card {
+            padding: 16px;
+            border-radius: 8px;
+            background-color: #f8fafc;
+            border: 1px solid #e4e7ed;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .test-case-card:hover {
+            transform: translateY(-2px);
+            background-color: #fff;
+            border-color: #a0cfff;
+            box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+        }
+        
+        .test-case-card.active {
+            background-color: #ecf5ff;
+            border-color: #409EFF;
+        }
+        
+        .test-case-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        
+        .test-case-description {
+            font-size: 12px;
+            color: #909399;
+        }
+        
+        .thread-select-panel {
+            position: absolute;
+            left: 340px;
+            top: 20px;
+            width: 300px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            padding: 20px;
+            transform: translateX(-20px);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            border: 1px solid #e4e7ed;
+        }
+        
+        .thread-select-panel.show {
+            transform: translateX(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .thread-select-panel.hide {
+            transform: translateX(-20px);
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .threads-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 8px;
+        }
+        
+        .thread-card {
+            position: relative;
+            padding: 16px;
+            border-radius: 8px;
+            background-color: #f8fafc;
+            border: 1px solid #e4e7ed;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .thread-card:hover {
+            background-color: #fff;
+            border-color: #a0cfff;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+        }
+        
+        .thread-card.active {
+            background-color: #ecf5ff;
+            border-color: #409EFF;
+        }
+        
+        .thread-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background-color: #e6f1fc;
+            display: flex;
+            align-items: center;
             justify-content: center;
+            color: #409EFF;
+            font-size: 18px;
+        }
+        
+        .thread-info {
+            flex: 1;
+        }
+        
+        .thread-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #303133;
+            margin-bottom: 4px;
+        }
+        
+        .thread-description {
+            font-size: 12px;
+            color: #67c23a;
+            font-family: monospace;
+        }
+        
+        .thread-arrow {
+            color: #c0c4cc;
+            transition: all 0.3s;
+        }
+        
+        .thread-card:hover .thread-arrow {
+            color: #409EFF;
+            transform: translateX(4px);
+        }
+        
+        .thread-card.active .thread-arrow {
+            color: #409EFF;
+            transform: translateX(4px);
+        }
+        
+        .current-selection-info {
+            padding: 0 12px;
+        }
+        
+        .selection-label {
+            font-size: 14px;
+            color: #909399;
+            margin-bottom: 12px;
+        }
+        
+        .selection-value {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .selection-item {
+            background-color: #f8fafc;
+            border: 1px solid #e4e7ed;
+            padding: 12px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .selection-item .label {
+            font-size: 12px;
+            color: #909399;
+            margin-bottom: 4px;
+        }
+        
+        .selection-item .value {
+            font-size: 14px;
+            color: #303133;
+            font-weight: 500;
+        }
+        
+        .back-button {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            color: #409EFF;
+            font-size: 14px;
+            padding: 6px 12px;
+            border-radius: 4px;
+            background-color: #f0f7ff;
+            border: 1px solid #d9ecff;
+            transition: all 0.3s ease;
+            width: fit-content;
+        }
+        
+        .back-button:hover {
+            background-color: #ecf5ff;
+            border-color: #a0cfff;
+        }
+        
+        .chart-container {
+            flex: 1;
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #e4e7ed;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+        }
+        
+        .tabs-header {
+            margin-bottom: 20px;
+        }
+        
+        .tabs-content {
+            flex: 1;
+            position: relative;
+        }
+        
+        .tab-pane {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .language-selector {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .language-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 4px;
+            background-color: #f8fafc;
+            border: 1px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .language-item:hover {
+            background-color: #fff;
+            border-color: #a0cfff;
+        }
+        
+        .language-item.active {
+            background-color: #ecf5ff;
+            border-color: #409EFF;
+        }
+        
+        .language-flag {
+            font-size: 16px;
+        }
+        
+        .language-label {
+            font-size: 14px;
+            color: #606266;
+        }
+        
+        .function-detail-panel {
+            background-color: #f8fafc;
+        }
+        
+        .detail-content {
+            margin-top: 16px;
+        }
+        
+        .detail-item {
+            background-color: #fff;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #ebeef5;
+            margin-bottom: 8px;
+        }
+        
+        .detail-label {
+            font-size: 12px;
+            color: #909399;
+            margin-bottom: 4px;
+        }
+        
+        .detail-value {
+            font-size: 14px;
+            color: #303133;
+            word-break: break-all;
+        }
+        
+        #chart {
+            width: 100%;
+            height: 100%;
         }
     </style>
 </head>
 <body>
-<div id="app" class="container">
-    <div class="header">
-        <div class="logo-title">
-            <img src="images/logo.png" alt="Company Logo" class="logo">
-            <h1>{{ translations[currentLang].reportTitle }}</h1>
+    <div id="app">
+        <div class="header">
+            <div style="display: flex; align-items: center;">
+                <img src="image.png" class="logo" alt="logo">
+                <div class="title">{{ i18nText.title }}</div>
+            </div>
+            <div class="language-selector">
+                <div v-for="lang in languages" 
+                     :key="lang.value"
+                     class="language-item"
+                     :class="{ active: currentLang === lang.value }"
+                     @click="handleLanguageChange(lang.value)">
+                    <span class="language-flag">{{ lang.flag }}</span>
+                    <span class="language-label">{{ lang.label }}</span>
+                </div>
+            </div>
         </div>
-        <el-select v-model="currentLang" style="width: 120px">
-            <el-option value="en" label="English"></el-option>
-            <el-option value="zh" label="中文"></el-option>
-        </el-select>
+        
+        <div class="main-container">
+            <div class="left-panels">
+                <div class="panel">
+                    <template v-if="!selectedThread">
+                        <div class="panel-header">
+                            <el-icon class="panel-icon"><Files /></el-icon>
+                            <div class="section-title">{{ i18nText.testCase.title }}</div>
+                        </div>
+                        <div class="test-cases">
+                            <div v-for="testCase in testCases" 
+                                 :key="testCase.value"
+                                 class="test-case-card"
+                                 :class="{ active: selectedTestCase === testCase.value }"
+                                 @click="handleTestCaseClick(testCase)">
+                                <div class="test-case-title">{{ testCase.label }}</div>
+                                <div class="test-case-description">{{ testCase.description }}</div>
+                            </div>
+                        </div>
+                    </template>
+                    
+                    <template v-else>
+                        <div class="panel-header" style="margin-bottom: 12px;">
+                            <div class="back-button" @click="handleBack">
+                                <el-icon><Back /></el-icon>
+                                <span>{{ i18nText.back }}</span>
+                            </div>
+                        </div>
+                        <div class="current-selection-info">
+                            <div class="selection-label">{{ i18nText.currentSelection }}:</div>
+                            <div class="selection-value">
+                                <div class="selection-item">
+                                    <span class="label">{{ i18nText.testCase.title }}:</span>
+                                    <span class="value">{{ getCurrentTestCase.label }}</span>
+                                </div>
+                                <div class="selection-item">
+                                    <span class="label">{{ i18nText.thread.title }}:</span>
+                                    <span class="value">{{ getThreadLabel(selectedThread) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <div class="panel function-detail-panel" v-if="selectedNode">
+                    <div class="panel-header" style="justify-content: space-between;">
+                        <div class="section-title">{{ i18nText.functionDetail.title }}</div>
+                        <el-icon class="detail-close" @click="closeDetail"><Close /></el-icon>
+                    </div>
+                    
+                    <div class="detail-content">
+                        <div class="detail-item">
+                            <div class="detail-label">{{ i18nText.functionDetail.name }}</div>
+                            <div class="detail-value">{{ selectedNode.name }}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">{{ i18nText.functionDetail.callCount }}</div>
+                            <div class="detail-value">{{ selectedNode.value }} {{ currentLang === 'en' ? 'times' : '次' }}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">{{ i18nText.functionDetail.percentage }}</div>
+                            <div class="detail-value">{{ selectedNode.percentage.toFixed(2) }}%</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">{{ i18nText.functionDetail.id }}</div>
+                            <div class="detail-value">{{ selectedNode.id }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="thread-select-panel" 
+                 :class="{ 
+                     show: selectedTestCase && !selectedThread,
+                     hide: !selectedTestCase || selectedThread 
+                 }">
+                <div class="panel-header">
+                    <el-icon class="panel-icon"><Share /></el-icon>
+                    <div class="section-title">{{ i18nText.thread.title }}</div>
+                </div>
+                <div v-if="selectedTestCase" class="threads-container">
+                    <div v-for="thread in threads" 
+                         :key="thread.value"
+                         class="thread-card"
+                         :class="{ active: selectedThread === thread.value }"
+                         @click="handleThreadClick(thread)">
+                        <div class="thread-icon">
+                            <el-icon><Connection /></el-icon>
+                        </div>
+                        <div class="thread-info">
+                            <div class="thread-name">{{ thread.label }}</div>
+                            <div class="thread-description">
+                                {{ formatExecutionTime(getThreadExecutionTime(thread.value)) }}
+                            </div>
+                        </div>
+                        <el-icon class="thread-arrow"><ArrowRight /></el-icon>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <div class="tabs-header">
+                    <el-radio-group v-model="activeTab" size="large">
+                        <el-radio-button :label="'flame'">{{ i18nText.chart.tabs.flame }}</el-radio-button>
+                        <el-radio-button :label="'table'">{{ i18nText.chart.tabs.table }}</el-radio-button>
+                    </el-radio-group>
+                </div>
+                
+                <div class="tabs-content">
+                    <div v-show="activeTab === 'flame'" class="tab-pane">
+                        <div id="chart"></div>
+                    </div>
+                    <div v-show="activeTab === 'table'" class="tab-pane">
+                        <el-table :data="tableData" style="width: 100%" height="100%">
+                            <el-table-column prop="name" :label="i18nText.chart.table.name" />
+                            <el-table-column prop="callCount" :label="i18nText.chart.table.callCount" />
+                            <el-table-column prop="percentage" :label="i18nText.chart.table.percentage" />
+                            <el-table-column prop="id" :label="i18nText.chart.table.id" />
+                        </el-table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <el-table
-            :data="paginatedData"
-            style="width: 100%"
-            border
-            show-overflow-tooltip
-            @expand-change="handleExpand"
-            :default-sort="{ prop: 'performanceRate', order: 'descending' }">
-        <el-table-column type="expand">
-            <template #default="props">
-                <el-table :data="props.row.threadInvoke" border>
-                    <el-table-column :label="translations[currentLang].threadName">
-                        <template #default="scope">
-                            {{ scope.row.threadName }}
-                        </template>
-                    </el-table-column>
-                    <el-table-column :label="translations[currentLang].threadInvokeCount">
-                        <template #default="scope">
-                            {{ scope.row.invokeInfo.invokeCount }}
-                        </template>
-                    </el-table-column>
-                    <el-table-column :label="translations[currentLang].threadTotalCost">
-                        <template #default="scope">
-                            {{ Number(scope.row.invokeInfo.totalCost).toFixed(5) }}
-                        </template>
-                    </el-table-column>
-                    <el-table-column :label="translations[currentLang].threadMaxCost">
-                        <template #default="scope">
-                            {{ Number(scope.row.invokeInfo.maxCost).toFixed(5) }}
-                        </template>
-                    </el-table-column>
-                    <el-table-column :label="translations[currentLang].threadMinCost">
-                        <template #default="scope">
-                            {{ Number(scope.row.invokeInfo.minCost).toFixed(5) }}
-                        </template>
-                    </el-table-column>
-                    <el-table-column :label="translations[currentLang].threadPercentage">
-                        <template #default="scope">
-                            {{ props.row.totalCost === 0 ? '0%' : ((scope.row.invokeInfo.totalCost / props.row.totalCost) * 100).toFixed(2) + '%' }}
-                        </template>
-                    </el-table-column>
-                </el-table>
-            </template>
-        </el-table-column>
-        <el-table-column
-                prop="methodName"
-                :label="translations[currentLang].methodName"
-                show-overflow-tooltip
-                min-width="200">
-            <template #default="scope">
-                {{ scope.row.methodName }}
-            </template>
-        </el-table-column>
-        <el-table-column :label="translations[currentLang].invokeCount" prop="invokeCount" sortable>
-            <template #default="scope">
-                {{ scope.row.invokeCount }}
-            </template>
-        </el-table-column>
-        <el-table-column :label="translations[currentLang].totalCost" prop="totalCost" sortable>
-            <template #default="scope">
-                {{ Number(scope.row.totalCost).toFixed(5) }}
-            </template>
-        </el-table-column>
-        <el-table-column :label="translations[currentLang].maxCost" prop="maxCost" sortable>
-            <template #default="scope">
-                {{ Number(scope.row.maxCost).toFixed(5) }}
-            </template>
-        </el-table-column>
-        <el-table-column :label="translations[currentLang].minCost" prop="minCost" sortable>
-            <template #default="scope">
-                {{ Number(scope.row.minCost).toFixed(5) }}
-            </template>
-        </el-table-column>
-        <el-table-column :label="translations[currentLang].avgCost" prop="avgCost" sortable>
-            <template #default="scope">
-                {{ Number(scope.row.avgCost).toFixed(5) }}
-            </template>
-        </el-table-column>
-        <el-table-column
-                :label="translations[currentLang].performanceRate"
-                prop="performanceRate"
-                sortable
-                :sort-method="sortByPerformance">
-            <template #default="scope">
-                <span v-if="scope.row.expectTime < 1" style="color: #67C23A">
-                    <el-icon><Check /></el-icon>{{scope.row.expectTime}}
-                </span>
-                <template v-else>
-                    <span v-if="(scope.row.avgCost / scope.row.expectTime) <= 1" style="color: #67C23A">
-                        {{ ((scope.row.avgCost / scope.row.expectTime) * 100).toFixed(2) + '%' }}
-                        <el-icon><Check /></el-icon>
-                    </span>
-                    <span v-else>
-                        <el-popover
-                                placement="top-start"
-                                :title="translations[currentLang].warningTitle"
-                                :width="200"
-                                trigger="hover">
-                            <template #default>
-                                <div>{{ translations[currentLang].performanceWarning }}</div>
-                                <div>{{ translations[currentLang].expectTimeInfo }}: {{ scope.row.expectTime }}ms</div>
-                                <div>{{ translations[currentLang].actualTimeInfo }}: {{ scope.row.avgCost ? scope.row.avgCost.toFixed(2) : '0' }}ms</div>
-                            </template>
-                            <template #reference>
-                                <span style="color: #F56C6C">
-                                    {{ ((scope.row.avgCost / scope.row.expectTime) * 100).toFixed(2) + '%' }}
-                                    <el-icon><Warning /></el-icon>
-                                </span>
-                            </template>
-                        </el-popover>
-                    </span>
-                </template>
-            </template>
-        </el-table-column>
-    </el-table>
-
-    <div class="pagination-wrapper">
-        <el-pagination
-                background
-                layout="slot, prev, pager, next"
-                :current-page="currentPage"
-                :page-size="pageSize"
-                :total="tableData.length"
-                @size-change="handleSizeChange"
-                @current-change="handleCurrentChange">
-            <template #default>
-                {{ currentLang === 'zh' ? `共 ${tableData.length} 条` : `Total ${tableData.length} items` }}
-            </template>
-        </el-pagination>
-    </div>
-</div>
-
-<script>
-    const {createApp} = Vue;
-    const app = createApp({
-        data() {
-            return {
-                currentLang: defaultLanguage().toLowerCase(),
-                tableData: [],
-                currentPage: 1,
-                pageSize: 10,
-                translations: {
-                    en: {
-                        reportTitle: "API Call Report",
-                        methodName: "Method Name",
-                        invokeCount: "Invoke Count",
-                        totalCost: "Total Time (ms)",
-                        maxCost: "Max Time (ms)",
-                        minCost: "Min Time (ms)",
-                        avgCost: "Avg Time (ms)",
-                        threadName: "Thread Name",
-                        threadInvokeCount: "Invoke Count",
-                        threadTotalCost: "Total Time (ms)",
-                        threadMaxCost: "Max Time (ms)",
-                        threadMinCost: "Min Time (ms)",
-                        threadPercentage: "Percentage",
-                        noThreadInfo: "No thread information available",
-                        thread: "Thread",
-                        performanceRate: "Performance Rate",
-                        warningTitle: "Performance Warning",
-                        performanceWarning: "The average execution time exceeds the expected time",
-                        expectTimeInfo: "Expected Time",
-                        actualTimeInfo: "Actual Time",
+    <script>
+        window.i18n = {
+            zh: {
+                title: '函数调用报告',
+                testCase: {
+                    title: '测试用例',
+                    select: '请选择测试用例'
+                },
+                thread: {
+                    title: '线程列表',
+                    select: '请选择线程'
+                },
+                currentSelection: '当前选择',
+                functionDetail: {
+                    title: '函数调用详情',
+                    name: '函数名称',
+                    callCount: '调用次数',
+                    percentage: '占用比例',
+                    id: '函数标识'
+                },
+                chart: {
+                    title: '函数调用火焰图',
+                    tabs: {
+                        flame: '火焰图',
+                        table: '数据表格'
                     },
-                    zh: {
-                        reportTitle: "API调用报告",
-                        methodName: "方法名",
-                        invokeCount: "调用次数",
-                        totalCost: "总耗时(ms)",
-                        maxCost: "最大耗时(ms)",
-                        minCost: "最小耗时(ms)",
-                        avgCost: "平均耗时(ms)",
-                        threadName: "线程名",
-                        threadInvokeCount: "调用次数",
-                        threadTotalCost: "总耗时(ms)",
-                        threadMaxCost: "最大耗时(ms)",
-                        threadMinCost: "最小耗时(ms)",
-                        threadPercentage: "耗时占比",
-                        noThreadInfo: "没有可用的线程信息",
-                        thread: "线程",
-                        performanceRate: "达标率",
-                        warningTitle: "性能警告",
-                        performanceWarning: "平均执行时间超出预期时间",
-                        expectTimeInfo: "预期时间",
-                        actualTimeInfo: "实际时间",
+                    table: {
+                        name: '函数名称',
+                        callCount: '调用次数',
+                        percentage: '占比',
+                        id: '函数ID'
+                    },
+                    noData: '请选择测试用例和线程'
+                },
+                language: '切换语言',
+                back: '返回'
+            },
+            en: {
+                title: 'Function Call Report',
+                testCase: {
+                    title: 'Test Cases',
+                    select: 'Please select a test case'
+                },
+                thread: {
+                    title: 'Thread List',
+                    select: 'Please select a thread'
+                },
+                currentSelection: 'Current Selection',
+                functionDetail: {
+                    title: 'Function Call Details',
+                    name: 'Function Name',
+                    callCount: 'Call Count',
+                    percentage: 'Percentage',
+                    id: 'Function ID'
+                },
+                chart: {
+                    title: 'Function Call Flame Graph',
+                    tabs: {
+                        flame: 'Flame Graph',
+                        table: 'Data Table'
+                    },
+                    table: {
+                        name: 'Function Name',
+                        callCount: 'Call Count',
+                        percentage: 'Percentage',
+                        id: 'Function ID'
+                    },
+                    noData: 'Please select a test case and thread'
+                },
+                language: 'Switch Language',
+                back: 'Back'
+            }
+        };
+
+        const { createApp, ref, onMounted, computed, watch, nextTick } = Vue
+        
+        const { Files, Share, Close, Back, Connection, ArrowRight } = ElementPlusIconsVue
+        
+        const app = createApp({
+            components: {
+                Files: ElementPlusIconsVue.Files,
+                Share: ElementPlusIconsVue.Share,
+                Close: ElementPlusIconsVue.Close,
+                Back: ElementPlusIconsVue.Back,
+                Connection: ElementPlusIconsVue.Connection,
+                ArrowRight: ElementPlusIconsVue.ArrowRight
+            },
+            setup() {
+                const selectedTestCase = ref('')
+                const selectedThread = ref('')
+                const showThreadPanel = ref(false)
+                
+                const testCases = computed(() => window.getTestCases());
+                
+                const threads = computed(() => {
+                    if (!selectedTestCase.value) return [];
+                    return window.getThreads(selectedTestCase.value);
+                });
+                
+                const getThreadLabel = (threadValue) => {
+                    if (!selectedTestCase.value) return '';
+                    const threads = window.getThreads(selectedTestCase.value);
+                    const thread = threads.find(t => t.value === threadValue);
+                    return thread ? thread.label : '';
+                }
+                
+                const handleTestCaseClick = (testCase) => {
+                    if (selectedTestCase.value === testCase.value) {
+                        selectedTestCase.value = ''
+                        selectedThread.value = ''
+                    } else {
+                        selectedTestCase.value = testCase.value
+                        selectedThread.value = ''
+                    }
+                    updateChart()
+                }
+                
+                const handleThreadClick = (thread) => {
+                    selectedThread.value = thread.value
+                    showThreadPanel.value = false
+                    updateChart()
+                }
+                
+                const selectedNode = ref(null)
+                const activeTab = ref('flame')
+                const tableData = ref([])
+                
+                const closeDetail = () => {
+                    selectedNode.value = null
+                }
+                
+                onMounted(() => {
+                    window.chartManager.init(document.getElementById('chart'))
+                    window.chartManager.onNodeClick((node) => {
+                        if (node) {
+                            selectedNode.value = {
+                                name: node.name,
+                                value: node.count,
+                                percentage: node.percentage,
+                                id: node.id
+                            }
+                        }
+                    })
+                })
+                
+                const updateTableData = () => {
+                    if (selectedTestCase.value && selectedThread.value) {
+                        const threadData = window.chartManager.currentTestData
+                        if (threadData) {
+                            tableData.value = threadData.children.map(child => ({
+                                name: child.name,
+                                callCount: child.count,
+                                percentage: ((child.value / threadData.value) * 100).toFixed(2) + '%',
+                                id: `${child.className}.${child.name}`
+                            }))
+                        }
                     }
                 }
-            }
-        },
-        computed: {
-            paginatedData() {
-                const start = (this.currentPage - 1) * this.pageSize;
-                const end = start + this.pageSize;
-                return this.tableData.slice(start, end);
-            }
-        },
-        mounted() {
-            this.loadData();
-        },
-        methods: {
-            loadData() {
-                this.tableData = jsonData();
-            },
-            handleCurrentChange(val) {
-                this.currentPage = val;
-            },
-            handleExpand(row, expandedRows) {
-
-            },
-
-            sortByPerformance(a, b) {
-                const rateA = a.expectTime < 1 ? 0 : (a.avgCost / a.expectTime);
-                const rateB = b.expectTime < 1 ? 0 : (b.avgCost / b.expectTime);
-
-                if (rateA === rateB) {
-                    return b.expectTime - a.expectTime;
+                
+                const updateChart = () => {
+                    if (selectedTestCase.value && selectedThread.value) {
+                        window.chartManager.updateChart(selectedTestCase.value, selectedThread.value)
+                            .then(() => {
+                                updateTableData()
+                            })
+                            .catch(error => {
+                                ElementPlus.ElMessage.error('加载数据失败：' + error.message)
+                            })
+                    } else {
+                        window.chartManager.clearChart()
+                        tableData.value = []
+                    }
                 }
-                return rateA - rateB;
+                
+                window.addEventListener('resize', () => {
+                    if (statsChart) {
+                        statsChart.resize()
+                    }
+                })
+                
+                const handleBack = () => {
+                    selectedThread.value = ''
+                    selectedNode.value = null
+                }
+                
+                const getCurrentTestCase = computed(() => {
+                    return testCases.value.find(t => t.value === selectedTestCase.value) || {}
+                })
+                
+                const currentLang = ref('zh')
+                const languages = [
+                    { value: 'zh', label: '简体中文', flag: '🇨🇳' },
+                    { value: 'en', label: 'English', flag: '🇺🇸' }
+                ]
+                
+                const handleLanguageChange = (lang) => {
+                    currentLang.value = lang
+                    window.currentLang = lang
+                    
+                    if (!selectedTestCase.value || !selectedThread.value) {
+                        window.chartManager.clearChart()
+                    } else {
+                        window.chartManager.updateChart(selectedTestCase.value, selectedThread.value)
+                    }
+                }
+                
+                const i18nText = computed(() => window.i18n[currentLang.value])
+
+                watch(() => i18nText.value.title, (newTitle) => {
+                    document.title = newTitle
+                }, { immediate: true })
+
+                const getThreadExecutionTime = (threadValue) => {
+                    if (!selectedTestCase.value) return 0;
+                    const threadData = FlameGraphManager.getThreadData(selectedTestCase.value, threadValue);
+                    return threadData ? threadData.value : 0;
+                }
+
+                const formatExecutionTime = (ns) => {
+                    if (ns < 1000) return `${ns}ns`;
+                    if (ns < 1_000_000) return `${(ns/1000).toFixed(2)}μs`;
+                    if (ns < 1_000_000_000) return `${(ns/1_000_000).toFixed(2)}ms`;
+                    return `${(ns/1_000_000_000).toFixed(2)}s`;
+                }
+
+                return {
+                    selectedTestCase,
+                    selectedThread,
+                    testCases,
+                    threads,
+                    handleTestCaseClick,
+                    handleThreadClick,
+                    updateChart,
+                    getThreadLabel,
+                    selectedNode,
+                    closeDetail,
+                    handleBack,
+                    getCurrentTestCase,
+                    activeTab,
+                    tableData,
+                    languages,
+                    currentLang,
+                    handleLanguageChange,
+                    i18nText,
+                    showThreadPanel,
+                    getThreadExecutionTime,
+                    formatExecutionTime,
+                }
             }
+        })
+        
+        for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
+            app.component(key, component)
         }
-    });
-
-    app.component('Check', ElementPlusIconsVue.Check);
-    app.component('Warning', ElementPlusIconsVue.Warning);
-
-    app.use(ElementPlus);
-    app.mount('#app');
-</script>
+        
+        app.use(ElementPlus)
+        app.mount('#app')
+    </script>
 </body>
 </html>
