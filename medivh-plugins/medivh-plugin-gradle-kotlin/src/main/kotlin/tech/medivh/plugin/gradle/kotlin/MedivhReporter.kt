@@ -41,7 +41,7 @@ class MedivhReporter(private val medivhExtension: MedivhExtension) {
         val reportDir = dir.resolve("report/")
         unzip(reportZip, reportDir)
         generateTraceData(reportDir)
-        val indexHtml = reportDir.resolve("function-trace.html")
+        val indexHtml = reportDir.resolve("index.html")
         println(i18n(medivhExtension.properties.language, "tip.seeReport", indexHtml.absolutePath))
     }
 
@@ -52,7 +52,7 @@ class MedivhReporter(private val medivhExtension: MedivhExtension) {
         val classifier = JfrEventClassifier(File("${medivhExtension.properties.reportDir}/medivh.jfr"))
         val testCaseReportList = classifier.classify()
         val jsFile = dir.resolve("medivh.js")
-        jsFile.appendText("const testCasesData = ")
+        jsFile.writeText("const testCasesData = ")
         jsFile.appendText(JSON.toJSONString(testCaseReportList))
     }
 

@@ -15,6 +15,7 @@ class ThreadRecordAccumulator(val name: String) {
 
     private var minStartTime = Instant.MAX
     private var maxDuration = Duration.ZERO
+    private var maxEndTime = Instant.MIN
 
     fun accumulate(event: FlameNode) {
         statistic.merge(event.name, InvokeInfo(event.duration.toMillis()), InvokeInfo::merge)
@@ -25,11 +26,15 @@ class ThreadRecordAccumulator(val name: String) {
         if (event.duration > maxDuration) {
             maxDuration = event.duration
         }
+        if (event.endTime > maxEndTime) {
+            maxEndTime = event.endTime
+        }
+
     }
 
     fun buildRecord(): ThreadRecord {
         eventList.sort()
-        val root = FlameNode(minStartTime, maxDuration, "all", "medivh")
+        val root = FlameNode(minStartTime, maxEndTime, maxDuration, "all", "medivh")
         eventList.forEach {
             processNode(it, root)
         }
@@ -77,10 +82,10 @@ class ThreadRecordAccumulator(val name: String) {
         val searchNodeParentNode = parent.children.binarySearch {
             if (it.startTime.isAfter(node.startTime)) {
                 1
-            } else if (it.startTime.isBefore(node.startTime)) {
+            } else if (it.endTime.isBefore(node.endTime)) {
                 -1
             } else {
-                -node.duration.compareTo(it.duration)
+                0
             }
         }
         if (searchNodeParentNode < 0) {

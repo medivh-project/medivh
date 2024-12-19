@@ -7,6 +7,7 @@
     <link rel="icon" type="image/png" href="image.png">
     
     <script src="medivh.js"></script>
+    <script src="chart.js"></script>
     <script src="https://registry.npmmirror.com/jquery/3.7.1/files/dist/jquery.min.js"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     
@@ -468,16 +469,16 @@
                             <div class="detail-value">{{ selectedNode.name }}</div>
                         </div>
                         <div class="detail-item">
+                            <div class="detail-label">{{ i18nText.functionDetail.className }}</div>
+                            <div class="detail-value">{{ selectedNode.className }}</div>
+                        </div>
+                        <div class="detail-item">
                             <div class="detail-label">{{ i18nText.functionDetail.callCount }}</div>
-                            <div class="detail-value">{{ selectedNode.value }} {{ currentLang === 'en' ? 'times' : '次' }}</div>
+                            <div class="detail-value">{{ selectedNode.count }} {{ currentLang === 'en' ? 'times' : '次' }}</div>
                         </div>
                         <div class="detail-item">
                             <div class="detail-label">{{ i18nText.functionDetail.percentage }}</div>
                             <div class="detail-value">{{ selectedNode.percentage.toFixed(2) }}%</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">{{ i18nText.functionDetail.id }}</div>
-                            <div class="detail-value">{{ selectedNode.id }}</div>
                         </div>
                     </div>
                 </div>
@@ -553,9 +554,9 @@
                 functionDetail: {
                     title: '函数调用详情',
                     name: '函数名称',
+                    className: '函数所在类',
                     callCount: '调用次数',
-                    percentage: '占用比例',
-                    id: '函数标识'
+                    percentage: '占用比例'
                 },
                 chart: {
                     title: '函数调用火焰图',
@@ -588,9 +589,9 @@
                 functionDetail: {
                     title: 'Function Call Details',
                     name: 'Function Name',
+                    className: 'Class Name',
                     callCount: 'Call Count',
-                    percentage: 'Percentage',
-                    id: 'Function ID'
+                    percentage: 'Percentage'
                 },
                 chart: {
                     title: 'Function Call Flame Graph',
@@ -671,12 +672,13 @@
                 onMounted(() => {
                     window.chartManager.init(document.getElementById('chart'))
                     window.chartManager.onNodeClick((node) => {
+                        console.log('Node clicked:', node)
                         if (node) {
                             selectedNode.value = {
                                 name: node.name,
-                                value: node.count,
-                                percentage: node.percentage,
-                                id: node.id
+                                className: node.className,
+                                count: node.count,
+                                percentage: node.percentage
                             }
                         }
                     })

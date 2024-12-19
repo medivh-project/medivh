@@ -11,7 +11,13 @@ import java.time.Instant
  *
  * @author gxz gongxuanzhangmelt@gmail.com
  **/
-class FlameNode(val startTime: Instant, val duration: Duration, val name: String, val className: String) :
+class FlameNode(
+    val startTime: Instant,
+    val endTime: Instant,
+    val duration: Duration,
+    val name: String,
+    val className: String
+) :
     Comparable<FlameNode> {
 
     val children: MutableList<FlameNode> = mutableListOf()
@@ -36,7 +42,7 @@ class FlameNode(val startTime: Instant, val duration: Duration, val name: String
 
         fun fromMethodInvokeEvent(event: RecordedEvent): FlameNode {
             val invokeMethod = event.stackTrace.frames.first().method
-            return FlameNode(event.startTime, event.duration, invokeMethod.name, invokeMethod.type.name)
+            return FlameNode(event.startTime, event.endTime, event.duration, invokeMethod.name, invokeMethod.type.name)
         }
 
     }

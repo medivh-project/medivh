@@ -48,20 +48,22 @@ class FlameGraphManager {
 
     initEvents() {
         this.chart.on('click', (params) => {
-            if (this.currentTestData && params.data.name) {
-                const chartData = this.processTreeData(this.currentTestData, this.currentTestData.value);
+            if (this.currentTestData) {
+                const data = this.processTreeData(this.currentTestData, params.data.name);
+                const rootValue = data[0].value[2];
                 
                 this.chart.setOption({
-                    xAxis: { max: this.currentTestData.value },
-                    series: [{ data: chartData }]
+                    xAxis: { max: rootValue },
+                    series: [{ data }]
                 });
                 
                 if (this.clickCallback && params.value[0] !== 0) {
+                    console.log('Clicked data:', params.data);
                     this.clickCallback({
-                        name: params.data.name,
+                        name: params.value[3],
                         count: params.data.count,
                         percentage: params.value[4],
-                        id: params.data.id
+                        className: params.data.className
                     });
                 }
             }
@@ -135,7 +137,7 @@ class FlameGraphManager {
 
     heightOfJson(json) {
         const recur = (item, level = 0) => {
-            if ((item.children || []).length === 0) {
+            if (!item.children || item.children.length === 0) {
                 return level;
             }
             let maxLevel = level;
@@ -152,13 +154,9 @@ class FlameGraphManager {
         const level = api.value(0);
         const start = api.coord([api.value(1), level]);
         const end = api.coord([api.value(2), level]);
-        const height = api.size([0, 1])[1] * 0.7;
+        const height = ((api.size && api.size([0, 1])) || [0, 20])[1];
         const width = end[0] - start[0];
-
-        const baseColor = api.visual('color');
-        const lighterColor = this.getLighterColor(baseColor);
-        const darkerColor = this.getDarkerColor(baseColor);
-
+        
         return {
             type: 'rect',
             transition: ['shape'],
@@ -166,46 +164,35 @@ class FlameGraphManager {
                 x: start[0],
                 y: start[1] - height / 2,
                 width,
-                height,
-                r: 1
+                height: height - 2,
+                r: 2
             },
             style: {
-                fill: {
-                    type: 'linear',
-                    x: 0,
-                    y: 0,
-                    x2: 0,
-                    y2: 1,
-                    colorStops: [{
-                        offset: 0,
-                        color: lighterColor
-                    }, {
-                        offset: 0.5,
-                        color: baseColor
-                    }, {
-                        offset: 1,
-                        color: darkerColor
-                    }]
-                },
-                stroke: '#fff',
-                lineWidth: 0.5,
-                shadowBlur: 2,
-                shadowColor: 'rgba(0,0,0,0.2)'
+                fill: api.visual('color')
+            },
+            emphasis: {
+                style: {
+                    stroke: '#000'
+                }
             },
             textConfig: {
-                position: width > 60 ? 'insideLeft' : 'right'
+                position: 'insideLeft'
             },
             textContent: {
                 style: {
                     text: api.value(3),
-                    fill: width > 60 ? '#fff' : '#666',
-                    fontSize: 12,
-                    fontFamily: 'Consolas, monospace',
-                    textShadowColor: width > 60 ? 'rgba(0,0,0,0.5)' : 'none',
-                    textShadowBlur: width > 60 ? 2 : 0,
+                    fontFamily: 'Verdana',
+                    fill: '#000',
                     width: width - 4,
                     overflow: 'truncate',
-                    ellipsis: '..'
+                    ellipsis: '..',
+                    truncateMinChar: 1
+                },
+                emphasis: {
+                    style: {
+                        stroke: '#000',
+                        lineWidth: 0.5
+                    }
                 }
             }
         };
@@ -228,34 +215,35 @@ class FlameGraphManager {
         }
     }
 
-    processTreeData(node, totalDuration) {
+    processTreeData(jsonObj, id) {
         const data = [];
-        const processNode = (node, level = 0, start = 0) => {
-            const value = node.value || node.duration;
-            const percentage = (value / totalDuration) * 100;
-            const count = node.count || 0;
-            
-            data.push({
-                name: node.name,
-                id: `${node.className}.${node.name}`,
-                className: node.className,
-                count: count,
-                value: [level, start, start + value, node.name, percentage],
+        const filteredJson = this.filterJson(structuredClone(jsonObj), id);
+        const rootVal = filteredJson.value;
+        
+        const recur = (item, start = 0, level = 0) => {
+            const temp = {
+                name: item.id,
+                value: [
+                    level,
+                    start,
+                    start + item.value,
+                    item.name,
+                    (item.value / rootVal) * 100
+                ],
+                className: item.className,
+                count: item.count,
                 itemStyle: {
-                    color: this.getNodeColor(node.className)
+                    color: this.getNodeColor(item.className)
                 }
-            });
-
-            let currentStart = start;
-            if (node.children && node.children.length > 0) {
-                node.children.forEach(child => {
-                    processNode(child, level + 1, currentStart);
-                    currentStart += child.value || child.duration;
-                });
+            };
+            data.push(temp);
+            let prevStart = start;
+            for (const child of item.children || []) {
+                recur(child, prevStart, level + 1);
+                prevStart = prevStart + child.value;
             }
         };
-
-        processNode(node);
+        recur(filteredJson);
         return data;
     }
 
@@ -280,11 +268,11 @@ class FlameGraphManager {
             hash = className.charCodeAt(i) + ((hash << 5) - hash);
         }
         
-        const hueOffset = (hash % 60) - 30;
+        const hueOffset = (hash % 40) - 20;
         const hue = (baseHue + hueOffset + 360) % 360;
         
-        const saturation = 65 + (hash % 20);
-        const lightness = 45 + (hash % 15);
+        const saturation = 60 + (hash % 15);
+        const lightness = 50 + (hash % 10);
 
         return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
     }
@@ -298,7 +286,8 @@ class FlameGraphManager {
             }
 
             this.currentTestData = threadData;
-            const chartData = this.processTreeData(threadData, threadData.value);
+            const levelOfOriginalJson = this.heightOfJson(threadData);
+            const chartData = this.processTreeData(threadData);
 
             const option = {
                 backgroundColor: {
@@ -320,75 +309,31 @@ class FlameGraphManager {
                 },
                 tooltip: {
                     formatter: (params) => {
-                        const samples = params.value[2] - params.value[1];
+                        const duration = params.value[2] - params.value[1];
                         const formatTime = (ns) => {
                             if (ns < 1000) return `${ns}ns`;
                             if (ns < 1_000_000) return `${(ns/1000).toFixed(2)}μs`;
                             if (ns < 1_000_000_000) return `${(ns/1_000_000).toFixed(2)}ms`;
                             return `${(ns/1_000_000_000).toFixed(2)}s`;
                         };
-                        
+
                         const lang = window.currentLang || 'zh';
                         const labels = {
                             zh: {
-                                totalTime: '总执行时间',
-                                class: '所属类',
                                 execTime: '执行时间',
-                                callCount: '调用次数',
-                                percentage: '占比',
-                                times: '次'
+                                percentage: '占比'
                             },
                             en: {
-                                totalTime: 'Total Execution Time',
-                                class: 'Class',
                                 execTime: 'Execution Time',
-                                callCount: 'Call Count',
-                                percentage: 'Percentage',
-                                times: 'times'
+                                percentage: 'Percentage'
                             }
                         }[lang];
-                        
-                        if (params.value[0] === 0) {
-                            return `
-                                <div style="padding: 3px 0">
-                                    <div style="font-weight: bold; font-size: 14px; margin-bottom: 8px;">
-                                        ${labels.totalTime}
-                                    </div>
-                                    <div style="color: #409EFF; font-size: 16px; font-family: monospace;">
-                                        ${formatTime(samples)}
-                                    </div>
-                                </div>`;
-                        }
-                        
-                        return `
-                            <div style="padding: 3px 0">
-                                <div style="font-weight: bold; font-size: 14px; margin-bottom: 8px;">
-                                    ${params.value[3]}
-                                </div>
-                                <div style="display: grid; grid-template-columns: auto 1fr; gap: 8px; font-size: 13px;">
-                                    <div style="color: #666;">${labels.class}:</div>
-                                    <div style="color: #409EFF; font-family: monospace;">${params.data.className}</div>
-                                    <div style="color: #666;">${labels.execTime}:</div>
-                                    <div style="color: #333; font-family: monospace;">${formatTime(samples)}</div>
-                                    <div style="color: #666;">${labels.callCount}:</div>
-                                    <div style="color: #333; font-family: monospace;">${params.data.count}</div>
-                                    <div style="color: #666;">${labels.percentage}:</div>
-                                    <div style="color: #333; font-family: monospace;">${params.value[4].toFixed(2)}%</div>
-                                </div>
-                            </div>`;
-                    },
-                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                    borderColor: '#eee',
-                    borderWidth: 1,
-                    padding: [12, 16],
-                    textStyle: {
-                        color: '#333',
-                        fontSize: 13
-                    },
-                    extraCssText: 'box-shadow: 0 2px 12px rgba(0,0,0,0.1); border-radius: 4px;'
+
+                        return `${params.marker} ${params.value[3]}<br/>
+                                ${labels.execTime}: ${formatTime(duration)}<br/>
+                                ${labels.percentage}: ${params.value[4].toFixed(2)}%`;
+                    }
                 },
-                animationDuration: 300,
-                animationEasing: 'cubicOut',
                 title: {
                     text: window.currentLang === 'en' ? 'Function Call Flame Graph' : '函数调用火焰图',
                     left: 'center',
@@ -401,58 +346,27 @@ class FlameGraphManager {
                 },
                 toolbox: {
                     feature: {
-                        restore: {},
-                        dataZoom: {
-                            yAxisIndex: 'none'
-                        },
-                        saveAsImage: {
-                            pixelRatio: 2
-                        }
+                        restore: {}
                     },
                     right: 20,
                     top: 10
                 },
-                dataZoom: [
-                    {
-                        type: 'slider',
-                        show: true,
-                        xAxisIndex: [0],
-                        start: 0,
-                        end: 100,
-                        bottom: 10,
-                        height: 20,
-                        borderColor: '#ccc',
-                        textStyle: {
-                            color: '#666'
-                        },
-                        zoomLock: true,
-                        moveOnMouseMove: false,
-                        zoomOnMouseWheel: false,
-                        preventDefaultMouseMove: true
-                    }
-                ],
-                progressive: 500,
-                progressiveThreshold: 3000,
                 xAxis: {
-                    show: false,
-                    type: 'value',
-                    max: threadData.value
+                    show: false
                 },
                 yAxis: {
                     show: false,
-                    type: 'category'
+                    max: levelOfOriginalJson
                 },
                 series: [
                     {
                         type: 'custom',
                         renderItem: this.renderItem,
                         encode: {
-                            x: [1, 2],
+                            x: [0, 1, 2],
                             y: 0
                         },
-                        data: chartData,
-                        large: true,
-                        largeThreshold: 500
+                        data: chartData
                     }
                 ]
             };
@@ -494,3 +408,4 @@ class FlameGraphManager {
 window.chartManager = new FlameGraphManager();
 window.getTestCases = FlameGraphManager.getTestCases;
 window.getThreads = FlameGraphManager.getThreads; 
+
