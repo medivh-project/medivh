@@ -1,7 +1,9 @@
 package tech.medivh.core.statistic
 
 import tech.medivh.core.InvokeInfo
-import tech.medivh.core.jfr.EventNode
+import tech.medivh.core.jfr.FlameNode
+import java.math.BigDecimal
+import java.time.Duration
 import java.time.Instant
 
 
@@ -9,40 +11,77 @@ import java.time.Instant
  * @author gxz gongxuanzhangmelt@gmail.com
  **/
 class ThreadRecordAccumulator(val name: String) {
-    private val eventList = mutableListOf<EventNode>()
+    private val eventList = mutableListOf<FlameNode>()
     private val statistic = mutableMapOf<String, InvokeInfo>()
 
     private var minStartTime = Instant.MAX
-    private var maxEndTime = Instant.MIN
+    private var maxDuration = Duration.ZERO
 
-    fun accumulate(event: EventNode) {
-        statistic.merge(event.name, InvokeInfo(event.duration().toMillis()), InvokeInfo::merge)
+    fun accumulate(event: FlameNode) {
+        statistic.merge(event.name, InvokeInfo(event.duration.toMillis()), InvokeInfo::merge)
         eventList.add(event)
         if (event.startTime < minStartTime) {
             minStartTime = event.startTime
         }
-        if (event.endTime > maxEndTime) {
-            maxEndTime = event.endTime
+        if (event.duration > maxDuration) {
+            maxDuration = event.duration
         }
     }
 
     fun buildRecord(): ThreadRecord {
         eventList.sort()
-        val root = EventNode(minStartTime, maxEndTime, "all")
+        val root = FlameNode(minStartTime, maxDuration, "all", "medivh")
         eventList.forEach {
             processNode(it, root)
         }
-        return ThreadRecord(name).apply { functionRoot = root }
+
+        val mergedChildren = mergeChildren(root.children)
+        var rootDuration = Duration.ZERO
+        mergedChildren.forEach {
+            rootDuration += it.duration
+        }
+        val rootRecord = FunctionRecord(root.name, root.className, rootDuration)
+        rootRecord.children.addAll(mergedChildren)
+        return ThreadRecord(name).apply { functionRoot = rootRecord }
     }
 
-    private fun processNode(node: EventNode, parent: EventNode) {
+
+    private fun mergeChildren(children: List<FlameNode>): List<FunctionRecord> {
+        if (children.isEmpty()) {
+            return emptyList()
+        }
+        if (children.size == 1) {
+            val flame = children.first()
+            return listOf(FunctionRecord(flame.name, flame.className, flame.duration))
+        }
+        return children.groupBy { it.name + it.className }.values.map { mergeSameNodes(it) }.toList()
+    }
+
+    private fun mergeSameNodes(sameNodes: List<FlameNode>): FunctionRecord {
+        var duration = Duration.ZERO
+        var count = 0
+        val allFlameChildren = mutableListOf<FlameNode>()
+        sameNodes.forEach {
+            duration += it.duration
+            count++
+            allFlameChildren.addAll(it.children)
+        }
+
+        val recordChildren = mergeChildren(allFlameChildren)
+        return FunctionRecord(sameNodes.first().name, sameNodes.first().className, duration, count).apply {
+            children.addAll(recordChildren)
+        }
+    }
+
+
+    private fun processNode(node: FlameNode, parent: FlameNode) {
         val searchNodeParentNode = parent.children.binarySearch {
             if (it.startTime.isAfter(node.startTime)) {
-                return@binarySearch 1
-            } else if (it.endTime.isBefore(node.endTime)) {
-                return@binarySearch -1
+                1
+            } else if (it.startTime.isBefore(node.startTime)) {
+                -1
             } else {
-                0
+                -node.duration.compareTo(it.duration)
             }
         }
         if (searchNodeParentNode < 0) {

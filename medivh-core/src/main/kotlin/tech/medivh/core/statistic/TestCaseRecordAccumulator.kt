@@ -1,6 +1,6 @@
 package tech.medivh.core.statistic
 
-import tech.medivh.core.jfr.EventNode
+import tech.medivh.core.jfr.FlameNode
 
 
 /**
@@ -10,7 +10,7 @@ class TestCaseRecordAccumulator(val name: String) {
 
     private val threadRecordAccumulatorMutableMap = mutableMapOf<String, ThreadRecordAccumulator>()
 
-    fun accumulate(threadName: String, event: EventNode) {
+    fun accumulate(threadName: String, event: FlameNode) {
         threadRecordAccumulatorMutableMap.computeIfAbsent(threadName) {
             ThreadRecordAccumulator(it)
         }.accumulate(event)

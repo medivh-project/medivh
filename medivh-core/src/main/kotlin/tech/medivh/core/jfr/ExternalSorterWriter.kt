@@ -22,7 +22,7 @@ class ExternalSorterWriter(dir: File, jfrThread: JfrThread, testCase: JfrMethod,
         }
     }
 
-    private val dataList = ArrayList<EventNode>(count)
+    private val dataList = ArrayList<FlameNode>(count)
 
     private val dataFile = dir.resolve("${jfrThread.javaThreadId}.rjfr")
 
@@ -32,7 +32,7 @@ class ExternalSorterWriter(dir: File, jfrThread: JfrThread, testCase: JfrMethod,
 
     private var allow = true
 
-    fun append(node: EventNode) {
+    fun append(node: FlameNode) {
         require(allow) { "this writer has been closed" }
         dataList.add(node)
         if (dataList.size == count) {
@@ -70,15 +70,16 @@ class ExternalSorterWriter(dir: File, jfrThread: JfrThread, testCase: JfrMethod,
         dataList.clear()
     }
 
-    private fun EventNode.serialize(): ByteArray {
-        val nameByte = name.toByteArray(Charsets.UTF_8)
-        ByteBuffer.allocate(Long.SIZE_BYTES * 2 + Int.SIZE_BYTES + nameByte.size).apply {
-            putLong(startTime.serialize())
-            putLong(endTime.serialize())
-            putInt(nameByte.size)
-            put(nameByte)
-            return array()
-        }
+    private fun FlameNode.serialize(): ByteArray {
+        TODO()
+//        val nameByte = name.toByteArray(Charsets.UTF_8)
+//        ByteBuffer.allocate(Long.SIZE_BYTES * 2 + Int.SIZE_BYTES + nameByte.size).apply {
+//            putLong(startTime.serialize())
+//            putLong(endTime.serialize())
+//            putInt(nameByte.size)
+//            put(nameByte)
+//            return array()
+//        }
     }
 
 

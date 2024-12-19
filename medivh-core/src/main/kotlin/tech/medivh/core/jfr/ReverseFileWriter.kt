@@ -40,7 +40,7 @@ class ReverseFileWriter(dir: File, jfrThread: JfrThread, bufferCapacity: Int = 1
 
     private var preIndex = 0L
 
-    fun append(node: EventNode) {
+    fun append(node: FlameNode) {
         val nodeArray = node.serialize()
         if (buffer.remaining() < nodeArray.size) {
             flush()
@@ -61,15 +61,16 @@ class ReverseFileWriter(dir: File, jfrThread: JfrThread, bufferCapacity: Int = 1
     }
 
 
-    private fun EventNode.serialize(): ByteArray {
-        val nameByte = name.toByteArray(Charsets.UTF_8)
-        ByteBuffer.allocate(Long.SIZE_BYTES * 2 + Int.SIZE_BYTES + nameByte.size).apply {
-            putLong(startTime.serialize())
-            putLong(endTime.serialize())
-            putInt(nameByte.size)
-            put(nameByte)
-            return array()
-        }
+    private fun FlameNode.serialize(): ByteArray {
+        TODO()
+//        val nameByte = name.toByteArray(Charsets.UTF_8)
+//        ByteBuffer.allocate(Long.SIZE_BYTES * 2 + Int.SIZE_BYTES + nameByte.size).apply {
+//            putLong(startTime.serialize())
+//            putLong(endTime.serialize())
+//            putInt(nameByte.size)
+//            put(nameByte)
+//            return array()
+//        }
     }
 
 

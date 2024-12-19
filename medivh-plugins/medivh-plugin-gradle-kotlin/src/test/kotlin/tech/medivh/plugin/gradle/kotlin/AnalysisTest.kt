@@ -13,10 +13,7 @@ class AnalysisTest {
 
     @Test
     fun reverseTest() {
-        val classify = JfrEventClassifier(File(this.javaClass.classLoader.getResource("main.jfr").path)).classify()
-        classify.forEach {
-            val tree = it.buildTree()
-        }
+        val classify = JfrEventClassifier(File(this.javaClass.classLoader.getResource("medivh.jfr").path)).classify()
         println(1)
     }
 

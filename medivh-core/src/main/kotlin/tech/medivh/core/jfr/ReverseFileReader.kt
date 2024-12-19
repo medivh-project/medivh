@@ -16,25 +16,26 @@ class ReverseFileReader(dir: File, jfrThread: JfrThread) {
     private val indexFile = dir.resolve("${jfrThread.javaThreadId}.ijfr")
 
 
-    fun readOrderNode(action: (EventNode) -> Unit) {
-        RandomAccessFile(dataFile, "r").use { file ->
-            var end = dataFile.length()
-            orderIndex().forEach { indexOffset ->
-                file.seek(indexOffset)
-                val bytes = ByteArray((end - indexOffset).toInt())
-                file.read(bytes)
-                val buffer = ByteBuffer.wrap(bytes)
-                while (buffer.hasRemaining()) {
-                    val startTime = buffer.getLong().deserialize()
-                    val endTime = buffer.getLong().deserialize()
-                    val nameBytes = ByteArray(buffer.getInt())
-                    buffer[nameBytes]
-                    val node = EventNode(startTime, endTime, String(nameBytes))
-                    action(node)
-                }
-                end = indexOffset
-            }
-        }
+    fun readOrderNode(action: (FlameNode) -> Unit) {
+        TODO()
+//        RandomAccessFile(dataFile, "r").use { file ->
+//            var end = dataFile.length()
+//            orderIndex().forEach { indexOffset ->
+//                file.seek(indexOffset)
+//                val bytes = ByteArray((end - indexOffset).toInt())
+//                file.read(bytes)
+//                val buffer = ByteBuffer.wrap(bytes)
+//                while (buffer.hasRemaining()) {
+//                    val startTime = buffer.getLong().deserialize()
+//                    val endTime = buffer.getLong().deserialize()
+//                    val nameBytes = ByteArray(buffer.getInt())
+//                    buffer[nameBytes]
+//                    val node = FlameNode(startTime, endTime, String(nameBytes))
+//                    action(node)
+//                }
+//                end = indexOffset
+//            }
+//        }
     }
 
 
