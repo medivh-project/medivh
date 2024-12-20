@@ -4,6 +4,7 @@ class FlameGraphManager {
         this.currentTestData = null;
         this.renderItem = this.renderItem.bind(this);
         this.clickCallback = null;
+        this.nodeMap = new Map();
     }
 
     static getTestCases() {
@@ -58,12 +59,23 @@ class FlameGraphManager {
                 });
                 
                 if (this.clickCallback && params.value[0] !== 0) {
-                    console.log('Clicked data:', params.data);
+                    const callStack = this.getCallStack(params.data.name);
+                    const node = this.nodeMap.get(params.data.name);
+                    const globalInfo = node?.globalInvokeInfo;
+                    
+                    const avgValue = globalInfo ? Math.floor(globalInfo.totalCost / globalInfo.invokeCount) : 0;
+
                     this.clickCallback({
                         name: params.value[3],
                         count: params.data.count,
                         percentage: params.value[4],
-                        className: params.data.className
+                        className: params.data.className,
+                        callStack: callStack,
+                        totalCount: globalInfo?.invokeCount || 0,
+                        totalValue: globalInfo?.totalCost || 0,
+                        maxValue: globalInfo?.maxCost || 0,
+                        minValue: globalInfo?.minCost || 0,
+                        avgValue: avgValue
                     });
                 }
             }
@@ -154,18 +166,21 @@ class FlameGraphManager {
         const level = api.value(0);
         const start = api.coord([api.value(1), level]);
         const end = api.coord([api.value(2), level]);
-        const height = ((api.size && api.size([0, 1])) || [0, 20])[1];
+        const baseHeight = Math.min(((api.size && api.size([0, 1])) || [0, 40])[1], 40);
+        const height = baseHeight * 0.6;
         const width = end[0] - start[0];
+        
+        const y = api.getHeight() - (level + 1) * height;
         
         return {
             type: 'rect',
             transition: ['shape'],
             shape: {
                 x: start[0],
-                y: start[1] - height / 2,
+                y: y,
                 width,
-                height: height - 2,
-                r: 2
+                height: height,
+                r: 1
             },
             style: {
                 fill: api.visual('color')
@@ -220,7 +235,14 @@ class FlameGraphManager {
         const filteredJson = this.filterJson(structuredClone(jsonObj), id);
         const rootVal = filteredJson.value;
         
+        const levelIndices = new Map();
+        
         const recur = (item, start = 0, level = 0) => {
+            const index = levelIndices.get(level) || 0;
+            levelIndices.set(level, index + 1);
+            
+            const fullNode = this.nodeMap.get(item.id);
+            
             const temp = {
                 name: item.id,
                 value: [
@@ -232,8 +254,9 @@ class FlameGraphManager {
                 ],
                 className: item.className,
                 count: item.count,
+                globalInvokeInfo: fullNode?.globalInvokeInfo,
                 itemStyle: {
-                    color: this.getNodeColor(item.className)
+                    color: this.getNodeColor(item.className, level, index)
                 }
             };
             data.push(temp);
@@ -247,7 +270,7 @@ class FlameGraphManager {
         return data;
     }
 
-    getNodeColor(className) {
+    getNodeColor(className, level, index) {
         const baseHues = {
             'tech.medivh.demo.kotlin.DemoClass': 200,
             'tech.medivh.demo.kotlin.DemoClass1': 120,
@@ -268,11 +291,11 @@ class FlameGraphManager {
             hash = className.charCodeAt(i) + ((hash << 5) - hash);
         }
         
-        const hueOffset = (hash % 40) - 20;
-        const hue = (baseHue + hueOffset + 360) % 360;
+        const hueOffset = ((hash + level + index) % 5) * 72;
+        const hue = (baseHue + hueOffset) % 360;
         
-        const saturation = 60 + (hash % 15);
-        const lightness = 50 + (hash % 10);
+        const saturation = 60 + ((hash + index) % 20);
+        const lightness = 45 + ((hash + level) % 15);
 
         return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
     }
@@ -286,6 +309,7 @@ class FlameGraphManager {
             }
 
             this.currentTestData = threadData;
+            this.buildNodeMap(threadData);
             const levelOfOriginalJson = this.heightOfJson(threadData);
             const chartData = this.processTreeData(threadData);
 
@@ -321,15 +345,23 @@ class FlameGraphManager {
                         const labels = {
                             zh: {
                                 execTime: '执行时间',
-                                percentage: '占比'
+                                percentage: '占比',
+                                className: '函数所在类',
+                                callCount: '在同级调用栈的执行次数',
+                                times: '次'
                             },
                             en: {
                                 execTime: 'Execution Time',
-                                percentage: 'Percentage'
+                                percentage: 'Percentage',
+                                className: 'Class Name',
+                                callCount: 'Call Count in Same Stack Level',
+                                times: 'times'
                             }
                         }[lang];
 
                         return `${params.marker} ${params.value[3]}<br/>
+                                ${labels.className}: ${params.data.className}<br/>
+                                ${labels.callCount}: ${params.data.count} ${labels[lang === 'en' ? 'times' : 'times']}<br/>
                                 ${labels.execTime}: ${formatTime(duration)}<br/>
                                 ${labels.percentage}: ${params.value[4].toFixed(2)}%`;
                     }
@@ -358,6 +390,13 @@ class FlameGraphManager {
                     show: false,
                     max: levelOfOriginalJson
                 },
+                grid: {
+                    top: 60,
+                    bottom: 20,
+                    left: 10,
+                    right: 10,
+                    containLabel: true
+                },
                 series: [
                     {
                         type: 'custom',
@@ -366,7 +405,8 @@ class FlameGraphManager {
                             x: [0, 1, 2],
                             y: 0
                         },
-                        data: chartData
+                        data: chartData,
+                        gap: 1
                     }
                 ]
             };
@@ -402,6 +442,38 @@ class FlameGraphManager {
             return `hsl(${h}, ${s}%, ${l}%)`;
         }
         return hslColor;
+    }
+
+    buildNodeMap(threadData) {
+        this.nodeMap.clear();
+        const stack = [threadData];
+        while (stack.length > 0) {
+            const node = stack.pop();
+            if (node.id) {
+                this.nodeMap.set(node.id, node);
+            }
+            if (node.children) {
+                stack.push(...node.children);
+            }
+        }
+    }
+
+    getCallStack(nodeId) {
+        const callStack = [];
+        let currentNode = this.nodeMap.get(nodeId);
+        
+        while (currentNode) {
+            callStack.unshift({
+                name: currentNode.name,
+                className: currentNode.className,
+                value: currentNode.value,
+                count: currentNode.count,
+                level: callStack.length
+            });
+            currentNode = this.nodeMap.get(currentNode.parentId);
+        }
+        
+        return callStack;
     }
 }
 

@@ -7,7 +7,6 @@
     <link rel="icon" type="image/png" href="image.png">
     
     <script src="medivh.js"></script>
-    <script src="chart.js"></script>
     <script src="https://registry.npmmirror.com/jquery/3.7.1/files/dist/jquery.min.js"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     
@@ -393,6 +392,111 @@
             width: 100%;
             height: 100%;
         }
+        
+        .call-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .stack-path {
+            padding: 8px;
+            background: #f8fafc;
+            border-radius: 4px;
+            line-height: 1.5;
+            word-break: break-all;
+        }
+        
+        .stack-name {
+            color: #666;
+            font-family: monospace;
+        }
+        
+        .stack-separator {
+            color: #909399;
+            margin: 0 4px;
+        }
+        
+        .current-func {
+            color: #409EFF;
+            font-weight: 500;
+        }
+        
+        .stack-collapse {
+            border: none;
+        }
+        
+        .expand-title {
+            font-size: 12px;
+            color: #909399;
+        }
+        
+        .stack-list {
+            padding: 8px;
+            background: #f8fafc;
+            border-radius: 4px;
+        }
+        
+        .stack-item {
+            padding: 4px 8px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
+        .detail-section {
+            background: #fff;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+            border: 1px solid #ebeef5;
+        }
+        
+        .section-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #409EFF;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #ebeef5;
+        }
+        
+        .detail-item {
+            margin-bottom: 8px;
+            padding: 8px;
+            background: #f8fafc;
+            border-radius: 4px;
+        }
+        
+        .detail-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .execution-time-range {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .time-item {
+            flex: 1;
+        }
+        
+        .time-separator {
+            color: #909399;
+            font-weight: bold;
+        }
+        
+        .detail-label {
+            font-size: 12px;
+            color: #909399;
+            margin-bottom: 4px;
+        }
+        
+        .detail-value {
+            font-size: 13px;
+            color: #303133;
+            word-break: break-all;
+        }
     </style>
 </head>
 <body>
@@ -464,22 +568,72 @@
                     </div>
                     
                     <div class="detail-content">
-                        <div class="detail-item">
-                            <div class="detail-label">{{ i18nText.functionDetail.name }}</div>
-                            <div class="detail-value">{{ selectedNode.name }}</div>
+                        <div class="detail-section">
+                            <div class="section-label">{{ i18nText.functionDetail.basicInfo }}</div>
+                            <div class="detail-item">
+                                <div class="detail-label">{{ i18nText.functionDetail.name }}</div>
+                                <div class="detail-value">{{ selectedNode.name }}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">{{ i18nText.functionDetail.className }}</div>
+                                <div class="detail-value">{{ selectedNode.className }}</div>
+                            </div>
                         </div>
-                        <div class="detail-item">
-                            <div class="detail-label">{{ i18nText.functionDetail.className }}</div>
-                            <div class="detail-value">{{ selectedNode.className }}</div>
+
+                        <div class="detail-section">
+                            <div class="section-label">{{ i18nText.functionDetail.currentStackPerformance }}</div>
+                            <div class="detail-item">
+                                <div class="detail-label">{{ i18nText.functionDetail.currentCallCount }}</div>
+                                <div class="detail-value">{{ selectedNode.count }} {{ currentLang === 'en' ? 'times' : '次' }}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">{{ i18nText.functionDetail.currentPercentage }}</div>
+                                <div class="detail-value">{{ selectedNode.percentage.toFixed(2) }}%</div>
+                            </div>
                         </div>
-                        <div class="detail-item">
-                            <div class="detail-label">{{ i18nText.functionDetail.callCount }}</div>
-                            <div class="detail-value">{{ selectedNode.count }} {{ currentLang === 'en' ? 'times' : '次' }}</div>
+
+                        <div class="detail-section">
+                            <div class="section-label">{{ i18nText.functionDetail.threadPerformance }}</div>
+                            <div class="detail-item">
+                                <div class="detail-label">{{ i18nText.functionDetail.totalCallCount }}</div>
+                                <div class="detail-value">{{ selectedNode.totalCount }} {{ currentLang === 'en' ? 'times' : '次' }}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">{{ i18nText.functionDetail.totalExecutionTime }}</div>
+                                <div class="detail-value">{{ formatExecutionTime(selectedNode.totalValue) }}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">{{ i18nText.functionDetail.avgExecutionTime }}</div>
+                                <div class="detail-value">{{ formatExecutionTime(selectedNode.avgValue) }}</div>
+                            </div>
+                            <div class="detail-item execution-time-range">
+                                <div class="time-item">
+                                    <div class="detail-label">{{ i18nText.functionDetail.minExecutionTime }}</div>
+                                    <div class="detail-value">{{ formatExecutionTime(selectedNode.minValue) }}</div>
+                                </div>
+                                <div class="time-separator">~</div>
+                                <div class="time-item">
+                                    <div class="detail-label">{{ i18nText.functionDetail.maxExecutionTime }}</div>
+                                    <div class="detail-value">{{ formatExecutionTime(selectedNode.maxValue) }}</div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="detail-item">
-                            <div class="detail-label">{{ i18nText.functionDetail.percentage }}</div>
-                            <div class="detail-value">{{ selectedNode.percentage.toFixed(2) }}%</div>
-                        </div>
+
+                        <el-collapse v-model="expandedStack" class="stack-collapse">
+                            <el-collapse-item name="1">
+                                <template #title>
+                                    <span class="expand-title">{{ i18nText.functionDetail.showDetail }}</span>
+                                </template>
+                                <div class="stack-list">
+                                    <div v-for="(func, index) in selectedNode.callStack" 
+                                         :key="index"
+                                         class="stack-item"
+                                         :class="{ 'current-func': index === selectedNode.callStack.length - 1 }">
+                                        {{ index + 1 }}. {{ func.name }}
+                                    </div>
+                                </div>
+                            </el-collapse-item>
+                        </el-collapse>
                     </div>
                 </div>
             </div>
@@ -555,8 +709,18 @@
                     title: '函数调用详情',
                     name: '函数名称',
                     className: '函数所在类',
-                    callCount: '调用次数',
-                    percentage: '占用比例'
+                    currentCallCount: '在当前调用栈中的执行次数',
+                    currentPercentage: '在父函数调用栈中的执行时间占比',
+                    totalCallCount: '在整个线程中的总调用次数',
+                    totalExecutionTime: '在整个线程中的总执行时间',
+                    callStack: '调用栈',
+                    showDetail: '查看详细调用栈',
+                    maxExecutionTime: '最长单次执行时间',
+                    minExecutionTime: '最短单次执行时间',
+                    basicInfo: '基本信息',
+                    currentStackPerformance: '在当前调用栈中的表现',
+                    threadPerformance: '在整个线程中的表现',
+                    avgExecutionTime: '平均执行时间'
                 },
                 chart: {
                     title: '函数调用火焰图',
@@ -590,8 +754,18 @@
                     title: 'Function Call Details',
                     name: 'Function Name',
                     className: 'Class Name',
-                    callCount: 'Call Count',
-                    percentage: 'Percentage'
+                    currentCallCount: 'Call Count in Current Stack',
+                    currentPercentage: 'Execution Time Percentage in Parent Stack',
+                    totalCallCount: 'Total Call Count in Thread',
+                    totalExecutionTime: 'Total Execution Time in Thread',
+                    callStack: 'Call Stack',
+                    showDetail: 'Show Detailed Call Stack',
+                    maxExecutionTime: 'Maximum Single Execution Time',
+                    minExecutionTime: 'Minimum Single Execution Time',
+                    basicInfo: 'Basic Information',
+                    currentStackPerformance: 'Performance in Current Stack',
+                    threadPerformance: 'Performance in Thread',
+                    avgExecutionTime: 'Average Execution Time'
                 },
                 chart: {
                     title: 'Function Call Flame Graph',
@@ -618,12 +792,13 @@
         
         const app = createApp({
             components: {
-                Files: ElementPlusIconsVue.Files,
-                Share: ElementPlusIconsVue.Share,
-                Close: ElementPlusIconsVue.Close,
-                Back: ElementPlusIconsVue.Back,
-                Connection: ElementPlusIconsVue.Connection,
-                ArrowRight: ElementPlusIconsVue.ArrowRight
+                // 移除这些组件注册
+                // ElIconFiles: ElementPlusIconsVue.Files,
+                // ElIconShare: ElementPlusIconsVue.Share,
+                // ElIconClose: ElementPlusIconsVue.Close,
+                // ElIconBack: ElementPlusIconsVue.Back,
+                // ElIconConnection: ElementPlusIconsVue.Connection,
+                // ElIconArrowRight: ElementPlusIconsVue.ArrowRight
             },
             setup() {
                 const selectedTestCase = ref('')
@@ -672,13 +847,18 @@
                 onMounted(() => {
                     window.chartManager.init(document.getElementById('chart'))
                     window.chartManager.onNodeClick((node) => {
-                        console.log('Node clicked:', node)
                         if (node) {
                             selectedNode.value = {
                                 name: node.name,
                                 className: node.className,
                                 count: node.count,
-                                percentage: node.percentage
+                                percentage: node.percentage,
+                                callStack: node.callStack,
+                                totalCount: node.totalCount,
+                                totalValue: node.totalValue,
+                                maxValue: node.maxValue,
+                                minValue: node.minValue,
+                                avgValue: node.avgValue
                             }
                         }
                     })
@@ -714,8 +894,8 @@
                 }
                 
                 window.addEventListener('resize', () => {
-                    if (statsChart) {
-                        statsChart.resize()
+                    if (window.chartManager && window.chartManager.chart) {
+                        window.chartManager.chart.resize()
                     }
                 })
                 
@@ -764,6 +944,8 @@
                     return `${(ns/1_000_000_000).toFixed(2)}s`;
                 }
 
+                const expandedStack = ref([]);
+
                 return {
                     selectedTestCase,
                     selectedThread,
@@ -786,12 +968,14 @@
                     showThreadPanel,
                     getThreadExecutionTime,
                     formatExecutionTime,
+                    expandedStack,
                 }
             }
         })
         
+        // 使用这种方式全局注册所有图标组件
         for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
-            app.component(key, component)
+            app.component(key, component);
         }
         
         app.use(ElementPlus)

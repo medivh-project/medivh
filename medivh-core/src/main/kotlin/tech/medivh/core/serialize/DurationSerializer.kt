@@ -4,7 +4,6 @@ import com.alibaba.fastjson2.JSONWriter
 import com.alibaba.fastjson2.writer.ObjectWriter
 import java.lang.reflect.Type
 import java.time.Duration
-import java.util.UUID
 
 
 /**
@@ -15,9 +14,6 @@ class DurationSerializer : ObjectWriter<Duration> {
     override fun write(jsonWriter: JSONWriter?, `object`: Any?, fieldName: Any?, fieldType: Type?, features: Long) {
         `object` as Duration
         jsonWriter?.writeInt64(durationToLong(`object`))
-        jsonWriter?.writeName("id")
-        jsonWriter?.writeColon()
-        jsonWriter?.writeString(UUID.randomUUID().toString())
     }
 
 
