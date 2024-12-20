@@ -1,10 +1,7 @@
 package tech.medivh.core.statistic
 
-import tech.medivh.core.InvokeInfo
 import tech.medivh.core.jfr.FlameNode
-import tech.medivh.core.serialize.DurationSerializer
 import java.time.Duration
-import java.time.Instant
 
 
 /**
@@ -12,41 +9,25 @@ import java.time.Instant
  **/
 class ThreadRecordAccumulator(val name: String) {
     private val eventList = mutableListOf<FlameNode>()
-    private val statistic = mutableMapOf<String, InvokeInfo>()
 
-    private var minStartTime = Instant.MAX
-    private var maxDuration = Duration.ZERO
-    private var maxEndTime = Instant.MIN
-
-    private var id = 0L
-
-    private val globalStatistic = mutableMapOf<String, InvokeInfo>()
+    private val aggregation = ThreadAggregation()
 
     fun accumulate(event: FlameNode) {
-        statistic.merge(event.name, InvokeInfo(event.duration.toMillis()), InvokeInfo::merge)
         eventList.add(event)
-        if (event.startTime < minStartTime) {
-            minStartTime = event.startTime
-        }
-        if (event.duration > maxDuration) {
-            maxDuration = event.duration
-        }
-        if (event.endTime > maxEndTime) {
-            maxEndTime = event.endTime
-        }
-
+        aggregation.gather(event)
     }
 
     fun buildRecord(): ThreadRecord {
         eventList.sort()
-        val root = FlameNode(minStartTime, maxEndTime, maxDuration, "all", "medivh")
+        val root = FlameNode(
+            aggregation.earliest,
+            aggregation.latest,
+            Duration.between(aggregation.earliest, aggregation.latest),
+            "all",
+            "medivh"
+        )
         eventList.forEach {
             processNode(it, root)
-            globalStatistic.merge(
-                "${it.className}#${it.name}",
-                InvokeInfo(DurationSerializer.durationToLong(it.duration)),
-                InvokeInfo::merge
-            )
         }
 
         val mergedChildren = mergeChildren(root.children)
@@ -54,10 +35,11 @@ class ThreadRecordAccumulator(val name: String) {
         mergedChildren.forEach {
             rootDuration += it.value
         }
-        val rootInvokeInfo = InvokeInfo(DurationSerializer.durationToLong(rootDuration))
-        val rootRecord = FunctionRecord(root.name, root.className, rootDuration, rootInvokeInfo, ++id, null, 1)
+        val rootRecord = FunctionRecord(root.name, root.className, rootDuration, 1, null, 1)
         rootRecord.addChildren(mergedChildren)
-        return ThreadRecord(name).apply { functionRoot = rootRecord }
+        return ThreadRecord(name, aggregation).apply {
+            functionRoot = rootRecord
+        }
     }
 
 
@@ -67,8 +49,16 @@ class ThreadRecordAccumulator(val name: String) {
         }
         if (children.size == 1) {
             val flame = children.first()
-            val invokeInfo = globalStatistic["${flame.className}#${flame.name}"]!!
-            return listOf(FunctionRecord(flame.name, flame.className, flame.duration, invokeInfo, ++id, null, 1))
+            return listOf(
+                FunctionRecord(
+                    flame.name,
+                    flame.className,
+                    flame.duration,
+                    aggregation.assignId(flame),
+                    null,
+                    1
+                )
+            )
         }
         return children.groupBy { it.name + it.className }.values.map { mergeSameNodes(it) }.toList()
     }
@@ -83,13 +73,11 @@ class ThreadRecordAccumulator(val name: String) {
             allFlameChildren.addAll(it.children)
         }
 
-        val invokeInfo = globalStatistic["${sameNodes.first().className}#${sameNodes.first().name}"]!!
         return FunctionRecord(
             sameNodes.first().name,
             sameNodes.first().className,
             duration,
-            invokeInfo,
-            ++id,
+            aggregation.assignId(sameNodes.first()),
             null,
             count
         ).apply {

@@ -5,6 +5,8 @@ class FlameGraphManager {
         this.renderItem = this.renderItem.bind(this);
         this.clickCallback = null;
         this.nodeMap = new Map();
+        this.currentTestCase = null;
+        this.currentThread = null;
     }
 
     static getTestCases() {
@@ -61,9 +63,11 @@ class FlameGraphManager {
                 if (this.clickCallback && params.value[0] !== 0) {
                     const callStack = this.getCallStack(params.data.name);
                     const node = this.nodeMap.get(params.data.name);
-                    const globalInfo = node?.globalInvokeInfo;
                     
-                    const avgValue = globalInfo ? Math.floor(globalInfo.totalCost / globalInfo.invokeCount) : 0;
+                    const testIndex = parseInt(this.currentTestCase.replace('test', ''));
+                    const threadIndex = parseInt(this.currentThread.split('_thread')[1]);
+                    const thread = testCasesData[testIndex].threads[threadIndex];
+                    const totalStats = thread.aggregation.threadTotalInvoke[params.data.name];
 
                     this.clickCallback({
                         name: params.value[3],
@@ -71,11 +75,11 @@ class FlameGraphManager {
                         percentage: params.value[4],
                         className: params.data.className,
                         callStack: callStack,
-                        totalCount: globalInfo?.invokeCount || 0,
-                        totalValue: globalInfo?.totalCost || 0,
-                        maxValue: globalInfo?.maxCost || 0,
-                        minValue: globalInfo?.minCost || 0,
-                        avgValue: avgValue
+                        totalCount: totalStats?.invokeCount || 0,
+                        totalValue: totalStats?.totalCost || 0,
+                        maxValue: totalStats?.maxCost || 0,
+                        minValue: totalStats?.minCost || 0,
+                        avgValue: totalStats ? Math.floor(totalStats.totalCost / totalStats.invokeCount) : 0
                     });
                 }
             }
@@ -241,8 +245,6 @@ class FlameGraphManager {
             const index = levelIndices.get(level) || 0;
             levelIndices.set(level, index + 1);
             
-            const fullNode = this.nodeMap.get(item.id);
-            
             const temp = {
                 name: item.id,
                 value: [
@@ -254,7 +256,8 @@ class FlameGraphManager {
                 ],
                 className: item.className,
                 count: item.count,
-                globalInvokeInfo: fullNode?.globalInvokeInfo,
+                maxValue: item.maxValue,
+                minValue: item.minValue,
                 itemStyle: {
                     color: this.getNodeColor(item.className, level, index)
                 }
@@ -302,6 +305,8 @@ class FlameGraphManager {
 
     async updateChart(testCase, thread) {
         try {
+            this.currentTestCase = testCase;
+            this.currentThread = thread;
             const threadData = FlameGraphManager.getThreadData(testCase, thread);
             if (!threadData) {
                 this.clearChart();
@@ -335,10 +340,15 @@ class FlameGraphManager {
                     formatter: (params) => {
                         const duration = params.value[2] - params.value[1];
                         const formatTime = (ns) => {
-                            if (ns < 1000) return `${ns}ns`;
-                            if (ns < 1_000_000) return `${(ns/1000).toFixed(2)}μs`;
-                            if (ns < 1_000_000_000) return `${(ns/1_000_000).toFixed(2)}ms`;
-                            return `${(ns/1_000_000_000).toFixed(2)}s`;
+                            if (ns >= 1_000_000_000) {
+                                return `${(ns/1_000_000_000).toFixed(2)}s`;
+                            } else if (ns >= 1_000_000) {
+                                return `${(ns/1_000_000).toFixed(2)}ms`;
+                            } else if (ns >= 1000) {
+                                return `${(ns/1000).toFixed(2)}μs`;
+                            } else {
+                                return `${ns}ns`;
+                            }
                         };
 
                         const lang = window.currentLang || 'zh';

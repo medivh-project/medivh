@@ -8,7 +8,9 @@ data class InvokeInfo(
     var totalCost: Long,
     var invokeCount: Long = 1,
     var maxCost: Long = totalCost,
-    var minCost: Long = totalCost
+    var minCost: Long = totalCost,
+    val methodName: String = "",
+    val className: String = ""
 ) {
 
     companion object {

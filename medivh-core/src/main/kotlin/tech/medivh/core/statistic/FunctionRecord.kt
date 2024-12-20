@@ -1,7 +1,7 @@
 package tech.medivh.core.statistic
 
+import com.alibaba.fastjson2.JSONArray
 import com.alibaba.fastjson2.annotation.JSONField
-import tech.medivh.core.InvokeInfo
 import tech.medivh.core.serialize.DurationSerializer
 import java.time.Duration
 
@@ -14,7 +14,6 @@ class FunctionRecord(
     val className: String,
     @JSONField(serializeUsing = DurationSerializer::class)
     var value: Duration,
-    val globalInvokeInfo: InvokeInfo,
     var id: Long? = null,
     var parentId: Long? = null,
     var count: Int = 1
