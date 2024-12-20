@@ -549,6 +549,12 @@
             font-size: 14px;
             margin: 0;
         }
+        
+        .empty-hint {
+            margin-top: 8px !important;
+            color: #f56c6c;
+            font-size: 12px !important;
+        }
     </style>
 </head>
 <body>
@@ -589,14 +595,23 @@
                             <div class="section-title">{{ i18nText.testCase.title }}</div>
                         </div>
                         <div class="test-cases">
-                            <div v-for="testCase in testCases" 
-                                 :key="testCase.value"
-                                 class="test-case-card"
-                                 :class="{ active: selectedTestCase === testCase.value }"
-                                 @click="handleTestCaseClick(testCase)">
-                                <div class="test-case-title">{{ testCase.label }}</div>
-                                <div class="test-case-description">{{ testCase.description }}</div>
-                            </div>
+                            <template v-if="testCases.length > 0">
+                                <div v-for="testCase in testCases" 
+                                     :key="testCase.value"
+                                     class="test-case-card"
+                                     :class="{ active: selectedTestCase === testCase.value }"
+                                     @click="handleTestCaseClick(testCase)">
+                                    <div class="test-case-title">{{ testCase.label }}</div>
+                                    <div class="test-case-description">{{ testCase.description }}</div>
+                                </div>
+                            </template>
+                            <template v-else>
+                                <div class="empty-data">
+                                    <el-icon class="empty-icon"><Files /></el-icon>
+                                    <p>{{ i18nText.testCase.noData }}</p>
+                                    <p class="empty-hint">{{ i18nText.testCase.checkConfig }}</p>
+                                </div>
+                            </template>
                         </div>
                     </template>
                     
@@ -647,6 +662,10 @@
                             <div class="detail-item">
                                 <div class="detail-label">{{ i18nText.functionDetail.currentCallCount }}</div>
                                 <div class="detail-value">{{ selectedNode.count }} {{ currentLang === 'en' ? 'times' : '次' }}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">{{ i18nText.functionDetail.currentExecutionTime }}</div>
+                                <div class="detail-value">{{ formatExecutionTime(selectedNode.durationInStack) }}</div>
                             </div>
                             <div class="detail-item">
                                 <div class="detail-label">{{ i18nText.functionDetail.currentPercentage }}</div>
@@ -856,7 +875,9 @@
                 title: '函数调用报告',
                 testCase: {
                     title: '测试用例',
-                    select: '请选择测试用例'
+                    select: '请���择测试用例',
+                    noData: '暂无测试用例数据',
+                    checkConfig: '请检查medivh配置，是否设置了正确的include'
                 },
                 thread: {
                     title: '线程列表',
@@ -878,7 +899,8 @@
                     basicInfo: '基本信息',
                     currentStackPerformance: '在当前调用栈中的表现',
                     threadPerformance: '在个线程中的表现',
-                    avgExecutionTime: '平均执行时间'
+                    avgExecutionTime: '平均执行时间',
+                    currentExecutionTime: '在当前调用栈中的执行时间'
                 },
                 chart: {
                     title: '函数调用火焰图',
@@ -909,7 +931,9 @@
                 title: 'Function Call Report',
                 testCase: {
                     title: 'Test Cases',
-                    select: 'Please select a test case'
+                    select: 'Please select a test case',
+                    noData: 'No test case data available',
+                    checkConfig: 'Please check medivh configuration, whether the include is set correctly'
                 },
                 thread: {
                     title: 'Thread List',
@@ -931,7 +955,8 @@
                     basicInfo: 'Basic Information',
                     currentStackPerformance: 'Performance in Current Stack',
                     threadPerformance: 'Performance in Thread',
-                    avgExecutionTime: 'Average Execution Time'
+                    avgExecutionTime: 'Average Execution Time',
+                    currentExecutionTime: 'Execution Time in Current Stack'
                 },
                 chart: {
                     title: 'Function Call Flame Graph',
@@ -967,13 +992,6 @@
         
         const app = createApp({
             components: {
-                // 移除这些组件注册
-                // ElIconFiles: ElementPlusIconsVue.Files,
-                // ElIconShare: ElementPlusIconsVue.Share,
-                // ElIconClose: ElementPlusIconsVue.Close,
-                // ElIconBack: ElementPlusIconsVue.Back,
-                // ElIconConnection: ElementPlusIconsVue.Connection,
-                // ElIconArrowRight
             },
             setup() {
                 const selectedTestCase = ref('')
@@ -1015,28 +1033,22 @@
                 const activeTab = ref('flame')
                 const tableData = ref([])
                 
+                const updateSelectedNode = (nodeData) => {
+                    selectedNode.value = {
+                        ...nodeData,
+                        durationInStack: nodeData.durationInStack
+                    }
+                }
+                
                 const closeDetail = () => {
                     selectedNode.value = null
                 }
                 
                 onMounted(() => {
                     window.chartManager.init(document.getElementById('chart'))
-                    window.chartManager.onNodeClick((node) => {
-                        if (node) {
-                            selectedNode.value = {
-                                name: node.name,
-                                className: node.className,
-                                count: node.count,
-                                percentage: node.percentage,
-                                callStack: node.callStack,
-                                totalCount: node.totalCount,
-                                totalValue: node.totalValue,
-                                maxValue: node.maxValue,
-                                minValue: node.minValue,
-                                avgValue: node.avgValue
-                            }
-                        }
-                    })
+                    window.chartManager.onNodeClick((nodeData) => {
+                        updateSelectedNode(nodeData);
+                    });
                 })
                 
                 const updateTableData = () => {
@@ -1046,9 +1058,12 @@
                         const thread = testCasesData[testIndex].threads[threadIndex];
                         
                         if (thread && thread.aggregation && thread.aggregation.threadTotalInvoke) {
+                            const threadDuration = thread.aggregation.duration;
+                            
                             tableData.value = Object.entries(thread.aggregation.threadTotalInvoke)
                                 .map(([id, stats]) => {
                                     const avgCost = stats.invokeCount ? Math.floor(stats.totalCost / stats.invokeCount) : 0;
+                                    const percentage = threadDuration ? (stats.totalCost / threadDuration * 100) : 0;
                                     
                                     return {
                                         name: stats.methodName || '',
@@ -1058,12 +1073,12 @@
                                         avgExecutionTime: formatExecutionTime(avgCost),
                                         maxExecutionTime: formatExecutionTime(stats.maxCost),
                                         minExecutionTime: formatExecutionTime(stats.minCost),
-                                        percentage: ((stats.totalCost / thread.aggregation.duration) * 100).toFixed(2) + '%',
+                                        percentage: percentage.toFixed(2) + '%',
                                         _executionTime: stats.totalCost,
                                         _avgExecutionTime: avgCost,
                                         _maxExecutionTime: stats.maxCost,
                                         _minExecutionTime: stats.minCost,
-                                        _percentage: (stats.totalCost / thread.aggregation.duration) * 100
+                                        _percentage: percentage
                                     };
                                 })
                                 .sort((a, b) => b._executionTime - a._executionTime);

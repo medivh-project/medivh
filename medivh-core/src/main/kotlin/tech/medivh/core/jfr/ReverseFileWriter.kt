@@ -3,7 +3,6 @@ package tech.medivh.core.jfr
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.nio.ByteBuffer
-import java.time.Instant
 
 
 /**
@@ -72,7 +71,6 @@ class ReverseFileWriter(dir: File, jfrThread: JfrThread, bufferCapacity: Int = 1
 //            return array()
 //        }
     }
-
 
 
     companion object {

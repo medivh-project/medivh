@@ -1,6 +1,5 @@
 package tech.medivh.core.statistic
 
-import com.alibaba.fastjson2.JSONArray
 import com.alibaba.fastjson2.annotation.JSONField
 import tech.medivh.core.serialize.DurationSerializer
 import java.time.Duration

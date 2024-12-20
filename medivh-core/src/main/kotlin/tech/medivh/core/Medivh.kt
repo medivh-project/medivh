@@ -4,7 +4,6 @@ import net.bytebuddy.agent.builder.AgentBuilder
 import net.bytebuddy.asm.Advice
 import net.bytebuddy.description.annotation.AnnotationDescription
 import net.bytebuddy.description.method.MethodDescription
-import net.bytebuddy.description.type.TypeDescription
 import net.bytebuddy.matcher.ElementMatcher
 import net.bytebuddy.matcher.ElementMatchers
 import tech.medivh.api.DebugTime
@@ -46,7 +45,7 @@ object Medivh {
                         writer.writeMethod(TagMethod(method.name, desc.name, debugTimeDesc.expectTime))
                     }
                 }
-                val methodIntercept : ElementMatcher<MethodDescription> = if (context.mode() == RunningMode.NORMAL) {
+                val methodIntercept: ElementMatcher<MethodDescription> = if (context.mode() == RunningMode.NORMAL) {
                     ElementMatchers.isAnnotatedWith(DebugTime::class.java)
                 } else {
                     //  exclude lambda method

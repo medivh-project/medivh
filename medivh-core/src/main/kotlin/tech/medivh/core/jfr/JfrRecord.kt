@@ -17,7 +17,7 @@ class JfrRecord(event: RecordedEvent) : Comparable<JfrRecord> {
     val stackTrace: JfrStackTrace = JfrStackTrace()
 
     override fun compareTo(other: JfrRecord): Int {
-        if(startTime == other.startTime){
+        if (startTime == other.startTime) {
             return duration.compareTo(other.duration)
         }
         if (startTime.isBefore(other.startTime)) {

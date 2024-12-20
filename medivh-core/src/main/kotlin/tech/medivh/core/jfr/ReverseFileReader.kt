@@ -1,7 +1,6 @@
 package tech.medivh.core.jfr
 
 import java.io.File
-import java.io.RandomAccessFile
 import java.nio.ByteBuffer
 import java.time.Instant
 

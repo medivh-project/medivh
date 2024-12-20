@@ -62,25 +62,30 @@ class FlameGraphManager {
                 
                 if (this.clickCallback && params.value[0] !== 0) {
                     const callStack = this.getCallStack(params.data.name);
-                    const node = this.nodeMap.get(params.data.name);
                     
                     const testIndex = parseInt(this.currentTestCase.replace('test', ''));
                     const threadIndex = parseInt(this.currentThread.split('_thread')[1]);
                     const thread = testCasesData[testIndex].threads[threadIndex];
                     const totalStats = thread.aggregation.threadTotalInvoke[params.data.name];
 
-                    this.clickCallback({
+                    const durationInStack = params.value[2] - params.value[1];
+
+                    const nodeData = {
                         name: params.value[3],
                         count: params.data.count,
                         percentage: params.value[4],
                         className: params.data.className,
                         callStack: callStack,
+                        value: params.data.value,
+                        durationInStack: durationInStack,
                         totalCount: totalStats?.invokeCount || 0,
                         totalValue: totalStats?.totalCost || 0,
                         maxValue: totalStats?.maxCost || 0,
                         minValue: totalStats?.minCost || 0,
                         avgValue: totalStats ? Math.floor(totalStats.totalCost / totalStats.invokeCount) : 0
-                    });
+                    };
+
+                    this.clickCallback(nodeData);
                 }
             }
         });

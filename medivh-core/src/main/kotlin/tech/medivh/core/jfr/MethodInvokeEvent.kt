@@ -12,5 +12,4 @@ class MethodInvokeEvent : Event() {
     var testCase: String? = null
 
 
-
 }
