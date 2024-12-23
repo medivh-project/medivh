@@ -227,7 +227,7 @@ class FlameGraphManager {
             this.chart.clear();
             this.chart.setOption({
                 title: {
-                    text: window.currentLang === 'en' ? 'Please select a test case and thread' : '请选择测试用例和线程',
+                    text: language === 'EN' ? 'Please select a test case and thread' : '请选择测试用例和线程',
                     left: 'center',
                     top: '45%',
                     textStyle: {
@@ -323,6 +323,19 @@ class FlameGraphManager {
             const levelOfOriginalJson = this.heightOfJson(threadData);
             const chartData = this.processTreeData(threadData);
 
+            this.chart.setOption({
+                title: {
+                    text: language === 'EN' ? window.i18n.en.chart.title : window.i18n.zh.chart.title,
+                    left: 'center',
+                    top: 10,
+                    textStyle: {
+                        fontFamily: 'Verdana',
+                        fontWeight: 'normal',
+                        fontSize: 20
+                    }
+                }
+            });
+
             const option = {
                 backgroundColor: {
                     type: 'linear',
@@ -356,33 +369,32 @@ class FlameGraphManager {
                             }
                         };
 
-                        const lang = window.currentLang || 'zh';
                         const labels = {
-                            zh: {
+                            ZH: {
                                 execTime: '执行时间',
                                 percentage: '占比',
                                 className: '函数所在类',
                                 callCount: '在同级调用栈的执行次数',
                                 times: '次'
                             },
-                            en: {
+                            EN: {
                                 execTime: 'Execution Time',
                                 percentage: 'Percentage',
                                 className: 'Class Name',
                                 callCount: 'Call Count in Same Stack Level',
                                 times: 'times'
                             }
-                        }[lang];
+                        }[language];
 
                         return `${params.marker} ${params.value[3]}<br/>
                                 ${labels.className}: ${params.data.className}<br/>
-                                ${labels.callCount}: ${params.data.count} ${labels[lang === 'en' ? 'times' : 'times']}<br/>
+                                ${labels.callCount}: ${params.data.count} ${labels.times}<br/>
                                 ${labels.execTime}: ${formatTime(duration)}<br/>
                                 ${labels.percentage}: ${params.value[4].toFixed(2)}%`;
                     }
                 },
                 title: {
-                    text: window.currentLang === 'en' ? 'Function Call Flame Graph' : '函数调用火焰图',
+                    text: language === 'EN' ? window.i18n.en.chart.title : window.i18n.zh.chart.title,
                     left: 'center',
                     top: 10,
                     textStyle: {

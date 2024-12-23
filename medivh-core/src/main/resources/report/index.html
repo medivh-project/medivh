@@ -1171,15 +1171,16 @@
                 return testCases.value.find(t => t.value === selectedTestCase.value) || {}
             })
 
-            const currentLang = ref('zh')
+            const currentLang = ref(language.toLowerCase())
             const languages = [
-                {value: 'zh', label: '简体中文', flag: '🇨🇳'},
-                {value: 'en', label: 'English', flag: '🇺🇸'}
+                { value: 'zh', label: '简体中文', flag: '🇨🇳' },
+                { value: 'en', label: 'English', flag: '🇺🇸' }
             ]
 
             const handleLanguageChange = (lang) => {
                 currentLang.value = lang
                 window.currentLang = lang
+                window.language = lang.toUpperCase()
 
                 if (!selectedTestCase.value || !selectedThread.value) {
                     window.chartManager.clearChart()

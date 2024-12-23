@@ -37,6 +37,8 @@ class MedivhReporter(private val medivhExtension: MedivhExtension) {
         val jsFile = dir.resolve("medivh.js")
         jsFile.writeText("const testCasesData = ")
         jsFile.appendText(JSON.toJSONString(testCaseReportList))
+        jsFile.appendText(";")
+        jsFile.appendText("\nconst language = '${medivhExtension.properties.language.name}'")
     }
 
     private fun unzip(zipFile: File, reportDir: File) {
