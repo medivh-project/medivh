@@ -24,13 +24,10 @@ class MedivhGradlePlugin : Plugin<Project> {
 
         project.afterEvaluate {
             val byteBuddyVersion = "1.15.1"
-            val fastjson2Version = "2.0.52"
             val medivhVersion = project.extensions.extraProperties["medivhVersion"]
-            project.dependencies.add("implementation", "tech.medivh:medivh-api:${medivhVersion}")
             project.dependencies.add("testImplementation", "tech.medivh:medivh-junit-extension:${medivhVersion}")
             project.dependencies.add("testImplementation", "net.bytebuddy:byte-buddy-agent:$byteBuddyVersion")
             project.dependencies.add("testImplementation", "net.bytebuddy:byte-buddy:$byteBuddyVersion")
-//            project.dependencies.add("testImplementation", "com.alibaba.fastjson2:fastjson2:$fastjson2Version")
             val copyAgent = project.tasks.register("copyAgent", CopyAgentTask::class.java, medivhVersion)
 
             project.tasks.register("copyReportZip", CopyReportZipTask::class.java)
