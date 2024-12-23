@@ -16,9 +16,9 @@ open class TestClass {
     fun testMethod() {
         println(1)
     }
-    
+
     @Test
-    fun testAnalysis(){
+    fun testAnalysis() {
         val parse = JSONArray.parse(File(this.javaClass.classLoader.getResource("aa.json").file).readText())
         println(1)
     }

@@ -5,28 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title v-text="i18nText.title">函数调用报告</title>
     <link rel="icon" type="image/png" href="image.png">
-    
+
     <script src="medivh.js"></script>
     <script src="js/vue.global.prod.js"></script>
-    
-    <link rel="stylesheet" href="css/index.css" />
+
+    <link rel="stylesheet" href="css/index.css"/>
     <script src="js/element-plus.min.js"></script>
     <script src="js/index.iife.min.js"></script>
-    
+
     <script src="js/echarts.min.js"></script>
     <script src="chart.js"></script>
-    
+
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             background-color: #f0f2f5;
         }
-        
+
         .header {
             height: 60px;
             padding: 0 20px;
@@ -37,20 +37,20 @@
             justify-content: space-between;
             box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
         }
-        
+
         .logo {
             width: 32px;
             height: 32px;
             margin-right: 12px;
             object-fit: contain;
         }
-        
+
         .title {
             font-size: 20px;
             font-weight: bold;
             color: #333;
         }
-        
+
         .main-container {
             display: flex;
             height: calc(100vh - 60px);
@@ -58,7 +58,7 @@
             gap: 20px;
             position: relative;
         }
-        
+
         .left-panels {
             display: flex;
             flex-direction: column;
@@ -67,7 +67,7 @@
             max-height: calc(100vh - 100px);
             overflow-y: auto;
         }
-        
+
         .panel {
             background-color: #ffffff;
             padding: 20px;
@@ -75,31 +75,31 @@
             box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px 0 rgba(0, 0, 0, 0.02);
             border: 1px solid #e4e7ed;
         }
-        
+
         .panel-header {
             display: flex;
             align-items: center;
             margin-bottom: 16px;
         }
-        
+
         .panel-icon {
             font-size: 18px;
             margin-right: 8px;
             color: #409EFF;
         }
-        
+
         .section-title {
             font-size: 16px;
             font-weight: 600;
             color: #2c3e50;
         }
-        
+
         .test-cases {
             display: flex;
             flex-direction: column;
             gap: 12px;
         }
-        
+
         .test-case-card {
             padding: 16px;
             border-radius: 8px;
@@ -108,31 +108,31 @@
             cursor: pointer;
             transition: all 0.3s ease;
         }
-        
+
         .test-case-card:hover {
             transform: translateY(-2px);
             background-color: #fff;
             border-color: #a0cfff;
             box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
         }
-        
+
         .test-case-card.active {
             background-color: #ecf5ff;
             border-color: #409EFF;
         }
-        
+
         .test-case-title {
             font-size: 14px;
             font-weight: 600;
             color: #2c3e50;
             margin-bottom: 8px;
         }
-        
+
         .test-case-description {
             font-size: 12px;
             color: #909399;
         }
-        
+
         .thread-select-panel {
             position: absolute;
             left: 340px;
@@ -149,26 +149,26 @@
             z-index: 1000;
             border: 1px solid #e4e7ed;
         }
-        
+
         .thread-select-panel.show {
             transform: translateX(0);
             opacity: 1;
             pointer-events: auto;
         }
-        
+
         .thread-select-panel.hide {
             transform: translateX(-20px);
             opacity: 0;
             pointer-events: none;
         }
-        
+
         .threads-container {
             display: flex;
             flex-direction: column;
             gap: 12px;
             margin-top: 8px;
         }
-        
+
         .thread-card {
             position: relative;
             padding: 16px;
@@ -181,19 +181,19 @@
             align-items: center;
             gap: 12px;
         }
-        
+
         .thread-card:hover {
             background-color: #fff;
             border-color: #a0cfff;
             transform: translateY(-2px);
             box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
         }
-        
+
         .thread-card.active {
             background-color: #ecf5ff;
             border-color: #409EFF;
         }
-        
+
         .thread-icon {
             width: 32px;
             height: 32px;
@@ -205,55 +205,55 @@
             color: #409EFF;
             font-size: 18px;
         }
-        
+
         .thread-info {
             flex: 1;
         }
-        
+
         .thread-name {
             font-size: 14px;
             font-weight: 500;
             color: #303133;
             margin-bottom: 4px;
         }
-        
+
         .thread-description {
             font-size: 12px;
             color: #67c23a;
             font-family: monospace;
         }
-        
+
         .thread-arrow {
             color: #c0c4cc;
             transition: all 0.3s;
         }
-        
+
         .thread-card:hover .thread-arrow {
             color: #409EFF;
             transform: translateX(4px);
         }
-        
+
         .thread-card.active .thread-arrow {
             color: #409EFF;
             transform: translateX(4px);
         }
-        
+
         .current-selection-info {
             padding: 0 12px;
         }
-        
+
         .selection-label {
             font-size: 14px;
             color: #909399;
             margin-bottom: 12px;
         }
-        
+
         .selection-value {
             display: flex;
             flex-direction: column;
             gap: 12px;
         }
-        
+
         .selection-item {
             background-color: #f8fafc;
             border: 1px solid #e4e7ed;
@@ -261,19 +261,19 @@
             border-radius: 8px;
             transition: all 0.3s ease;
         }
-        
+
         .selection-item .label {
             font-size: 12px;
             color: #909399;
             margin-bottom: 4px;
         }
-        
+
         .selection-item .value {
             font-size: 14px;
             color: #303133;
             font-weight: 500;
         }
-        
+
         .back-button {
             display: flex;
             align-items: center;
@@ -288,12 +288,12 @@
             transition: all 0.3s ease;
             width: fit-content;
         }
-        
+
         .back-button:hover {
             background-color: #ecf5ff;
             border-color: #a0cfff;
         }
-        
+
         .chart-container {
             flex: 1;
             background-color: #ffffff;
@@ -304,16 +304,16 @@
             border: 1px solid #e4e7ed;
             box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
         }
-        
+
         .tabs-header {
             margin-bottom: 20px;
         }
-        
+
         .tabs-content {
             flex: 1;
             position: relative;
         }
-        
+
         .tab-pane {
             position: absolute;
             top: 0;
@@ -321,13 +321,13 @@
             width: 100%;
             height: 100%;
         }
-        
+
         .language-selector {
             display: flex;
             align-items: center;
             gap: 8px;
         }
-        
+
         .language-item {
             display: flex;
             align-items: center;
@@ -339,34 +339,34 @@
             border: 1px solid transparent;
             transition: all 0.3s ease;
         }
-        
+
         .language-item:hover {
             background-color: #fff;
             border-color: #a0cfff;
         }
-        
+
         .language-item.active {
             background-color: #ecf5ff;
             border-color: #409EFF;
         }
-        
+
         .language-flag {
             font-size: 16px;
         }
-        
+
         .language-label {
             font-size: 14px;
             color: #606266;
         }
-        
+
         .function-detail-panel {
             background-color: #f8fafc;
         }
-        
+
         .detail-content {
             margin-top: 16px;
         }
-        
+
         .detail-item {
             background-color: #fff;
             padding: 12px;
@@ -374,30 +374,30 @@
             border: 1px solid #ebeef5;
             margin-bottom: 8px;
         }
-        
+
         .detail-label {
             font-size: 12px;
             color: #909399;
             margin-bottom: 4px;
         }
-        
+
         .detail-value {
             font-size: 14px;
             color: #303133;
             word-break: break-all;
         }
-        
+
         #chart {
             width: 100%;
             height: 100%;
         }
-        
+
         .call-stack {
             display: flex;
             flex-direction: column;
             gap: 8px;
         }
-        
+
         .stack-path {
             padding: 8px;
             background: #f8fafc;
@@ -405,43 +405,43 @@
             line-height: 1.5;
             word-break: break-all;
         }
-        
+
         .stack-name {
             color: #666;
             font-family: monospace;
         }
-        
+
         .stack-separator {
             color: #909399;
             margin: 0 4px;
         }
-        
+
         .current-func {
             color: #409EFF;
             font-weight: 500;
         }
-        
+
         .stack-collapse {
             border: none;
         }
-        
+
         .expand-title {
             font-size: 12px;
             color: #909399;
         }
-        
+
         .stack-list {
             padding: 8px;
             background: #f8fafc;
             border-radius: 4px;
         }
-        
+
         .stack-item {
             padding: 4px 8px;
             font-family: monospace;
             font-size: 12px;
         }
-        
+
         .detail-section {
             background: #fff;
             border-radius: 8px;
@@ -449,7 +449,7 @@
             margin-bottom: 12px;
             border: 1px solid #ebeef5;
         }
-        
+
         .section-label {
             font-size: 13px;
             font-weight: 500;
@@ -458,97 +458,97 @@
             padding-bottom: 8px;
             border-bottom: 1px solid #ebeef5;
         }
-        
+
         .detail-item {
             margin-bottom: 8px;
             padding: 8px;
             background: #f8fafc;
             border-radius: 4px;
         }
-        
+
         .detail-item:last-child {
             margin-bottom: 0;
         }
-        
+
         .execution-time-range {
             display: flex;
             align-items: center;
             gap: 8px;
         }
-        
+
         .time-item {
             flex: 1;
         }
-        
+
         .time-separator {
             color: #909399;
             font-weight: bold;
         }
-        
+
         .detail-label {
             font-size: 12px;
             color: #909399;
             margin-bottom: 4px;
         }
-        
+
         .detail-value {
             font-size: 13px;
             color: #303133;
             word-break: break-all;
         }
-        
+
         .table-cell-name {
             text-align: left;
             padding: 0 8px;
         }
-        
+
         .table-header {
             padding: 16px 0;
         }
-        
+
         .table-search {
             width: 300px;
         }
-        
+
         .pagination-container {
             padding: 16px;
             display: flex;
             justify-content: flex-end;
         }
-        
+
         .github-link {
             color: #606266;
             transition: opacity 0.3s ease;
             display: flex;
             align-items: center;
         }
-        
+
         .github-link:hover {
             opacity: 0.8;
         }
-        
+
         .github-icon {
             width: 24px;
             height: 24px;
         }
-        
+
         .empty-data {
             padding: 40px 0;
             text-align: center;
             color: #909399;
         }
-        
+
         .empty-icon {
             font-size: 48px;
             margin-bottom: 16px;
             color: #dcdfe6;
         }
-        
+
         .empty-data p {
             font-size: 14px;
             margin: 0;
         }
-        
+
         .empty-hint {
             margin-top: 8px !important;
             color: #f56c6c;
@@ -557,225 +557,245 @@
     </style>
 </head>
 <body>
-    <div id="app">
-        <div class="header">
-            <div style="display: flex; align-items: center;">
-                <img src="image.png" class="logo" alt="logo">
-                <div class="title">{{ i18nText.title }}</div>
-            </div>
-            <div style="display: flex; align-items: center; gap: 16px;">
-                <a href="https://github.com/medivh-project/medivh" 
-                   target="_blank" 
-                   class="github-link" 
-                   title="View on GitHub">
-                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/github/github-original.svg" 
-                         class="github-icon" 
-                         alt="GitHub" />
-                </a>
-                <div class="language-selector">
-                    <div v-for="lang in languages" 
-                         :key="lang.value"
-                         class="language-item"
-                         :class="{ active: currentLang === lang.value }"
-                         @click="handleLanguageChange(lang.value)">
-                        <span class="language-flag">{{ lang.flag }}</span>
-                        <span class="language-label">{{ lang.label }}</span>
-                    </div>
+<div id="app">
+    <div class="header">
+        <div style="display: flex; align-items: center;">
+            <img src="image.png" class="logo" alt="logo">
+            <div class="title">{{ i18nText.title }}</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 16px;">
+            <a href="https://github.com/medivh-project/medivh"
+               target="_blank"
+               class="github-link"
+               title="View on GitHub">
+                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/github/github-original.svg"
+                     class="github-icon"
+                     alt="GitHub"/>
+            </a>
+            <div class="language-selector">
+                <div v-for="lang in languages"
+                     :key="lang.value"
+                     class="language-item"
+                     :class="{ active: currentLang === lang.value }"
+                     @click="handleLanguageChange(lang.value)">
+                    <span class="language-flag">{{ lang.flag }}</span>
+                    <span class="language-label">{{ lang.label }}</span>
                 </div>
             </div>
         </div>
-        
-        <div class="main-container">
-            <div class="left-panels">
-                <div class="panel">
-                    <template v-if="!selectedThread">
-                        <div class="panel-header">
-                            <el-icon class="panel-icon"><Files /></el-icon>
-                            <div class="section-title">{{ i18nText.testCase.title }}</div>
+    </div>
+
+    <div class="main-container">
+        <div class="left-panels">
+            <div class="panel">
+                <template v-if="!selectedThread">
+                    <div class="panel-header">
+                        <el-icon class="panel-icon">
+                            <Files/>
+                        </el-icon>
+                        <div class="section-title">{{ i18nText.testCase.title }}</div>
+                    </div>
+                    <div class="test-cases">
+                        <template v-if="testCases.length > 0">
+                            <div v-for="testCase in testCases"
+                                 :key="testCase.value"
+                                 class="test-case-card"
+                                 :class="{ active: selectedTestCase === testCase.value }"
+                                 @click="handleTestCaseClick(testCase)">
+                                <div class="test-case-title">{{ testCase.label }}</div>
+                                <div class="test-case-description">{{ testCase.description }}</div>
+                            </div>
+                        </template>
+                        <template v-else>
+                            <div class="empty-data">
+                                <el-icon class="empty-icon">
+                                    <Files/>
+                                </el-icon>
+                                <p>{{ i18nText.testCase.noData }}</p>
+                                <p class="empty-hint">{{ i18nText.testCase.checkConfig }}</p>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+
+                <template v-else>
+                    <div class="panel-header" style="margin-bottom: 12px;">
+                        <div class="back-button" @click="handleBack">
+                            <el-icon>
+                                <Back/>
+                            </el-icon>
+                            <span>{{ i18nText.back }}</span>
                         </div>
-                        <div class="test-cases">
-                            <template v-if="testCases.length > 0">
-                                <div v-for="testCase in testCases" 
-                                     :key="testCase.value"
-                                     class="test-case-card"
-                                     :class="{ active: selectedTestCase === testCase.value }"
-                                     @click="handleTestCaseClick(testCase)">
-                                    <div class="test-case-title">{{ testCase.label }}</div>
-                                    <div class="test-case-description">{{ testCase.description }}</div>
-                                </div>
-                            </template>
-                            <template v-else>
-                                <div class="empty-data">
-                                    <el-icon class="empty-icon"><Files /></el-icon>
-                                    <p>{{ i18nText.testCase.noData }}</p>
-                                    <p class="empty-hint">{{ i18nText.testCase.checkConfig }}</p>
-                                </div>
-                            </template>
-                        </div>
-                    </template>
-                    
-                    <template v-else>
-                        <div class="panel-header" style="margin-bottom: 12px;">
-                            <div class="back-button" @click="handleBack">
-                                <el-icon><Back /></el-icon>
-                                <span>{{ i18nText.back }}</span>
+                    </div>
+                    <div class="current-selection-info">
+                        <div class="selection-label">{{ i18nText.currentSelection }}:</div>
+                        <div class="selection-value">
+                            <div class="selection-item">
+                                <span class="label">{{ i18nText.testCase.title }}:</span>
+                                <span class="value">{{ getCurrentTestCase.label }}</span>
+                            </div>
+                            <div class="selection-item">
+                                <span class="label">{{ i18nText.thread.title }}:</span>
+                                <span class="value">{{ getThreadLabel(selectedThread) }}</span>
                             </div>
                         </div>
-                        <div class="current-selection-info">
-                            <div class="selection-label">{{ i18nText.currentSelection }}:</div>
-                            <div class="selection-value">
-                                <div class="selection-item">
-                                    <span class="label">{{ i18nText.testCase.title }}:</span>
-                                    <span class="value">{{ getCurrentTestCase.label }}</span>
-                                </div>
-                                <div class="selection-item">
-                                    <span class="label">{{ i18nText.thread.title }}:</span>
-                                    <span class="value">{{ getThreadLabel(selectedThread) }}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </template>
+                    </div>
+                </template>
+            </div>
+
+            <div class="panel function-detail-panel" v-if="selectedNode">
+                <div class="panel-header" style="justify-content: space-between;">
+                    <div class="section-title">{{ i18nText.functionDetail.title }}</div>
+                    <el-icon class="detail-close" @click="closeDetail">
+                        <Close/>
+                    </el-icon>
                 </div>
 
-                <div class="panel function-detail-panel" v-if="selectedNode">
-                    <div class="panel-header" style="justify-content: space-between;">
-                        <div class="section-title">{{ i18nText.functionDetail.title }}</div>
-                        <el-icon class="detail-close" @click="closeDetail"><Close /></el-icon>
+                <div class="detail-content">
+                    <div class="detail-section">
+                        <div class="section-label">{{ i18nText.functionDetail.basicInfo }}</div>
+                        <div class="detail-item">
+                            <div class="detail-label">{{ i18nText.functionDetail.name }}</div>
+                            <div class="detail-value">{{ selectedNode.name }}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">{{ i18nText.functionDetail.className }}</div>
+                            <div class="detail-value">{{ selectedNode.className }}</div>
+                        </div>
                     </div>
-                    
-                    <div class="detail-content">
-                        <div class="detail-section">
-                            <div class="section-label">{{ i18nText.functionDetail.basicInfo }}</div>
-                            <div class="detail-item">
-                                <div class="detail-label">{{ i18nText.functionDetail.name }}</div>
-                                <div class="detail-value">{{ selectedNode.name }}</div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="detail-label">{{ i18nText.functionDetail.className }}</div>
-                                <div class="detail-value">{{ selectedNode.className }}</div>
+
+                    <div class="detail-section">
+                        <div class="section-label">{{ i18nText.functionDetail.currentStackPerformance }}</div>
+                        <div class="detail-item">
+                            <div class="detail-label">{{ i18nText.functionDetail.currentCallCount }}</div>
+                            <div class="detail-value">{{ selectedNode.count }} {{ currentLang === 'en' ? 'times' : '次'
+                                }}
                             </div>
                         </div>
-
-                        <div class="detail-section">
-                            <div class="section-label">{{ i18nText.functionDetail.currentStackPerformance }}</div>
-                            <div class="detail-item">
-                                <div class="detail-label">{{ i18nText.functionDetail.currentCallCount }}</div>
-                                <div class="detail-value">{{ selectedNode.count }} {{ currentLang === 'en' ? 'times' : '次' }}</div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="detail-label">{{ i18nText.functionDetail.currentExecutionTime }}</div>
-                                <div class="detail-value">{{ formatExecutionTime(selectedNode.durationInStack) }}</div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="detail-label">{{ i18nText.functionDetail.currentPercentage }}</div>
-                                <div class="detail-value">{{ selectedNode.percentage.toFixed(2) }}%</div>
-                            </div>
+                        <div class="detail-item">
+                            <div class="detail-label">{{ i18nText.functionDetail.currentExecutionTime }}</div>
+                            <div class="detail-value">{{ formatExecutionTime(selectedNode.durationInStack) }}</div>
                         </div>
-
-                        <div class="detail-section">
-                            <div class="section-label">{{ i18nText.functionDetail.threadPerformance }}</div>
-                            <div class="detail-item">
-                                <div class="detail-label">{{ i18nText.functionDetail.totalCallCount }}</div>
-                                <div class="detail-value">{{ selectedNode.totalCount }} {{ currentLang === 'en' ? 'times' : '次' }}</div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="detail-label">{{ i18nText.functionDetail.totalExecutionTime }}</div>
-                                <div class="detail-value">{{ formatExecutionTime(selectedNode.totalValue) }}</div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="detail-label">{{ i18nText.functionDetail.avgExecutionTime }}</div>
-                                <div class="detail-value">{{ formatExecutionTime(selectedNode.avgValue) }}</div>
-                            </div>
-                            <div class="detail-item execution-time-range">
-                                <div class="time-item">
-                                    <div class="detail-label">{{ i18nText.functionDetail.minExecutionTime }}</div>
-                                    <div class="detail-value">{{ formatExecutionTime(selectedNode.minValue) }}</div>
-                                </div>
-                                <div class="time-separator">~</div>
-                                <div class="time-item">
-                                    <div class="detail-label">{{ i18nText.functionDetail.maxExecutionTime }}</div>
-                                    <div class="detail-value">{{ formatExecutionTime(selectedNode.maxValue) }}</div>
-                                </div>
-                            </div>
+                        <div class="detail-item">
+                            <div class="detail-label">{{ i18nText.functionDetail.currentPercentage }}</div>
+                            <div class="detail-value">{{ selectedNode.percentage.toFixed(2) }}%</div>
                         </div>
-
-                        <el-collapse v-model="expandedStack" class="stack-collapse">
-                            <el-collapse-item name="1">
-                                <template #title>
-                                    <span class="expand-title">{{ i18nText.functionDetail.showDetail }}</span>
-                                </template>
-                                <div class="stack-list">
-                                    <div v-for="(func, index) in selectedNode.callStack" 
-                                         :key="index"
-                                         class="stack-item"
-                                         :class="{ 'current-func': index === selectedNode.callStack.length - 1 }">
-                                        {{ index + 1 }}. {{ func.name }}
-                                    </div>
-                                </div>
-                            </el-collapse-item>
-                        </el-collapse>
                     </div>
+
+                    <div class="detail-section">
+                        <div class="section-label">{{ i18nText.functionDetail.threadPerformance }}</div>
+                        <div class="detail-item">
+                            <div class="detail-label">{{ i18nText.functionDetail.totalCallCount }}</div>
+                            <div class="detail-value">{{ selectedNode.totalCount }}
+                                {{ currentLang === 'en' ? 'times' : '次' }}
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">{{ i18nText.functionDetail.totalExecutionTime }}</div>
+                            <div class="detail-value">{{ formatExecutionTime(selectedNode.totalValue) }}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">{{ i18nText.functionDetail.avgExecutionTime }}</div>
+                            <div class="detail-value">{{ formatExecutionTime(selectedNode.avgValue) }}</div>
+                        </div>
+                        <div class="detail-item execution-time-range">
+                            <div class="time-item">
+                                <div class="detail-label">{{ i18nText.functionDetail.minExecutionTime }}</div>
+                                <div class="detail-value">{{ formatExecutionTime(selectedNode.minValue) }}</div>
+                            </div>
+                            <div class="time-separator">~</div>
+                            <div class="time-item">
+                                <div class="detail-label">{{ i18nText.functionDetail.maxExecutionTime }}</div>
+                                <div class="detail-value">{{ formatExecutionTime(selectedNode.maxValue) }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <el-collapse v-model="expandedStack" class="stack-collapse">
+                        <el-collapse-item name="1">
+                            <template #title>
+                                <span class="expand-title">{{ i18nText.functionDetail.showDetail }}</span>
+                            </template>
+                            <div class="stack-list">
+                                <div v-for="(func, index) in selectedNode.callStack"
+                                     :key="index"
+                                     class="stack-item"
+                                     :class="{ 'current-func': index === selectedNode.callStack.length - 1 }">
+                                    {{ index + 1 }}. {{ func.name }}
+                                </div>
+                            </div>
+                        </el-collapse-item>
+                    </el-collapse>
                 </div>
             </div>
-            
-            <div class="thread-select-panel" 
-                 :class="{ 
+        </div>
+
+        <div class="thread-select-panel"
+             :class="{ 
                      show: selectedTestCase && !selectedThread,
                      hide: !selectedTestCase || selectedThread 
                  }">
-                <div class="panel-header">
-                    <el-icon class="panel-icon"><Share /></el-icon>
-                    <div class="section-title">{{ i18nText.thread.title }}</div>
-                </div>
-                <div v-if="selectedTestCase" class="threads-container">
-                    <div v-for="thread in threads" 
-                         :key="thread.value"
-                         class="thread-card"
-                         :class="{ active: selectedThread === thread.value }"
-                         @click="handleThreadClick(thread)">
-                        <div class="thread-icon">
-                            <el-icon><Connection /></el-icon>
-                        </div>
-                        <div class="thread-info">
-                            <div class="thread-name">{{ thread.label }}</div>
-                            <div class="thread-description">
-                                {{ formatExecutionTime(getThreadExecutionTime(thread.value)) }}
-                            </div>
-                        </div>
-                        <el-icon class="thread-arrow"><ArrowRight /></el-icon>
+            <div class="panel-header">
+                <el-icon class="panel-icon">
+                    <Share/>
+                </el-icon>
+                <div class="section-title">{{ i18nText.thread.title }}</div>
+            </div>
+            <div v-if="selectedTestCase" class="threads-container">
+                <div v-for="thread in threads"
+                     :key="thread.value"
+                     class="thread-card"
+                     :class="{ active: selectedThread === thread.value }"
+                     @click="handleThreadClick(thread)">
+                    <div class="thread-icon">
+                        <el-icon>
+                            <Connection/>
+                        </el-icon>
                     </div>
+                    <div class="thread-info">
+                        <div class="thread-name">{{ thread.label }}</div>
+                        <div class="thread-description">
+                            {{ formatExecutionTime(getThreadExecutionTime(thread.value)) }}
+                        </div>
+                    </div>
+                    <el-icon class="thread-arrow">
+                        <ArrowRight/>
+                    </el-icon>
                 </div>
             </div>
-            
-            <div class="chart-container">
-                <div class="tabs-header">
-                    <el-radio-group v-model="activeTab" size="large">
-                        <el-radio-button :label="'flame'">{{ i18nText.chart.tabs.flame }}</el-radio-button>
-                        <el-radio-button :label="'table'">{{ i18nText.chart.tabs.table }}</el-radio-button>
-                    </el-radio-group>
+        </div>
+
+        <div class="chart-container">
+            <div class="tabs-header">
+                <el-radio-group v-model="activeTab" size="large">
+                    <el-radio-button :label="'flame'">{{ i18nText.chart.tabs.flame }}</el-radio-button>
+                    <el-radio-button :label="'table'">{{ i18nText.chart.tabs.table }}</el-radio-button>
+                </el-radio-group>
+            </div>
+
+            <div class="tabs-content">
+                <div v-show="activeTab === 'flame'" class="tab-pane">
+                    <div id="chart"></div>
                 </div>
-                
-                <div class="tabs-content">
-                    <div v-show="activeTab === 'flame'" class="tab-pane">
-                        <div id="chart"></div>
-                    </div>
-                    <div v-show="activeTab === 'table'" class="tab-pane">
-                        <div class="table-header">
-                            <el-input
+                <div v-show="activeTab === 'table'" class="tab-pane">
+                    <div class="table-header">
+                        <el-input
                                 v-model="searchQuery"
                                 :placeholder="i18nText.chart.table.searchPlaceholder"
                                 class="table-search"
                                 clearable
                                 @clear="handleSearch">
-                                <template #prefix>
-                                    <el-icon><Search /></el-icon>
-                                </template>
-                            </el-input>
-                        </div>
+                            <template #prefix>
+                                <el-icon>
+                                    <Search/>
+                                </el-icon>
+                            </template>
+                        </el-input>
+                    </div>
 
-                        <el-table 
-                            :data="paginatedTableData" 
-                            style="width: 100%" 
+                    <el-table
+                            :data="paginatedTableData"
+                            style="width: 100%"
                             height="calc(100% - 90px)"
                             border
                             stripe
@@ -792,82 +812,88 @@
                                 padding: '4px',
                                 textAlign: 'center'
                             }">
-                            <el-table-column 
-                                prop="name" 
+                        <el-table-column
+                                prop="name"
                                 :label="i18nText.chart.table.name"
                                 width="150"
                                 show-overflow-tooltip>
-                                <template #default="scope">
-                                    <div class="table-cell-name">
-                                        <span>{{ scope.row.name }}</span>
-                                    </div>
-                                </template>
-                            </el-table-column>
-                            <el-table-column 
-                                prop="className" 
+                            <template #default="scope">
+                                <div class="table-cell-name">
+                                    <span>{{ scope.row.name }}</span>
+                                </div>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                                prop="className"
                                 :label="i18nText.chart.table.className"
                                 width="350"
                                 show-overflow-tooltip>
-                            </el-table-column>
-                            <el-table-column 
+                        </el-table-column>
+                        <el-table-column
                                 :label="i18nText.chart.table.executionTimeRange"
                                 width="320">
-                                <template #default="scope">
-                                    <div class="execution-time-range">
-                                        <div class="time-item">
-                                            <div class="detail-label">{{ i18nText.chart.table.minExecutionTime }}</div>
-                                            <div class="detail-value">{{ scope.row.minExecutionTime }}</div>
-                                        </div>
-                                        <div class="time-separator">~</div>
-                                        <div class="time-item">
-                                            <div class="detail-label">{{ i18nText.chart.table.maxExecutionTime }}</div>
-                                            <div class="detail-value">{{ scope.row.maxExecutionTime }}</div>
-                                        </div>
+                            <template #default="scope">
+                                <div class="execution-time-range">
+                                    <div class="time-item">
+                                        <div class="detail-label">{{ i18nText.chart.table.minExecutionTime }}</div>
+                                        <div class="detail-value">{{ scope.row.minExecutionTime }}</div>
                                     </div>
-                                </template>
-                            </el-table-column>
-                            <el-table-column 
-                                prop="callCount" 
+                                    <div class="time-separator">~</div>
+                                    <div class="time-item">
+                                        <div class="detail-label">{{ i18nText.chart.table.maxExecutionTime }}</div>
+                                        <div class="detail-value">{{ scope.row.maxExecutionTime }}</div>
+                                    </div>
+                                </div>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                                prop="callCount"
                                 :label="i18nText.chart.table.callCount"
                                 width="140">
-                            </el-table-column>
-                            <el-table-column 
-                                prop="avgExecutionTime" 
+                        </el-table-column>
+                        <el-table-column
+                                prop="avgExecutionTime"
                                 :label="i18nText.chart.table.avgExecutionTime"
                                 width="160"
                                 show-overflow-tooltip>
-                            </el-table-column>
-                            <el-table-column 
-                                prop="totalExecutionTime" 
+                        </el-table-column>
+                        <el-table-column
+                                prop="totalExecutionTime"
                                 :label="i18nText.chart.table.totalExecutionTime"
                                 width="160"
                                 show-overflow-tooltip>
-                            </el-table-column>
-                            <el-table-column 
-                                prop="percentage" 
+                        </el-table-column>
+                        <el-table-column
+                                prop="percentage"
                                 :label="i18nText.chart.table.percentage"
                                 width="140">
-                                <template #header>
-                                    <div style="display: flex; align-items: center; justify-content: center; gap: 4px;">
-                                        {{ i18nText.chart.table.percentage }}
-                                        <el-tooltip
+                            <template #header>
+                                <div style="display: flex; align-items: center; justify-content: center; gap: 4px;">
+                                    {{ i18nText.chart.table.percentage }}
+                                    <el-tooltip
                                             :content="i18nText.chart.table.percentageTooltip"
                                             placement="top">
-                                            <el-icon style="cursor: help;"><QuestionFilled /></el-icon>
-                                        </el-tooltip>
-                                    </div>
-                                </template>
-                            </el-table-column>
-                            <template #empty>
-                                <div class="empty-data">
-                                    <el-icon class="empty-icon"><Files /></el-icon>
-                                    <p>{{ selectedTestCase && selectedThread ? i18nText.chart.table.noData : i18nText.chart.table.pleaseSelect }}</p>
+                                        <el-icon style="cursor: help;">
+                                            <QuestionFilled/>
+                                        </el-icon>
+                                    </el-tooltip>
                                 </div>
                             </template>
-                        </el-table>
+                        </el-table-column>
+                        <template #empty>
+                            <div class="empty-data">
+                                <el-icon class="empty-icon">
+                                    <Files/>
+                                </el-icon>
+                                <p>
+                                    {{ selectedTestCase && selectedThread ? i18nText.chart.table.noData : i18nText.chart.table.pleaseSelect
+                                    }}</p>
+                            </div>
+                        </template>
+                    </el-table>
 
-                        <div class="pagination-container" v-if="filteredTableData.length > 0">
-                            <el-pagination
+                    <div class="pagination-container" v-if="filteredTableData.length > 0">
+                        <el-pagination
                                 v-model:current-page="currentPage"
                                 v-model:page-size="pageSize"
                                 :page-sizes="[10, 20, 50, 100]"
@@ -875,401 +901,411 @@
                                 layout="total, sizes, prev, pager, next"
                                 @size-change="handleSizeChange"
                                 @current-change="handleCurrentChange">
-                            </el-pagination>
-                        </div>
+                        </el-pagination>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <script>
-        window.i18n = {
-            zh: {
-                title: '函数调用报告',
-                testCase: {
-                    title: '测试用例',
-                    select: '请选择测试用例',
-                    noData: '暂无测试用例数据',
-                    checkConfig: '请检查medivh配置，是否设置了正确的include'
+<script>
+    window.i18n = {
+        zh: {
+            title: '函数调用报告',
+            testCase: {
+                title: '测试用例',
+                select: '请选择测试用例',
+                noData: '暂无测试用例数据',
+                checkConfig: '请检查medivh配置，是否设置了正确的include'
+            },
+            thread: {
+                title: '线程列表',
+                select: '请选择线程'
+            },
+            currentSelection: '当前选择',
+            functionDetail: {
+                title: '函数调用详情',
+                name: '函数名称',
+                className: '函数所在类',
+                currentCallCount: '在当前调用栈中的执行次数',
+                currentPercentage: '在父函数调用栈中的执行时间占比',
+                totalCallCount: '在整个线程中的总调用次数',
+                totalExecutionTime: '总执行时间',
+                callStack: '调用栈',
+                showDetail: '��看详细调用栈',
+                maxExecutionTime: '最长单次执行时间',
+                minExecutionTime: '最短单次执行时间',
+                basicInfo: '基本信息',
+                currentStackPerformance: '在当前调用栈中的表现',
+                threadPerformance: '在个线程中的表现',
+                avgExecutionTime: '平均执行时间',
+                currentExecutionTime: '在当前调用栈中的执行时间'
+            },
+            chart: {
+                title: '函数调用火焰图',
+                tabs: {
+                    flame: '火焰图',
+                    table: '数据表格'
                 },
-                thread: {
-                    title: '线程列表',
-                    select: '请选择线程'
-                },
-                currentSelection: '当前选择',
-                functionDetail: {
-                    title: '函数调用详情',
+                table: {
                     name: '函数名称',
                     className: '函数所在类',
-                    currentCallCount: '在当前调用栈中的执行次数',
-                    currentPercentage: '在父函数调用栈中的执行时间占比',
-                    totalCallCount: '在整个线程中的总调用次数',
-                    totalExecutionTime: '总执行时间',
-                    callStack: '调用栈',
-                    showDetail: '��看详细调用栈',
-                    maxExecutionTime: '最长单次执行时间',
-                    minExecutionTime: '最短单次执行时间',
-                    basicInfo: '基本信息',
-                    currentStackPerformance: '在当前调用栈中的表现',
-                    threadPerformance: '在个线程中的表现',
+                    executionTimeRange: '执行时间范围',
+                    callCount: '调用次数',
                     avgExecutionTime: '平均执行时间',
-                    currentExecutionTime: '在当前调用栈中的执行时间'
+                    totalExecutionTime: '总执行时间',
+                    percentage: '执行时间占比',
+                    minExecutionTime: '最短',
+                    maxExecutionTime: '最长',
+                    searchPlaceholder: '搜索函数名称或类名',
+                    noData: '暂无数据',
+                    pleaseSelect: '请选择测试用例和线程',
+                    percentageTooltip: '该函数的总执行时间占整个线程执行时间的百分比'
                 },
-                chart: {
-                    title: '函数调用火焰图',
-                    tabs: {
-                        flame: '火焰图',
-                        table: '数据表格'
-                    },
-                    table: {
-                        name: '函数名称',
-                        className: '函数所在类',
-                        executionTimeRange: '执行时间范围',
-                        callCount: '调用次数',
-                        avgExecutionTime: '平均执行时间',
-                        totalExecutionTime: '总执行时间',
-                        percentage: '执行时间占比',
-                        minExecutionTime: '最短',
-                        maxExecutionTime: '最长',
-                        searchPlaceholder: '搜索函数名称或类名',
-                        noData: '暂无数据',
-                        pleaseSelect: '请选择测试用例和线程',
-                        percentageTooltip: '该函数的总执行时间占整个线程执行时间的百分比'
-                    },
-                    noData: '请选择测试用例和线程'
-                },
-                language: '切换语言',
-                back: '返回'
+                noData: '请选择测试用例和线程'
             },
-            en: {
-                title: 'Function Call Report',
-                testCase: {
-                    title: 'Test Cases',
-                    select: 'Please select a test case',
-                    noData: 'No test case data available',
-                    checkConfig: 'Please check medivh configuration, whether the include is set correctly'
+            language: '切换语言',
+            back: '返回'
+        },
+        en: {
+            title: 'Function Call Report',
+            testCase: {
+                title: 'Test Cases',
+                select: 'Please select a test case',
+                noData: 'No test case data available',
+                checkConfig: 'Please check medivh configuration, whether the include is set correctly'
+            },
+            thread: {
+                title: 'Thread List',
+                select: 'Please select a thread'
+            },
+            currentSelection: 'Current Selection',
+            functionDetail: {
+                title: 'Function Call Details',
+                name: 'Function Name',
+                className: 'Class Name',
+                currentCallCount: 'Call Count in Current Stack',
+                currentPercentage: 'Execution Time Percentage in Parent Stack',
+                totalCallCount: 'Total Call Count in Thread',
+                totalExecutionTime: 'Total Execution Time in Thread',
+                callStack: 'Call Stack',
+                showDetail: 'Show Detailed Call Stack',
+                maxExecutionTime: 'Maximum Single Execution Time',
+                minExecutionTime: 'Minimum Single Execution Time',
+                basicInfo: 'Basic Information',
+                currentStackPerformance: 'Performance in Current Stack',
+                threadPerformance: 'Performance in Thread',
+                avgExecutionTime: 'Average Execution Time',
+                currentExecutionTime: 'Execution Time in Current Stack'
+            },
+            chart: {
+                title: 'Function Call Flame Graph',
+                tabs: {
+                    flame: 'Flame Graph',
+                    table: 'Data Table'
                 },
-                thread: {
-                    title: 'Thread List',
-                    select: 'Please select a thread'
-                },
-                currentSelection: 'Current Selection',
-                functionDetail: {
-                    title: 'Function Call Details',
+                table: {
                     name: 'Function Name',
                     className: 'Class Name',
-                    currentCallCount: 'Call Count in Current Stack',
-                    currentPercentage: 'Execution Time Percentage in Parent Stack',
-                    totalCallCount: 'Total Call Count in Thread',
-                    totalExecutionTime: 'Total Execution Time in Thread',
-                    callStack: 'Call Stack',
-                    showDetail: 'Show Detailed Call Stack',
-                    maxExecutionTime: 'Maximum Single Execution Time',
-                    minExecutionTime: 'Minimum Single Execution Time',
-                    basicInfo: 'Basic Information',
-                    currentStackPerformance: 'Performance in Current Stack',
-                    threadPerformance: 'Performance in Thread',
-                    avgExecutionTime: 'Average Execution Time',
-                    currentExecutionTime: 'Execution Time in Current Stack'
+                    executionTimeRange: 'Execution Time Range',
+                    callCount: 'Call Count',
+                    avgExecutionTime: 'Average Time',
+                    totalExecutionTime: 'Total Time',
+                    percentage: 'Percentage',
+                    minExecutionTime: 'Min',
+                    maxExecutionTime: 'Max',
+                    searchPlaceholder: 'Search function name or class name',
+                    noData: 'No Data',
+                    pleaseSelect: 'Please select a test case and thread',
+                    percentageTooltip: 'The percentage of function\'s total execution time in thread execution time'
                 },
-                chart: {
-                    title: 'Function Call Flame Graph',
-                    tabs: {
-                        flame: 'Flame Graph',
-                        table: 'Data Table'
-                    },
-                    table: {
-                        name: 'Function Name',
-                        className: 'Class Name',
-                        executionTimeRange: 'Execution Time Range',
-                        callCount: 'Call Count',
-                        avgExecutionTime: 'Average Time',
-                        totalExecutionTime: 'Total Time',
-                        percentage: 'Percentage',
-                        minExecutionTime: 'Min',
-                        maxExecutionTime: 'Max',
-                        searchPlaceholder: 'Search function name or class name',
-                        noData: 'No Data',
-                        pleaseSelect: 'Please select a test case and thread',
-                        percentageTooltip: 'The percentage of function\'s total execution time in thread execution time'
-                    },
-                    noData: 'Please select a test case and thread'
-                },
-                language: 'Switch Language',
-                back: 'Back'
-            }
-        };
-
-        const { createApp, ref, onMounted, computed, watch, nextTick } = Vue
-        
-        const { Files, Share, Close, Back, Connection, ArrowRight, Search, Platform, Github, QuestionFilled } = ElementPlusIconsVue
-        
-        const app = createApp({
-            components: {
+                noData: 'Please select a test case and thread'
             },
-            setup() {
-                const selectedTestCase = ref('')
-                const selectedThread = ref('')
-                const showThreadPanel = ref(false)
-                
-                const testCases = computed(() => window.getTestCases());
-                
-                const threads = computed(() => {
-                    if (!selectedTestCase.value) return [];
-                    return window.getThreads(selectedTestCase.value);
+            language: 'Switch Language',
+            back: 'Back'
+        }
+    };
+
+    const {createApp, ref, onMounted, computed, watch, nextTick} = Vue
+
+    const {
+        Files,
+        Share,
+        Close,
+        Back,
+        Connection,
+        ArrowRight,
+        Search,
+        Platform,
+        Github,
+        QuestionFilled
+    } = ElementPlusIconsVue
+
+    const app = createApp({
+        components: {},
+        setup() {
+            const selectedTestCase = ref('')
+            const selectedThread = ref('')
+            const showThreadPanel = ref(false)
+
+            const testCases = computed(() => window.getTestCases());
+
+            const threads = computed(() => {
+                if (!selectedTestCase.value) return [];
+                return window.getThreads(selectedTestCase.value);
+            });
+
+            const getThreadLabel = (threadValue) => {
+                if (!selectedTestCase.value) return '';
+                const threads = window.getThreads(selectedTestCase.value);
+                const thread = threads.find(t => t.value === threadValue);
+                return thread ? thread.label : '';
+            }
+
+            const handleTestCaseClick = (testCase) => {
+                if (selectedTestCase.value === testCase.value) {
+                    selectedTestCase.value = ''
+                    selectedThread.value = ''
+                } else {
+                    selectedTestCase.value = testCase.value
+                    selectedThread.value = ''
+                }
+                updateChart()
+            }
+
+            const handleThreadClick = (thread) => {
+                selectedThread.value = thread.value
+                showThreadPanel.value = false
+                updateChart()
+            }
+
+            const selectedNode = ref(null)
+            const activeTab = ref('flame')
+            const tableData = ref([])
+
+            const updateSelectedNode = (nodeData) => {
+                selectedNode.value = {
+                    ...nodeData,
+                    durationInStack: nodeData.durationInStack
+                }
+            }
+
+            const closeDetail = () => {
+                selectedNode.value = null
+            }
+
+            onMounted(() => {
+                window.chartManager.init(document.getElementById('chart'))
+                window.chartManager.onNodeClick((nodeData) => {
+                    updateSelectedNode(nodeData);
                 });
-                
-                const getThreadLabel = (threadValue) => {
-                    if (!selectedTestCase.value) return '';
-                    const threads = window.getThreads(selectedTestCase.value);
-                    const thread = threads.find(t => t.value === threadValue);
-                    return thread ? thread.label : '';
-                }
-                
-                const handleTestCaseClick = (testCase) => {
-                    if (selectedTestCase.value === testCase.value) {
-                        selectedTestCase.value = ''
-                        selectedThread.value = ''
-                    } else {
-                        selectedTestCase.value = testCase.value
-                        selectedThread.value = ''
-                    }
-                    updateChart()
-                }
-                
-                const handleThreadClick = (thread) => {
-                    selectedThread.value = thread.value
-                    showThreadPanel.value = false
-                    updateChart()
-                }
-                
-                const selectedNode = ref(null)
-                const activeTab = ref('flame')
-                const tableData = ref([])
-                
-                const updateSelectedNode = (nodeData) => {
-                    selectedNode.value = {
-                        ...nodeData,
-                        durationInStack: nodeData.durationInStack
-                    }
-                }
-                
-                const closeDetail = () => {
-                    selectedNode.value = null
-                }
-                
-                onMounted(() => {
-                    window.chartManager.init(document.getElementById('chart'))
-                    window.chartManager.onNodeClick((nodeData) => {
-                        updateSelectedNode(nodeData);
-                    });
-                })
-                
-                const updateTableData = () => {
-                    if (selectedTestCase.value && selectedThread.value) {
-                        const testIndex = parseInt(selectedTestCase.value.replace('test', ''));
-                        const threadIndex = parseInt(selectedThread.value.split('_thread')[1]);
-                        const thread = testCasesData[testIndex].threads[threadIndex];
-                        
-                        if (thread && thread.aggregation && thread.aggregation.threadTotalInvoke) {
-                            const threadDuration = thread.aggregation.duration;
-                            
-                            tableData.value = Object.entries(thread.aggregation.threadTotalInvoke)
-                                .map(([id, stats]) => {
-                                    const avgCost = stats.invokeCount ? Math.floor(stats.totalCost / stats.invokeCount) : 0;
-                                    const percentage = threadDuration ? (stats.totalCost / threadDuration * 100) : 0;
-                                    
-                                    return {
-                                        name: stats.methodName || '',
-                                        className: stats.className || '',
-                                        callCount: stats.invokeCount,
-                                        totalExecutionTime: formatExecutionTime(stats.totalCost),
-                                        avgExecutionTime: formatExecutionTime(avgCost),
-                                        maxExecutionTime: formatExecutionTime(stats.maxCost),
-                                        minExecutionTime: formatExecutionTime(stats.minCost),
-                                        percentage: percentage.toFixed(2) + '%',
-                                        _executionTime: stats.totalCost,
-                                        _avgExecutionTime: avgCost,
-                                        _maxExecutionTime: stats.maxCost,
-                                        _minExecutionTime: stats.minCost,
-                                        _percentage: percentage
-                                    };
-                                })
-                                .sort((a, b) => b._executionTime - a._executionTime);
-                        } else {
-                            tableData.value = [];
-                        }
+            })
+
+            const updateTableData = () => {
+                if (selectedTestCase.value && selectedThread.value) {
+                    const testIndex = parseInt(selectedTestCase.value.replace('test', ''));
+                    const threadIndex = parseInt(selectedThread.value.split('_thread')[1]);
+                    const thread = testCasesData[testIndex].threads[threadIndex];
+
+                    if (thread && thread.aggregation && thread.aggregation.threadTotalInvoke) {
+                        const threadDuration = thread.aggregation.duration;
+
+                        tableData.value = Object.entries(thread.aggregation.threadTotalInvoke)
+                            .map(([id, stats]) => {
+                                const avgCost = stats.invokeCount ? Math.floor(stats.totalCost / stats.invokeCount) : 0;
+                                const percentage = threadDuration ? (stats.totalCost / threadDuration * 100) : 0;
+
+                                return {
+                                    name: stats.methodName || '',
+                                    className: stats.className || '',
+                                    callCount: stats.invokeCount,
+                                    totalExecutionTime: formatExecutionTime(stats.totalCost),
+                                    avgExecutionTime: formatExecutionTime(avgCost),
+                                    maxExecutionTime: formatExecutionTime(stats.maxCost),
+                                    minExecutionTime: formatExecutionTime(stats.minCost),
+                                    percentage: percentage.toFixed(2) + '%',
+                                    _executionTime: stats.totalCost,
+                                    _avgExecutionTime: avgCost,
+                                    _maxExecutionTime: stats.maxCost,
+                                    _minExecutionTime: stats.minCost,
+                                    _percentage: percentage
+                                };
+                            })
+                            .sort((a, b) => b._executionTime - a._executionTime);
                     } else {
                         tableData.value = [];
                     }
-                };
-                
-                const updateChart = () => {
-                    if (selectedTestCase.value && selectedThread.value) {
-                        window.chartManager.updateChart(selectedTestCase.value, selectedThread.value)
-                            .then(() => {
-                                updateTableData()
-                            })
-                            .catch(error => {
-                                ElementPlus.ElMessage.error('加载数据失败：' + error.message)
-                            })
-                    } else {
-                        window.chartManager.clearChart()
-                        tableData.value = []
-                    }
+                } else {
+                    tableData.value = [];
                 }
-                
-                window.addEventListener('resize', () => {
-                    if (window.chartManager && window.chartManager.chart) {
-                        window.chartManager.chart.resize()
-                    }
-                })
-                
-                const handleBack = () => {
-                    selectedThread.value = ''
-                    selectedNode.value = null
-                }
-                
-                const getCurrentTestCase = computed(() => {
-                    return testCases.value.find(t => t.value === selectedTestCase.value) || {}
-                })
-                
-                const currentLang = ref('zh')
-                const languages = [
-                    { value: 'zh', label: '简体中文', flag: '🇨🇳' },
-                    { value: 'en', label: 'English', flag: '🇺🇸' }
-                ]
-                
-                const handleLanguageChange = (lang) => {
-                    currentLang.value = lang
-                    window.currentLang = lang
-                    
-                    if (!selectedTestCase.value || !selectedThread.value) {
-                        window.chartManager.clearChart()
-                    } else {
-                        window.chartManager.updateChart(selectedTestCase.value, selectedThread.value)
-                    }
-                }
-                
-                const i18nText = computed(() => window.i18n[currentLang.value])
+            };
 
-                watch(() => i18nText.value.title, (newTitle) => {
-                    document.title = newTitle
-                }, { immediate: true })
-
-                const getThreadExecutionTime = (threadValue) => {
-                    if (!selectedTestCase.value) return 0;
-                    const testIndex = parseInt(selectedTestCase.value.replace('test', ''));
-                    const threadIndex = parseInt(threadValue.split('_thread')[1]);
-                    const thread = testCasesData[testIndex].threads[threadIndex];
-                    return thread?.aggregation?.duration || 0;  // 使用 aggregation 中的 duration
-                }
-
-                const formatExecutionTime = (ns) => {
-                    if (!ns) return '0ns';
-                    
-                    if (ns >= 1_000_000_000) {
-                        // 秒级别
-                        return `${(ns/1_000_000_000).toFixed(2)}s`;
-                    } else if (ns >= 1_000_000) {
-                        // 毫秒级别
-                        return `${(ns/1_000_000).toFixed(2)}ms`;
-                    } else if (ns >= 1000) {
-                        // 微秒级别
-                        return `${(ns/1000).toFixed(2)}μs`;
-                    } else {
-                        // 纳秒级别
-                        return `${ns}ns`;
-                    }
-                }
-
-                const expandedStack = ref([]);
-
-                const searchQuery = ref('')
-                const currentPage = ref(1)
-                const pageSize = ref(20)
-
-                const filteredTableData = computed(() => {
-                    const query = searchQuery.value.toLowerCase();
-                    const filtered = tableData.value.filter(item => {
-                        const name = item.name || '';
-                        const className = item.className || '';
-                        return name.toLowerCase().includes(query) ||
-                               className.toLowerCase().includes(query);
-                    });
-                    return filtered;
-                });
-
-                const handleSearch = () => {
-                    currentPage.value = 1;
-                };
-
-                const handleSizeChange = (val) => {
-                    pageSize.value = val;
-                    currentPage.value = 1;
-                };
-
-                const handleCurrentChange = (val) => {
-                    currentPage.value = val;
-                };
-
-                const paginatedTableData = computed(() => {
-                    const start = (currentPage.value - 1) * pageSize.value;
-                    const end = start + pageSize.value;
-                    return filteredTableData.value.slice(start, end);
-                });
-
-                // 监听 activeTab 的变化
-                watch(activeTab, (newTab) => {
-                    if (newTab === 'table') {
-                        // 切换到表格时隐藏函数详情
-                        selectedNode.value = null;
-                    }
-                });
-
-                return {
-                    selectedTestCase,
-                    selectedThread,
-                    testCases,
-                    threads,
-                    handleTestCaseClick,
-                    handleThreadClick,
-                    updateChart,
-                    getThreadLabel,
-                    selectedNode,
-                    closeDetail,
-                    handleBack,
-                    getCurrentTestCase,
-                    activeTab,
-                    tableData,
-                    languages,
-                    currentLang,
-                    handleLanguageChange,
-                    i18nText,
-                    showThreadPanel,
-                    getThreadExecutionTime,
-                    formatExecutionTime,
-                    expandedStack,
-                    searchQuery,
-                    filteredTableData,
-                    currentPage,
-                    pageSize,
-                    handleSearch,
-                    handleSizeChange,
-                    handleCurrentChange,
-                    paginatedTableData,
+            const updateChart = () => {
+                if (selectedTestCase.value && selectedThread.value) {
+                    window.chartManager.updateChart(selectedTestCase.value, selectedThread.value)
+                        .then(() => {
+                            updateTableData()
+                        })
+                        .catch(error => {
+                            ElementPlus.ElMessage.error('加载数据失败：' + error.message)
+                        })
+                } else {
+                    window.chartManager.clearChart()
+                    tableData.value = []
                 }
             }
-        })
-        
-        // 使用这种方式全局注册所有图标组件
-        for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
-            app.component(key, component);
+
+            window.addEventListener('resize', () => {
+                if (window.chartManager && window.chartManager.chart) {
+                    window.chartManager.chart.resize()
+                }
+            })
+
+            const handleBack = () => {
+                selectedThread.value = ''
+                selectedNode.value = null
+            }
+
+            const getCurrentTestCase = computed(() => {
+                return testCases.value.find(t => t.value === selectedTestCase.value) || {}
+            })
+
+            const currentLang = ref('zh')
+            const languages = [
+                {value: 'zh', label: '简体中文', flag: '🇨🇳'},
+                {value: 'en', label: 'English', flag: '🇺🇸'}
+            ]
+
+            const handleLanguageChange = (lang) => {
+                currentLang.value = lang
+                window.currentLang = lang
+
+                if (!selectedTestCase.value || !selectedThread.value) {
+                    window.chartManager.clearChart()
+                } else {
+                    window.chartManager.updateChart(selectedTestCase.value, selectedThread.value)
+                }
+            }
+
+            const i18nText = computed(() => window.i18n[currentLang.value])
+
+            watch(() => i18nText.value.title, (newTitle) => {
+                document.title = newTitle
+            }, {immediate: true})
+
+            const getThreadExecutionTime = (threadValue) => {
+                if (!selectedTestCase.value) return 0;
+                const testIndex = parseInt(selectedTestCase.value.replace('test', ''));
+                const threadIndex = parseInt(threadValue.split('_thread')[1]);
+                const thread = testCasesData[testIndex].threads[threadIndex];
+                return thread?.aggregation?.duration || 0;  // 使用 aggregation 中的 duration
+            }
+
+            const formatExecutionTime = (ns) => {
+                if (!ns) return '0ns';
+
+                if (ns >= 1_000_000_000) {
+                    // 秒级别
+                    return `${(ns / 1_000_000_000).toFixed(2)}s`;
+                } else if (ns >= 1_000_000) {
+                    // 毫秒级别
+                    return `${(ns / 1_000_000).toFixed(2)}ms`;
+                } else if (ns >= 1000) {
+                    // 微秒级别
+                    return `${(ns / 1000).toFixed(2)}μs`;
+                } else {
+                    // 纳秒级别
+                    return `${ns}ns`;
+                }
+            }
+
+            const expandedStack = ref([]);
+
+            const searchQuery = ref('')
+            const currentPage = ref(1)
+            const pageSize = ref(20)
+
+            const filteredTableData = computed(() => {
+                const query = searchQuery.value.toLowerCase();
+                const filtered = tableData.value.filter(item => {
+                    const name = item.name || '';
+                    const className = item.className || '';
+                    return name.toLowerCase().includes(query) ||
+                        className.toLowerCase().includes(query);
+                });
+                return filtered;
+            });
+
+            const handleSearch = () => {
+                currentPage.value = 1;
+            };
+
+            const handleSizeChange = (val) => {
+                pageSize.value = val;
+                currentPage.value = 1;
+            };
+
+            const handleCurrentChange = (val) => {
+                currentPage.value = val;
+            };
+
+            const paginatedTableData = computed(() => {
+                const start = (currentPage.value - 1) * pageSize.value;
+                const end = start + pageSize.value;
+                return filteredTableData.value.slice(start, end);
+            });
+
+            // 监听 activeTab 的变化
+            watch(activeTab, (newTab) => {
+                if (newTab === 'table') {
+                    // 切换到表格时隐藏函数详情
+                    selectedNode.value = null;
+                }
+            });
+
+            return {
+                selectedTestCase,
+                selectedThread,
+                testCases,
+                threads,
+                handleTestCaseClick,
+                handleThreadClick,
+                updateChart,
+                getThreadLabel,
+                selectedNode,
+                closeDetail,
+                handleBack,
+                getCurrentTestCase,
+                activeTab,
+                tableData,
+                languages,
+                currentLang,
+                handleLanguageChange,
+                i18nText,
+                showThreadPanel,
+                getThreadExecutionTime,
+                formatExecutionTime,
+                expandedStack,
+                searchQuery,
+                filteredTableData,
+                currentPage,
+                pageSize,
+                handleSearch,
+                handleSizeChange,
+                handleCurrentChange,
+                paginatedTableData,
+            }
         }
-        
-        app.use(ElementPlus)
-        app.mount('#app')
-    </script>
+    })
+
+    // 使用这种方式全局注册所有图标组件
+    for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
+        app.component(key, component);
+    }
+
+    app.use(ElementPlus)
+    app.mount('#app')
+</script>
 </body>
 </html>

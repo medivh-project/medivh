@@ -1,15 +1,8 @@
 package tech.medivh.plugin.gradle.kotlin
 
 import com.alibaba.fastjson2.JSON
-import com.alibaba.fastjson2.JSONArray
-import tech.medivh.core.env.RunningMode
 import tech.medivh.core.i18n
-import tech.medivh.core.jfr.JfrAnalyzer
 import tech.medivh.core.jfr.JfrEventClassifier
-import tech.medivh.core.jfr.JfrMethod
-import tech.medivh.core.reporter.TagMethod
-import tech.medivh.core.reporter.TagMethodLogFileReader
-import tech.medivh.core.statistic.JfrStatistic
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -22,28 +15,18 @@ import java.util.zip.ZipInputStream
  **/
 class MedivhReporter(private val medivhExtension: MedivhExtension) {
 
-    private val analyzer = JfrAnalyzer()
-
-    private val statistic: MutableMap<JfrMethod, JfrStatistic> = hashMapOf()
-
 
     fun report() {
-        if (medivhExtension.properties.runningMode == RunningMode.NORMAL) {
-            normalReport()
-            return
-        }
-        deepReport()
-    }
-
-    private fun deepReport() {
         val dir = File(medivhExtension.properties.reportDir)
         val reportZip = dir.parentFile.parentFile.parentFile.resolve("medivh-report.zip")
         val reportDir = dir.resolve("report/")
         unzip(reportZip, reportDir)
         generateTraceData(reportDir)
         val indexHtml = reportDir.resolve("index.html")
-        println(i18n(medivhExtension.properties.language, "tip.seeReport", indexHtml.absolutePath))
+        //  in windows, the path is like "C:\Users\xxx" but idea console can't recognize it is a file path
+        println(i18n(medivhExtension.properties.language, "tip.seeReport", indexHtml.absolutePath.replace("\\", "/")))
     }
+
 
     private fun generateTraceData(dir: File) {
         if (!dir.exists()) {
@@ -55,31 +38,6 @@ class MedivhReporter(private val medivhExtension: MedivhExtension) {
         jsFile.writeText("const testCasesData = ")
         jsFile.appendText(JSON.toJSONString(testCaseReportList))
     }
-
-    private fun normalReport() {
-        val tagMethodMap = mutableMapOf<String, TagMethod>()
-        TagMethodLogFileReader(File(medivhExtension.properties.reportDir).resolve(TagMethod.FILE_NAME)).read {
-            tagMethodMap["${it.className}#${it.methodName}"] = it
-        }
-        val jfrFile = File("${medivhExtension.properties.reportDir}/medivh.jfr")
-        analyzer.analysis(jfrFile) {
-            statistic.merge(it.method, JfrStatistic(it), JfrStatistic::merge)
-        }
-        val dir = File(medivhExtension.properties.reportDir)
-        val reportZip = dir.parentFile.parentFile.parentFile.resolve("medivh-report.zip")
-        val reportDir = dir.resolve("report/")
-        unzip(reportZip, reportDir)
-        val jsonArray = JSONArray(statistic.values.map {
-            it.apply {
-                it.expectTime = tagMethodMap[it.methodName]?.expectTime ?: 0
-            }
-        })
-        JsGenerator(medivhExtension).generateJs(jsonArray.toJSONString())
-        val indexHtml = reportDir.resolve("index.html")
-        //  in windows, the path is like "C:\Users\xxx" but idea console can't recognize it is a file path
-        println(i18n(medivhExtension.properties.language, "tip.seeReport", indexHtml.absolutePath.replace("\\", "/")))
-    }
-
 
     private fun unzip(zipFile: File, reportDir: File) {
         if (reportDir.resolve("report/js").exists()) {
@@ -102,6 +60,5 @@ class MedivhReporter(private val medivhExtension: MedivhExtension) {
             }
         }
     }
-
 
 }

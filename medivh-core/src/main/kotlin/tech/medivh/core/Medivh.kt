@@ -3,12 +3,9 @@ package tech.medivh.core
 import net.bytebuddy.agent.builder.AgentBuilder
 import net.bytebuddy.asm.Advice
 import net.bytebuddy.description.annotation.AnnotationDescription
-import net.bytebuddy.description.method.MethodDescription
-import net.bytebuddy.matcher.ElementMatcher
 import net.bytebuddy.matcher.ElementMatchers
 import tech.medivh.api.DebugTime
 import tech.medivh.core.env.MedivhContext
-import tech.medivh.core.env.RunningMode
 import tech.medivh.core.jfr.JfrInterceptor
 import tech.medivh.core.reporter.TagMethod
 import tech.medivh.core.reporter.TagMethodLogFileWriter
@@ -45,13 +42,9 @@ object Medivh {
                         writer.writeMethod(TagMethod(method.name, desc.name, debugTimeDesc.expectTime))
                     }
                 }
-                val methodIntercept: ElementMatcher<MethodDescription> = if (context.mode() == RunningMode.NORMAL) {
-                    ElementMatchers.isAnnotatedWith(DebugTime::class.java)
-                } else {
-                    //  exclude lambda method
-                    ElementMatchers.not(ElementMatchers.isSynthetic())
-                        .and(ElementMatchers.not(ElementMatchers.nameContains("lambda$")))
-                }
+                //  exclude lambda method
+                val methodIntercept = ElementMatchers.not(ElementMatchers.isSynthetic())
+                    .and(ElementMatchers.not(ElementMatchers.nameContains("lambda$")))
                 builder.method(methodIntercept)
                     .intercept(advice)
 

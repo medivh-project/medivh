@@ -11,7 +11,6 @@ import tech.medivh.core.i18n
  **/
 class MedivhGradlePlugin : Plugin<Project> {
 
-
     override fun apply(project: Project) {
 
         val medivhExtension = project.extensions.create("medivh", MedivhExtension::class.java, project)
@@ -31,7 +30,7 @@ class MedivhGradlePlugin : Plugin<Project> {
             project.dependencies.add("testImplementation", "tech.medivh:medivh-junit-extension:${medivhVersion}")
             project.dependencies.add("testImplementation", "net.bytebuddy:byte-buddy-agent:$byteBuddyVersion")
             project.dependencies.add("testImplementation", "net.bytebuddy:byte-buddy:$byteBuddyVersion")
-            project.dependencies.add("testImplementation", "com.alibaba.fastjson2:fastjson2:$fastjson2Version")
+//            project.dependencies.add("testImplementation", "com.alibaba.fastjson2:fastjson2:$fastjson2Version")
             val copyAgent = project.tasks.register("copyAgent", CopyAgentTask::class.java, medivhVersion)
 
             project.tasks.register("copyReportZip", CopyReportZipTask::class.java)

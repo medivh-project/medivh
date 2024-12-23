@@ -21,7 +21,7 @@ class FlameGraphManager {
         const testIndex = parseInt(testCaseValue.replace('test', ''));
         const testCase = testCasesData[testIndex];
         if (!testCase) return [];
-        
+
         return testCase.threads.map((thread, index) => ({
             value: `${testCaseValue}_thread${index}`,
             label: thread.name
@@ -33,7 +33,7 @@ class FlameGraphManager {
         const threadIndex = parseInt(threadValue.split('_thread')[1]);
         const testCase = testCasesData[testIndex];
         if (!testCase) return null;
-        
+
         const thread = testCase.threads[threadIndex];
         if (!thread) return null;
 
@@ -54,15 +54,15 @@ class FlameGraphManager {
             if (this.currentTestData) {
                 const data = this.processTreeData(this.currentTestData, params.data.name);
                 const rootValue = data[0].value[2];
-                
+
                 this.chart.setOption({
-                    xAxis: { max: rootValue },
-                    series: [{ data }]
+                    xAxis: {max: rootValue},
+                    series: [{data}]
                 });
-                
+
                 if (this.clickCallback && params.value[0] !== 0) {
                     const callStack = this.getCallStack(params.data.name);
-                    
+
                     const testIndex = parseInt(this.currentTestCase.replace('test', ''));
                     const threadIndex = parseInt(this.currentThread.split('_thread')[1]);
                     const thread = testCasesData[testIndex].threads[threadIndex];
@@ -129,7 +129,7 @@ class FlameGraphManager {
         const data = [];
         const filteredJson = this.filterJson(JSON.parse(JSON.stringify(jsonObj)), id);
         const rootVal = filteredJson.value;
-        
+
         const recur = (item, start = 0, level = 0) => {
             const temp = {
                 name: item.id,
@@ -178,9 +178,9 @@ class FlameGraphManager {
         const baseHeight = Math.min(((api.size && api.size([0, 1])) || [0, 40])[1], 40);
         const height = baseHeight * 0.6;
         const width = end[0] - start[0];
-        
+
         const y = api.getHeight() - (level + 1) * height;
-        
+
         return {
             type: 'rect',
             transition: ['shape'],
@@ -243,13 +243,13 @@ class FlameGraphManager {
         const data = [];
         const filteredJson = this.filterJson(structuredClone(jsonObj), id);
         const rootVal = filteredJson.value;
-        
+
         const levelIndices = new Map();
-        
+
         const recur = (item, start = 0, level = 0) => {
             const index = levelIndices.get(level) || 0;
             levelIndices.set(level, index + 1);
-            
+
             const temp = {
                 name: item.id,
                 value: [
@@ -298,10 +298,10 @@ class FlameGraphManager {
         for (let i = 0; i < className.length; i++) {
             hash = className.charCodeAt(i) + ((hash << 5) - hash);
         }
-        
+
         const hueOffset = ((hash + level + index) % 5) * 72;
         const hue = (baseHue + hueOffset) % 360;
-        
+
         const saturation = 60 + ((hash + index) % 20);
         const lightness = 45 + ((hash + level) % 15);
 
@@ -346,11 +346,11 @@ class FlameGraphManager {
                         const duration = params.value[2] - params.value[1];
                         const formatTime = (ns) => {
                             if (ns >= 1_000_000_000) {
-                                return `${(ns/1_000_000_000).toFixed(2)}s`;
+                                return `${(ns / 1_000_000_000).toFixed(2)}s`;
                             } else if (ns >= 1_000_000) {
-                                return `${(ns/1_000_000).toFixed(2)}ms`;
+                                return `${(ns / 1_000_000).toFixed(2)}ms`;
                             } else if (ns >= 1000) {
-                                return `${(ns/1000).toFixed(2)}μs`;
+                                return `${(ns / 1000).toFixed(2)}μs`;
                             } else {
                                 return `${ns}ns`;
                             }
@@ -476,7 +476,7 @@ class FlameGraphManager {
     getCallStack(nodeId) {
         const callStack = [];
         let currentNode = this.nodeMap.get(nodeId);
-        
+
         while (currentNode) {
             callStack.unshift({
                 name: currentNode.name,
@@ -487,7 +487,7 @@ class FlameGraphManager {
             });
             currentNode = this.nodeMap.get(currentNode.parentId);
         }
-        
+
         return callStack;
     }
 }
