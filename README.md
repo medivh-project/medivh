@@ -7,7 +7,7 @@
 
 ## 🔥 Medivh
 
-> Medivh is a convenient and easy-to-use monitoring component. You only need one annotation to get a function execution
+> Medivh is a convenient and easy-to-use monitoring component. You only need one lind code to get a function execution
 > report.
 
 See [web site](https://medivh.tech) for details on the project.
@@ -18,7 +18,7 @@ See [web site](https://medivh.tech) for details on the project.
 ## import gradle plugin in your project
 
 ```kts
-id("tech.medivh.plugin.gradle") version "0.3.0"
+id("tech.medivh.plugin.gradle") version "0.4.2"
 ```
 
 
@@ -29,21 +29,6 @@ You can use Medivh in your Gradle file after build
 ```kts
 medivh {
     include("com.example") // your package name here
-}
-```
-
-## add annotation to your code
-```kotlin
-package tech.medivh.demo.kotlin
-//  package name must be the same as the package name you configured in the gradle file
-import tech.medivh.api.DebugTime
-
-class DemoClass {
-    @DebugTime
-    fun helloWorld(){
-        println("Hello World")
-    }
-
 }
 ```
 
