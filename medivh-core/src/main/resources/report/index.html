@@ -7,14 +7,13 @@
     <link rel="icon" type="image/png" href="image.png">
     
     <script src="medivh.js"></script>
-    <script src="https://registry.npmmirror.com/jquery/3.7.1/files/dist/jquery.min.js"></script>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="js/vue.global.prod.js"></script>
     
-    <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css" />
-    <script src="https://unpkg.com/element-plus"></script>
-    <script src="https://unpkg.com/@element-plus/icons-vue@2.1.0/dist/index.iife.min.js"></script>
+    <link rel="stylesheet" href="css/index.css" />
+    <script src="js/element-plus.min.js"></script>
+    <script src="js/index.iife.min.js"></script>
     
-    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <script src="js/echarts.min.js"></script>
     <script src="chart.js"></script>
     
     <style>
@@ -811,15 +810,26 @@
                                 show-overflow-tooltip>
                             </el-table-column>
                             <el-table-column 
+                                :label="i18nText.chart.table.executionTimeRange"
+                                width="320">
+                                <template #default="scope">
+                                    <div class="execution-time-range">
+                                        <div class="time-item">
+                                            <div class="detail-label">{{ i18nText.chart.table.minExecutionTime }}</div>
+                                            <div class="detail-value">{{ scope.row.minExecutionTime }}</div>
+                                        </div>
+                                        <div class="time-separator">~</div>
+                                        <div class="time-item">
+                                            <div class="detail-label">{{ i18nText.chart.table.maxExecutionTime }}</div>
+                                            <div class="detail-value">{{ scope.row.maxExecutionTime }}</div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </el-table-column>
+                            <el-table-column 
                                 prop="callCount" 
                                 :label="i18nText.chart.table.callCount"
                                 width="140">
-                            </el-table-column>
-                            <el-table-column 
-                                prop="totalExecutionTime" 
-                                :label="i18nText.chart.table.totalExecutionTime"
-                                width="160"
-                                show-overflow-tooltip>
                             </el-table-column>
                             <el-table-column 
                                 prop="avgExecutionTime" 
@@ -828,14 +838,8 @@
                                 show-overflow-tooltip>
                             </el-table-column>
                             <el-table-column 
-                                prop="maxExecutionTime" 
-                                :label="i18nText.chart.table.maxExecutionTime"
-                                width="160"
-                                show-overflow-tooltip>
-                            </el-table-column>
-                            <el-table-column 
-                                prop="minExecutionTime" 
-                                :label="i18nText.chart.table.minExecutionTime"
+                                prop="totalExecutionTime" 
+                                :label="i18nText.chart.table.totalExecutionTime"
                                 width="160"
                                 show-overflow-tooltip>
                             </el-table-column>
@@ -843,6 +847,16 @@
                                 prop="percentage" 
                                 :label="i18nText.chart.table.percentage"
                                 width="140">
+                                <template #header>
+                                    <div style="display: flex; align-items: center; justify-content: center; gap: 4px;">
+                                        {{ i18nText.chart.table.percentage }}
+                                        <el-tooltip
+                                            :content="i18nText.chart.table.percentageTooltip"
+                                            placement="top">
+                                            <el-icon style="cursor: help;"><QuestionFilled /></el-icon>
+                                        </el-tooltip>
+                                    </div>
+                                </template>
                             </el-table-column>
                             <template #empty>
                                 <div class="empty-data">
@@ -875,7 +889,7 @@
                 title: '函数调用报告',
                 testCase: {
                     title: '测试用例',
-                    select: '请���择测试用例',
+                    select: '请选择测试用例',
                     noData: '暂无测试用例数据',
                     checkConfig: '请检查medivh配置，是否设置了正确的include'
                 },
@@ -893,7 +907,7 @@
                     totalCallCount: '在整个线程中的总调用次数',
                     totalExecutionTime: '总执行时间',
                     callStack: '调用栈',
-                    showDetail: '查看详细调用栈',
+                    showDetail: '��看详细调用栈',
                     maxExecutionTime: '最长单次执行时间',
                     minExecutionTime: '最短单次执行时间',
                     basicInfo: '基本信息',
@@ -911,16 +925,17 @@
                     table: {
                         name: '函数名称',
                         className: '函数所在类',
+                        executionTimeRange: '执行时间范围',
                         callCount: '调用次数',
-                        executionTime: '执行时间',
-                        percentage: '执行时间占比',
-                        searchPlaceholder: '搜索函数名称或类名',
-                        totalExecutionTime: '总执行时间',
                         avgExecutionTime: '平均执行时间',
-                        maxExecutionTime: '最长执行时间',
-                        minExecutionTime: '最短执行时间',
+                        totalExecutionTime: '总执行时间',
+                        percentage: '执行时间占比',
+                        minExecutionTime: '最短',
+                        maxExecutionTime: '最长',
+                        searchPlaceholder: '搜索函数名称或类名',
                         noData: '暂无数据',
-                        pleaseSelect: '请选择测试用例和线程'
+                        pleaseSelect: '请选择测试用例和线程',
+                        percentageTooltip: '该函数的总执行时间占整个线程执行时间的百分比'
                     },
                     noData: '请选择测试用例和线程'
                 },
@@ -967,17 +982,17 @@
                     table: {
                         name: 'Function Name',
                         className: 'Class Name',
+                        executionTimeRange: 'Execution Time Range',
                         callCount: 'Call Count',
-                        executionTime: 'Execution Time',
-                        percentage: 'Percentage',
-                        searchPlaceholder: 'Search function name or class name',
+                        avgExecutionTime: 'Average Time',
                         totalExecutionTime: 'Total Time',
-                        avgExecutionTime: 'Avg Time',
-                        maxExecutionTime: 'Max Time',
-                        minExecutionTime: 'Min Time',
-                        variance: 'Variance',
+                        percentage: 'Percentage',
+                        minExecutionTime: 'Min',
+                        maxExecutionTime: 'Max',
+                        searchPlaceholder: 'Search function name or class name',
                         noData: 'No Data',
-                        pleaseSelect: 'Please select a test case and thread'
+                        pleaseSelect: 'Please select a test case and thread',
+                        percentageTooltip: 'The percentage of function\'s total execution time in thread execution time'
                     },
                     noData: 'Please select a test case and thread'
                 },
@@ -988,7 +1003,7 @@
 
         const { createApp, ref, onMounted, computed, watch, nextTick } = Vue
         
-        const { Files, Share, Close, Back, Connection, ArrowRight, Search, Platform, Github } = ElementPlusIconsVue
+        const { Files, Share, Close, Back, Connection, ArrowRight, Search, Platform, Github, QuestionFilled } = ElementPlusIconsVue
         
         const app = createApp({
             components: {
