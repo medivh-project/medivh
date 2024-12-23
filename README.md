@@ -65,7 +65,7 @@ class DemoClassTest{
 
 ```
 
-![Run your test](/doc/images/zh.gif)
+![Run your test](/doc/images/en.gif)
 
 ## Complete Example
 

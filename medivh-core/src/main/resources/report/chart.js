@@ -308,6 +308,23 @@ class FlameGraphManager {
         return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
     }
 
+    updateChartTitle() {
+        if (this.chart) {
+            this.chart.setOption({
+                title: {
+                    text: window.currentLang === 'en' ? window.i18n.en.chart.title : window.i18n.zh.chart.title,
+                    left: 'center',
+                    top: 10,
+                    textStyle: {
+                        fontFamily: 'Verdana',
+                        fontWeight: 'normal',
+                        fontSize: 20
+                    }
+                }
+            });
+        }
+    }
+
     async updateChart(testCase, thread) {
         try {
             this.currentTestCase = testCase;
@@ -322,19 +339,6 @@ class FlameGraphManager {
             this.buildNodeMap(threadData);
             const levelOfOriginalJson = this.heightOfJson(threadData);
             const chartData = this.processTreeData(threadData);
-
-            this.chart.setOption({
-                title: {
-                    text: language === 'EN' ? window.i18n.en.chart.title : window.i18n.zh.chart.title,
-                    left: 'center',
-                    top: 10,
-                    textStyle: {
-                        fontFamily: 'Verdana',
-                        fontWeight: 'normal',
-                        fontSize: 20
-                    }
-                }
-            });
 
             const option = {
                 backgroundColor: {
@@ -353,6 +357,16 @@ class FlameGraphManager {
                             color: '#eeeeb0'
                         }
                     ]
+                },
+                title: {
+                    text: window.currentLang === 'en' ? window.i18n.en.chart.title : window.i18n.zh.chart.title,
+                    left: 'center',
+                    top: 10,
+                    textStyle: {
+                        fontFamily: 'Verdana',
+                        fontWeight: 'normal',
+                        fontSize: 20
+                    }
                 },
                 tooltip: {
                     formatter: (params) => {
@@ -393,16 +407,6 @@ class FlameGraphManager {
                                 ${labels.percentage}: ${params.value[4].toFixed(2)}%`;
                     }
                 },
-                title: {
-                    text: language === 'EN' ? window.i18n.en.chart.title : window.i18n.zh.chart.title,
-                    left: 'center',
-                    top: 10,
-                    textStyle: {
-                        fontFamily: 'Verdana',
-                        fontWeight: 'normal',
-                        fontSize: 20
-                    }
-                },
                 toolbox: {
                     feature: {
                         restore: {}
@@ -439,6 +443,7 @@ class FlameGraphManager {
             };
 
             this.chart.setOption(option, true);
+            this.updateChartTitle();
         } catch (error) {
             console.error('Error updating chart:', error);
             this.clearChart();

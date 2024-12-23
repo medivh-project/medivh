@@ -1187,6 +1187,7 @@
                 } else {
                     window.chartManager.updateChart(selectedTestCase.value, selectedThread.value)
                 }
+                window.chartManager.updateChartTitle()
             }
 
             const i18nText = computed(() => window.i18n[currentLang.value])
