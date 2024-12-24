@@ -28,4 +28,30 @@ class FunctionRecord(
         child.parentId = id
         children.add(child)
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as FunctionRecord
+
+        if (value != other.value) return false
+        if (count != other.count) return false
+        if (name != other.name) return false
+        if (className != other.className) return false
+        if (children != other.children) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = count.hashCode()
+        result = 31 * result + name.hashCode()
+        result = 31 * result + className.hashCode()
+        result = 31 * result + value.hashCode()
+        result = 31 * result + children.hashCode()
+        return result
+    }
+
+
 }

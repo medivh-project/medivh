@@ -3,7 +3,7 @@ package tech.medivh.core.jfr
 import org.slf4j.LoggerFactory
 import java.io.BufferedOutputStream
 import java.io.File
-import java.time.Instant
+import java.nio.ByteBuffer
 
 
 /**
@@ -14,7 +14,7 @@ import java.time.Instant
  * we will have a file to store the sorted records. (threadName.me)
  * @author gxz gongxuanzhangmelt@gmail.com
  **/
-class ExternalSorterWriter(dir: File, jfrThread: JfrThread, testCase: JfrMethod, private val count: Int = 64 * 1024) {
+class ExternalSortedWriter(dir: File, jfrThread: JfrThread, private val count: Int = 64 * 1024) {
     init {
         if (!dir.exists()) {
             dir.mkdirs()
@@ -23,7 +23,9 @@ class ExternalSorterWriter(dir: File, jfrThread: JfrThread, testCase: JfrMethod,
 
     private val dataList = ArrayList<FlameNode>(count)
 
-    private val dataFile = dir.resolve("${jfrThread.javaThreadId}.rjfr")
+    private val dataFile = dir.resolve("${jfrThread.javaName}.rjfr")
+
+    private val indexFile = dir.resolve("${jfrThread.javaName}.ijfr")
 
     private val index = mutableListOf<Long>()
 
@@ -35,7 +37,7 @@ class ExternalSorterWriter(dir: File, jfrThread: JfrThread, testCase: JfrMethod,
         require(allow) { "this writer has been closed" }
         dataList.add(node)
         if (dataList.size == count) {
-            flush()
+            internalFlush()
         }
     }
 
@@ -46,15 +48,17 @@ class ExternalSorterWriter(dir: File, jfrThread: JfrThread, testCase: JfrMethod,
         require(allow) { "this writer has been closed" }
         internalFlush()
         allow = false
-        mergeSortAndWrite()
+        val indexBytes = ByteBuffer.allocate(index.size * Long.SIZE_BYTES).apply {
+            index.forEach { putLong(it) }
+        }
+        indexFile.writeBytes(indexBytes.array())
     }
 
-    private fun mergeSortAndWrite() {
-//        val blockingList: MutableList<Blocking> = mutableListOf()
-//        val queue = PriorityQueue<EventNode>()
-    }
 
     private fun internalFlush() {
+        if (dataList.isEmpty()) {
+            return
+        }
         dataList.sort()
         var currentLength = 0
         BufferedOutputStream(dataFile.outputStream()).use { dataWriter ->
@@ -65,29 +69,36 @@ class ExternalSorterWriter(dir: File, jfrThread: JfrThread, testCase: JfrMethod,
             }
         }
         index.add(preIndex)
+        preIndex += currentLength
         log.info("flush ${dataFile.name} $currentLength bytes")
         dataList.clear()
     }
 
+
+    /**
+     * use 48 bits to store duration, we can store 2^48 / 1_000_000_000(ns) = 281474s about 78h
+     */
     private fun FlameNode.serialize(): ByteArray {
-        TODO()
-//        val nameByte = name.toByteArray(Charsets.UTF_8)
-//        ByteBuffer.allocate(Long.SIZE_BYTES * 2 + Int.SIZE_BYTES + nameByte.size).apply {
-//            putLong(startTime.serialize())
-//            putLong(endTime.serialize())
-//            putInt(nameByte.size)
-//            put(nameByte)
-//            return array()
-//        }
+        val nameByte = name.toByteArray(Charsets.UTF_8)
+        val classNameByte = className.toByteArray(Charsets.UTF_8)
+        // string split to short length + string bytes
+        ByteBuffer.allocate(Short.SIZE_BYTES * 2 + Long.SIZE_BYTES * 2 + nameByte.size + classNameByte.size).apply {
+            putLong(startTime.epochSecond * 1_000_000_000 + startTime.nano.toLong())
+            putLong(endTime.epochSecond * 1_000_000_000 + endTime.nano.toLong())
+
+            putShort(nameByte.size.toShort())
+            put(nameByte)
+
+            putShort(classNameByte.size.toShort())
+            put(classNameByte)
+
+            return array()
+        }
     }
 
-
-    private fun Instant.serialize(): Long {
-        return this.epochSecond * 1_000_000_000 + this.nano.toLong()
-    }
 
     companion object {
-        private val log = LoggerFactory.getLogger(ExternalSorterWriter::class.java)
+        private val log = LoggerFactory.getLogger(ExternalSortedWriter::class.java)
     }
 
 

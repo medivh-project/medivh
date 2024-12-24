@@ -8,6 +8,9 @@ import tech.medivh.core.jfr.FlameNode
  **/
 class TestCaseRecordAccumulator(val name: String) {
 
+    /**
+     * key is thread name
+     */
     private val threadRecordAccumulatorMutableMap = mutableMapOf<String, ThreadRecordAccumulator>()
 
     fun accumulate(threadName: String, event: FlameNode) {

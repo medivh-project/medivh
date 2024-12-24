@@ -65,4 +65,31 @@ class ThreadAggregation(
     fun assignId(event: FlameNode): Long {
         return idMap.computeIfAbsent("${event.className}#${event.name}") { id++ }
     }
+
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as ThreadAggregation
+
+        if (earliest != other.earliest) return false
+        if (id != other.id) return false
+        if (maxDuration != other.maxDuration) return false
+        if (latest != other.latest) return false
+        if (threadTotalInvoke.values.toSet() != other.threadTotalInvoke.values.toSet()) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = id.hashCode()
+        result = 31 * result + earliest.hashCode()
+        result = 31 * result + latest.hashCode()
+        result = 31 * result + maxDuration.hashCode()
+        result = 31 * result + threadTotalInvoke.values.hashCode()
+        return result
+    }
+
+
 }

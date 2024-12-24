@@ -2,7 +2,9 @@ package tech.medivh.plugin.gradle.kotlin
 
 import com.alibaba.fastjson2.JSON
 import tech.medivh.core.i18n
-import tech.medivh.core.jfr.JfrEventClassifier
+import tech.medivh.core.jfr.ExternalClassifier
+import tech.medivh.core.jfr.JfrClassifier
+import tech.medivh.core.jfr.MemoryClassifier
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -32,8 +34,13 @@ class MedivhReporter(private val medivhExtension: MedivhExtension) {
         if (!dir.exists()) {
             dir.mkdirs()
         }
-        val classifier = JfrEventClassifier(File("${medivhExtension.properties.reportDir}/medivh.jfr"))
-        val testCaseReportList = classifier.classify()
+        val jfrFile = File("${medivhExtension.properties.reportDir}/medivh.jfr")
+        val classifier: JfrClassifier = if (jfrFile.length() > 48 * 1024 * 1024) {
+            ExternalClassifier()
+        } else {
+            MemoryClassifier()
+        }
+        val testCaseReportList = classifier.classify(jfrFile)
         val jsFile = dir.resolve("medivh.js")
         jsFile.writeText("const testCasesData = ")
         jsFile.appendText(JSON.toJSONString(testCaseReportList))

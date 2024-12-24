@@ -36,4 +36,5 @@ class JfrThread(thread: RecordedThread) {
 
         return true
     }
+
 }

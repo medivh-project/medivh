@@ -17,8 +17,10 @@ class ThreadRecordAccumulator(val name: String) {
         aggregation.gather(event)
     }
 
-    fun buildRecord(): ThreadRecord {
-        eventList.sort()
+    fun buildRecord(sort: Boolean = true): ThreadRecord {
+        if (sort) {
+            eventList.sort()
+        }
         val root = FlameNode(
             aggregation.earliest,
             aggregation.latest,

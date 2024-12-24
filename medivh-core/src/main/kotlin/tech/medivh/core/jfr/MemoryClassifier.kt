@@ -8,12 +8,15 @@ import java.io.File
 
 
 /**
+ *
+ * jfr file length less than 64M, so we can load all data to memory
+ *
  * @author gxz gongxuanzhangmelt@gmail.com
  **/
-class JfrEventClassifier(private val jfrFile: File) {
+class MemoryClassifier : JfrClassifier {
 
-
-    fun classify(): List<TestCaseRecord> {
+    override fun classify(jfrFile: File): List<TestCaseRecord> {
+        require(jfrFile.length() <= 48 * 1024 * 1024) { "jfr file length must less than 48M" }
         val accumulator = mutableMapOf<String, TestCaseRecordAccumulator>()
 
         RecordingFile(jfrFile.toPath()).use { recordingFile ->
