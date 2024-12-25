@@ -56,7 +56,7 @@ class SortedSegment(start: Long, private val end: Long, val file: RandomAccessFi
                 arrayIndex++
                 bufferOffset = buffer.position()
             } catch (e: BufferUnderflowException) {
-                //  ignore under flow
+                //  ignore under flow lick TCP Fragmentation
                 break
             }
         }
@@ -79,13 +79,13 @@ class SortedSegment(start: Long, private val end: Long, val file: RandomAccessFi
     }
 
     private fun ByteBuffer.readLengthAndString(): String {
-        val stringBytes = ByteArray(getShort().toUShort().toInt())
+        val stringBytes = ByteArray(getShort().toInt() and 0xFFFF)
         get(stringBytes)
         return String(stringBytes, Charsets.UTF_8)
     }
 
 
-    inner class SegmentNode(private val index: Int, val event: FlameNode) : Comparable<SegmentNode>{
+    inner class SegmentNode(private val index: Int, val event: FlameNode) : Comparable<SegmentNode> {
 
         fun next(): SegmentNode? {
             if (index == nodeArray.size - 1 || nodeArray[index + 1] == null) {

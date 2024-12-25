@@ -6,9 +6,9 @@ package tech.medivh.core.statistic
  **/
 class TestCaseRecord(val name: String) {
 
-    val threads: MutableList<ThreadRecord> = mutableListOf()
-    
-    
+    val threads: MutableSet<ThreadRecord> = mutableSetOf()
+
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

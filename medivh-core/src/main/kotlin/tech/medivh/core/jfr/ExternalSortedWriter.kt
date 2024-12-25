@@ -1,8 +1,8 @@
 package tech.medivh.core.jfr
 
 import org.slf4j.LoggerFactory
-import java.io.BufferedOutputStream
 import java.io.File
+import java.io.FileOutputStream
 import java.nio.ByteBuffer
 
 
@@ -14,14 +14,14 @@ import java.nio.ByteBuffer
  * we will have a file to store the sorted records. (threadName.me)
  * @author gxz gongxuanzhangmelt@gmail.com
  **/
-class ExternalSortedWriter(dir: File, jfrThread: JfrThread, private val count: Int = 64 * 1024) {
+class ExternalSortedWriter(dir: File, private val jfrThread: JfrThread, private val batchCount: Int = 64 * 1024) {
     init {
         if (!dir.exists()) {
             dir.mkdirs()
         }
     }
 
-    private val dataList = ArrayList<FlameNode>(count)
+    private val dataList = ArrayList<FlameNode>(batchCount)
 
     private val dataFile = dir.resolve("${jfrThread.javaName}.rjfr")
 
@@ -36,7 +36,7 @@ class ExternalSortedWriter(dir: File, jfrThread: JfrThread, private val count: I
     fun append(node: FlameNode) {
         require(allow) { "this writer has been closed" }
         dataList.add(node)
-        if (dataList.size == count) {
+        if (dataList.size == batchCount) {
             internalFlush()
         }
     }
@@ -61,10 +61,10 @@ class ExternalSortedWriter(dir: File, jfrThread: JfrThread, private val count: I
         }
         dataList.sort()
         var currentLength = 0
-        BufferedOutputStream(dataFile.outputStream()).use { dataWriter ->
+        FileOutputStream(dataFile, true).buffered().use { writer ->
             dataList.forEach {
                 val bytes = it.serialize()
-                dataWriter.write(bytes)
+                writer.write(bytes)
                 currentLength += bytes.size
             }
         }
@@ -76,7 +76,7 @@ class ExternalSortedWriter(dir: File, jfrThread: JfrThread, private val count: I
 
 
     /**
-     * use 48 bits to store duration, we can store 2^48 / 1_000_000_000(ns) = 281474s about 78h
+     * use short to store the string length because the string length is less than 64k
      */
     private fun FlameNode.serialize(): ByteArray {
         val nameByte = name.toByteArray(Charsets.UTF_8)
@@ -94,6 +94,10 @@ class ExternalSortedWriter(dir: File, jfrThread: JfrThread, private val count: I
 
             return array()
         }
+    }
+
+    override fun toString(): String {
+        return "testCase:[${dataFile.parentFile.parentFile.name}] thread:[${jfrThread.javaName}]"
     }
 
 

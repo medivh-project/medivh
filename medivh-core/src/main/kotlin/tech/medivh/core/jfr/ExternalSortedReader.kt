@@ -27,7 +27,7 @@ class ExternalSortedReader(threadDir: File) {
         val allIndex = readAllIndex()
         val dataRandomAccessFile = RandomAccessFile(dataFile, "r")
         val nodes = allIndex.mapIndexed { index, offset ->
-             val isLast = index == allIndex.size - 1
+            val isLast = index == allIndex.size - 1
             val end = if (isLast) dataFile.length() else allIndex[index + 1]
             SortedSegment(offset, end, dataRandomAccessFile).first()
         }
@@ -51,5 +51,10 @@ class ExternalSortedReader(threadDir: File) {
             return index
         }
     }
+
+    override fun toString(): String {
+        return "testCase:[${dataFile.parentFile.parentFile.name}] threadId:[${dataFile.nameWithoutExtension}]"
+    }
+
 
 }

@@ -77,7 +77,7 @@ class ThreadAggregation(
         if (id != other.id) return false
         if (maxDuration != other.maxDuration) return false
         if (latest != other.latest) return false
-        if (threadTotalInvoke.values.toSet() != other.threadTotalInvoke.values.toSet()) return false
+        if (threadTotalInvoke.values.toHashSet() != other.threadTotalInvoke.values.toHashSet()) return false
 
         return true
     }
@@ -87,7 +87,7 @@ class ThreadAggregation(
         result = 31 * result + earliest.hashCode()
         result = 31 * result + latest.hashCode()
         result = 31 * result + maxDuration.hashCode()
-        result = 31 * result + threadTotalInvoke.values.hashCode()
+        result = 31 * result + threadTotalInvoke.values.toHashSet().hashCode()
         return result
     }
 
